@@ -1833,7 +1833,7 @@ int				tmb_npass=0;
 int				tmb_nfail=0;
 int				tmb_nskip=0;
 
-const int		rat_ntests=19;
+const int		rat_ntests=18;
 int				rat_npassed[rat_ntests+1];
 int				rat_nfailed[rat_ntests+1];
 int				rat_nskipped[rat_ntests+1];
@@ -23007,6 +23007,7 @@ L25173:
 	   //	Done
 	   //------------------------------------------------------------------------------
 	   // Enumerate
+	   
 rat_auto_done:
 
 	   rat_nfail = 0;
@@ -23037,18 +23038,23 @@ rat_auto_done:
 	   fprintf(test_file,"\tFailed       =%3i\n",rat_nfail);
 	   fprintf(test_file,"\tSkipped      =%3i\n",rat_nskip);
 
-	   if (rat_nfail==0 && rat_npass==rat_ntests && rat_nskip==0)
-	   {
+	   fprintf(stdout, "rat_nfail=%3i\n",rat_nfail);
+	   fprintf(stdout, "rat_npass=%3i\n",rat_npass);
+	   fprintf(stdout, "rat_nskip=%3i\n",rat_nskip);
+	   fprintf(stdout, "rat_ntests=%3i\n",rat_ntests);
+
+	   if (rat_nfail==0 && rat_npass==rat_ntests && rat_nskip==0) {
 		   fprintf(stdout,   "\n");
 		   fprintf(stdout,   "\t+------+\n");
 		   fprintf(stdout,   "\t| PASS |\n");
 		   fprintf(stdout,   "\t+------+\n");
+
 		   fprintf(test_file,"\n");
 		   fprintf(test_file,"\t+------+\n");
 		   fprintf(test_file,"\t| PASS |\n");
 		   fprintf(test_file,"\t+------+\n");}
-	   else
-	   {
+
+	   else {
 		   fprintf(stdout,   "\n");
 		   fprintf(stdout,   "\t+-----------------------+\n");
 		   fprintf(stdout,   "\t|******** FAIL *********|\n");
@@ -23065,13 +23071,14 @@ rat_auto_done:
 	   pause ("<cr>=return to main menu");
 	   return;
 	   }
+
 	   //------------------------------------------------------------------------------
 	   //	Scope snapshot of current system
 	   //------------------------------------------------------------------------------
 	   void L2600() {
 L2600:
 
-		   printf("\t<cr> to arm acope, else exit: ");
+		   printf("\t<cr> to arm scope, else exit: ");
 		   gets(line);
 		   if (line[0] != NULL) return;
 
