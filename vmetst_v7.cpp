@@ -12524,7 +12524,7 @@ L18130:
 	status	= vme_read(adr=(rpc_rxa_adr+base_adr ),rpc_rxa);	// rpc_rx[15:0]
 	status	= vme_read(adr=(rpc_rxb_adr+base_adr ),rpc_rxb);	// rpc_rx[34:19]
 	status	= vme_read(adr=(rpc_rxc_adr+base_adr ),rpc_rxc);	// rpc_rx[38],rpc_rx[37:35],rpc_rx[18:16]
-	status	= vme_read(adr=(tmb_boot_adr+base_adr),boot_data);	// tdo_rpc (rpc_rx[39])
+	status	= vme_read(adr=(tmb_boot_adr+base_adr),boot_data);	// tdo_rpc (rpc_rx[39])	
 
 	dprintf(stdout,"\trpc_rxa=%4.4X\n",rpc_rxa);
 	dprintf(stdout,"\trpc_rxb=%4.4X\n",rpc_rxb);
@@ -13990,6 +13990,8 @@ L19105:
 	status	= vme_read(adr=rpc_rxe_adr+base_adr, rpc_rxe);
 	status	= vme_read(adr=rpc_rxf_adr+base_adr, rpc_rxf);
 
+	printf("rpc_rxa=%4.4X rpc_rxb=%4.4X rpc_rxc=%4.4X rpc_rxd=%4.4X rpc_rxe=%4.4X rpc_rxf=%4.4X\n",rpc_rxa,rpc_rxb,rpc_rxc,rpc_rxd,rpc_rxe,rpc_rxf); 	
+	 
 //	bit_to_array(rpc_rxa, &rpc_data_1st[ 0], 16);
 //	bit_to_array(rpc_rxb, &rpc_data_1st[16], 16);
 //	bit_to_array(rpc_rxc, &rpc_data_1st[32],  6);
@@ -14118,69 +14120,69 @@ L19251:
 
 // Send walking 1s to ALCT transmitter
 	for (ipass=1; ipass<=1000; ++ipass) {	// 19256
-	for (itx  =0; itx  <=24;   ++itx  ) {	// 19255
+		for (itx  =0; itx  <=24;   ++itx  ) {	// 19255
 
-	 status	 = vme_write(adr=tmb_boot_adr+base_adr,     wr_data=sel_boot_jtag);
-	 status	 = vme_write(adr=alct_txa_adr+base_adr,     wr_data=0);
-	 status	 = vme_write(adr=alct_txb_adr+base_adr,     wr_data=0);
-	 status	 = vme_write(adr=adr=vme_step_adr+base_adr, wr_data=sel_step_alct);
+			status	 = vme_write(adr=tmb_boot_adr+base_adr,     wr_data=sel_boot_jtag);
+			status	 = vme_write(adr=alct_txa_adr+base_adr,     wr_data=0);
+			status	 = vme_write(adr=alct_txb_adr+base_adr,     wr_data=0);
+			status	 = vme_write(adr=adr=vme_step_adr+base_adr, wr_data=sel_step_alct);
 
-	if (itx>=0 && itx<=4) {
-	 wr_data= (1<<itx) | sel_boot_jtag;
-	 adr	= tmb_boot_adr + base_adr;
-	 status	= vme_write(adr,wr_data);
-	}
-	else if (itx>=5 && itx<=17) {
-	 wr_data= (1<<(itx-5));
-	 adr	= alct_txa_adr + base_adr;
-	 status	= vme_write(adr,wr_data);
-	}
-	else if (itx==18) {
-	 wr_data= (1<<8) | sel_boot_jtag;
-	 adr	= tmb_boot_adr + base_adr;
-	 status	= vme_write(adr,wr_data);
-	}
-	else if (itx==20) {
-	 wr_data= 0x0001 | sel_step_alct;
-	 adr	= vme_step_adr + base_adr;
-	 status	= vme_write(adr,wr_data);
-	}
-	else if (itx>=19 || itx<=24) {
-	 wr_data= (1<<(itx-19));
-	 if (itx==21) wr_data = (1<<(20-19));
-	 if (itx==22) wr_data = (1<<(21-19));
-	 if (itx==23) wr_data = (1<<(22-19));
-	 if (itx==24) wr_data = (1<<(23-19));
-	 adr	= alct_txb_adr + base_adr;
-	 status	= vme_write(adr,wr_data);
-	}	
-	else {
-	 stop("dumbass");
-	}
+			if (itx>=0 && itx<=4) {
+				wr_data= (1<<itx) | sel_boot_jtag;
+				adr	= tmb_boot_adr + base_adr;
+				status	= vme_write(adr,wr_data);
+			}
+			else if (itx>=5 && itx<=17) {
+				wr_data= (1<<(itx-5));
+				adr	= alct_txa_adr + base_adr;
+				status	= vme_write(adr,wr_data);
+			}
+			else if (itx==18) {
+				wr_data= (1<<8) | sel_boot_jtag;
+				adr	= tmb_boot_adr + base_adr;
+				status	= vme_write(adr,wr_data);
+			}
+			else if (itx==20) {
+				 wr_data= 0x0001 | sel_step_alct;
+				 adr	= vme_step_adr + base_adr;
+				 status	= vme_write(adr,wr_data);
+			}
+			else if (itx>=19 || itx<=24) {
+				 wr_data= (1<<(itx-19));
+				 if (itx==21) wr_data = (1<<(20-19));
+				 if (itx==22) wr_data = (1<<(21-19));
+				 if (itx==23) wr_data = (1<<(22-19));
+				 if (itx==24) wr_data = (1<<(23-19));
+				 adr	= alct_txb_adr + base_adr;
+				 status	= vme_write(adr,wr_data);
+			}	
+			else {
+				stop("dumbass");
+			}
 
 // Read back ALCT data registers
-	alct_data=0;
+			alct_data=0;
 
-	for (ireg=0; ireg<=3; ++ireg) {
-	adr		= base_adr+alct_rxa_adr+2*ireg;
-	status	= vme_read(adr,rd_data);
-	alct_id = (rd_data>>8) & 0xFF;
-	rd_data = rd_data & 0xFF;
-	alct_data      = alct_data | (rd_data<<(ireg*8));
-	alct_id_expect = 0xA0 | ireg;
-	if (alct_id!=alct_id_expect || debug_step)
-	printf("\tWrong ALCT id expect=%4.4X id=%2.2X read=%4.4X\n",alct_id_expect,alct_id,rd_data);
-	}
+			for (ireg=0; ireg<=3; ++ireg) {
+				adr		= base_adr+alct_rxa_adr+2*ireg;
+				status	= vme_read(adr,rd_data);
+				alct_id = (rd_data>>8) & 0xFF;
+				rd_data = rd_data & 0xFF;
+				alct_data      = alct_data | (rd_data<<(ireg*8));
+				alct_id_expect = 0xA0 | ireg;
+				if (alct_id!=alct_id_expect || debug_step)
+				printf("\tWrong ALCT id expect=%4.4X id=%2.2X read=%4.4X\n",alct_id_expect,alct_id,rd_data);
+			}
 
-// Read back TDO rx[0], merge with rx[28:1]
-	adr		 = tmb_boot_adr + base_adr;
-	status	 = vme_read(adr,rd_data);
-	alct_tdo = rd_data;
+		// Read back TDO rx[0], merge with rx[28:1]
+			adr		 = tmb_boot_adr + base_adr;
+			status	 = vme_read(adr,rd_data);
+			alct_tdo = rd_data;
 
-	alct_tdo  = alct_tdo  & 0x1;
-	alct_lsbs = alct_data ^ 0xF;			// invert
-	alct_lsbs = alct_lsbs & 0xE;			// trim off [28:4]
-	alct_lsbs = alct_lsbs | alct_tdo;		// invert [3:1] add [0]
+			alct_tdo  = alct_tdo  & 0x1;
+			alct_lsbs = alct_data ^ 0xF;			// invert
+			alct_lsbs = alct_lsbs & 0xE;			// trim off [28:4]
+			alct_lsbs = alct_lsbs | alct_tdo;		// invert [3:1] add [0]
 
 // Check lower 4 ALCT rx bits that are hardwired to tx drivers
 	alct_expect = (1<<itx);					// (1<<(itx-20)) & 0x000F;
@@ -14489,7 +14491,7 @@ L19400:
 	for (irpc=0; irpc<=1; ++irpc) {	// 19470
 
 	printf("\tRAT: RPC SCSI Cable Loopback Test:\n");
-	printf("\tConnect a 25pr cable from RAT ALCTtx to RPC%1 S=skip <cr>=run",irpc);
+	printf("\tConnect a 25pr cable from RAT ALCTtx to RPC%i S=skip <cr>=run",irpc);
 
 	gets(line);
 	n = strlen(line);
@@ -21301,9 +21303,9 @@ L2500:
 	if (rat_board_id==5000) printf("\tUsing default board ID 5000\n");
 
 	if (rat_board_id>5600 || rat_board_id<5000) {
-	printf("\tBoard ID must be 5000-5600\n");
-	pause("<cr> to continue");
-	goto L2500;
+		printf("\tBoard ID must be 5000-5600\n");
+		pause("<cr> to continue");
+		goto L2500;
 	}
 
 //------------------------------------------------------------------------------
@@ -21312,29 +21314,28 @@ L2500:
 //------------------------------------------------------------------------------
 // Look for a previous test file version in current folder
 	for (iver=1; iver<=99; ++iver) {
+		sprintf(cfver,"%2.2i",iver);	// Convert version number to string
+		sfver=string(cfver);
 
-	sprintf(cfver,"%2.2i",iver);	// Convert version number to string
-	sfver=string(cfver);
+		sprintf(cbid,"%4.4i",rat_board_id);
 
-	sprintf(cbid,"%4.4i",rat_board_id);
-
-	if (icrc!=dsn[7]|| icrc==0) {	// RAT board has issues
-	printf("\n");
-	printf("\tTest RAT has bad Digital Serial %s\n",sdsn.c_str());
-	inquirb("\tContinue anyway? [y|n]? cr=%3c",bans);
-	if (!bans) {
-	printf("\n\tTest cancelled\n");
-	return;
-	}
+		if (icrc!=dsn[7]|| icrc==0) {	// RAT board has issues
+			printf("\n");
+			printf("\tTest RAT has bad Digital Serial %s\n",sdsn.c_str());
+			inquirb("\tContinue anyway? [y|n]? cr=%3c",bans);
+			if (!bans) {
+			printf("\n\tTest cancelled\n");
+			return;
+		}
 	}
 
 // Check if file exists
 	test_file_name = logfolder;
-	test_file_name = test_file_name.append(string("rat_")).append(sbid).append(string("_")).append(sdsn).append(string("_")).append(sfver).append(string(".txt"));
+	test_file_name = test_file_name.append(string("rat_")).append(cbid).append(string("_")).append(sdsn).append(string("_")).append(sfver).append(string(".txt"));
 
 	test_file = fopen(test_file_name.c_str(),"r");	// Check if this version already exists
 	if (test_file==NULL) goto L2502;				// No, so we use this version number
-	fclose(test_file);								// Yes, so close it, proceed to next version number
+		fclose(test_file);								// Yes, so close it, proceed to next version number
 	}	// close for iver
 
 // Already have 99 versions of this test file, kinda excessive, you should delete the older versions
@@ -21844,8 +21845,8 @@ L2505:
 	rs_year		== 0x2006		// year
 	) rat_user1_string = "OK ";
 
-	if (rat_user1_string.compare("BAD")==0) rat_npassed[itest]=1;
-	if (rat_user1_string.compare("BAD")!=0)
+	if (rat_user1_string.compare("BAD")!=0) rat_npassed[itest]=1;
+	if (rat_user1_string.compare("BAD")==0)
 	{
 	rat_nfailed[itest]=1;
 	fprintf(stdout, "\tError in RAT JTAG USER1 chain; wrong firmware?");
@@ -22448,212 +22449,237 @@ L2580:
 //------------------------------------------------------------------------------
 	for (irpc=0; irpc<=1; ++irpc)	// 2590	test rpc loop: itest=15,17, ddd section increments itest for 16,18
 	{
-	itest=15+irpc*2;
 
-// Turn on 40MHz FPGA output to drive RPC input clock
-	adr    = vme_ratctrl_adr+base_adr;
-	status = vme_read(adr,rd_data);
-	rat_ctrl_data = rd_data;
-	wr_data = rd_data & 0xFFDF;		// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0 [4]=dsn en [5]=clock en
-	wr_data = wr_data | 0x0020;		// 	enable clock bit
-	status  = vme_write(adr,wr_data);
+		itest=15+irpc*2;
 
-// Take ALCT out of loopback mode, enable CFEBs, and RAT ALCT SCSI
-	sel_boot_jtag = 0x0080;
-	sel_loopbk    = 0x0A8D;			// Enable RAT, disable front SCSI, was a81 for tmb2004
-	adr		= vme_loopbk_adr + base_adr;
-	wr_data = sel_loopbk;
-	status	= vme_write(adr,wr_data);
+		// Inform the biounit its time to move the cable
+		printf("\n");
+		printf("\tRAT: RPC SCSI Cable Loopback Test:\n");
+		printf("\tConnect a 25pr cable from RAT ALCTtx to RPC%i\n",irpc);
+		printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-// Turn on ALCT 40MHz clock
-	wr_data = 0x1FE0;
-	adr	    = vme_step_adr + base_adr;
-	status	= vme_write(adr,wr_data);
-	
-// Take RAT out of sync mode, keep posneg=1
-	wr_data = 0x0002;				// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0
-	adr	    = rpc_txb_adr+base_adr;
-	status  = vme_write(adr,wr_data);
+		gets(line);
+		n = strlen(line);
+		i = line[0];
 
-// Inform the biounit its time to move the cable
-	printf("\n");
-	printf("\tRAT: RPC SCSI Cable Loopback Test:\n");
-	printf("\tConnect a 25pr cable from RAT ALCTtx to RPC\n");
-	printf("\tSkip, Loop, Debug, Continue <cr> ");
+		debug_beep = false;
 
-	gets(line);
-	n = strlen(line);
-	i = line[0];
+		if (n==1 && (i=='S' || i=='s')) {rat_nskipped[itest]=1; goto L25470;};
+		if (n==1 && (i=='L' || i=='l')) {debug_loop = true; debug_beep = true;}
+		if (n==1 && (i=='D' || i=='d'))  debug_step = true;
 
-	debug_beep = false;
+		// Turn on 40MHz FPGA output to drive RPC input clock
+		adr    = vme_ratctrl_adr+base_adr;
+		status = vme_read(adr,rd_data);
+		rat_ctrl_data = rd_data;
+		wr_data = rd_data & 0xFFDF;		// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0 [4]=dsn en [5]=clock en
+		wr_data = wr_data | 0x0020;		// 	enable clock bit
+		status  = vme_write(adr,wr_data);
 
-	if (n==1 && (i=='S' || i=='s')) {rat_nskipped[itest]=1; goto L25470;};
-	if (n==1 && (i=='L' || i=='l')) {debug_loop = true; debug_beep = true;}
-	if (n==1 && (i=='D' || i=='d'))  debug_step = true;
 
-// Set RAT clock delay
-	adr	    = base_adr+vme_ddd0_adr;
-	status	= vme_read(adr,rd_data);
+		// Take ALCT out of loopback mode, enable CFEBs, and RAT ALCT SCSI
+		sel_boot_jtag = 0x0080;
+		sel_loopbk    = 0x0A8D;			//was 0A8D // Enable RAT, disable front SCSI, was a81 for tmb2004
+		adr		= vme_loopbk_adr + base_adr;
+		wr_data = sel_loopbk;
+		status	= vme_write(adr,wr_data);
 
-	wr_data = rd_data & 0x0FF0;
-//	wr_data = wr_data | (3 << 12);	// RAT delay 3  for DDR mux
-	wr_data = wr_data | (9 << 12);	// RAT delay 9 for non-DDR
-	wr_data = wr_data | (2 <<  0);	// ALCTtx delay 2
 
-	status  = vme_write(adr,wr_data);
+		// Turn off step mode
+		//turns RPCrx into a 40 Mhz clock for some reason..
+		wr_data = 0x1FE0;
+		adr	    = vme_step_adr + base_adr;
+		status	= vme_write(adr,wr_data);
 
-// Start DDD state machine
-	adr	    = base_adr+vme_dddsm_adr;
-	status  = vme_read(adr,rd_data);
-	autostart = rd_data & 0x0020;	// get current autostart state
-	wr_data	= 0x0000 | autostart;	// stop machine
-	status	= vme_write(adr,wr_data);
-	wr_data = 0x0001 | autostart;	// start machine
-	status	= vme_write(adr,wr_data);
-	wr_data = 0x0000 | autostart;	// unstart machine
-	status	= vme_write(adr,wr_data);
 
-// Loop over repeat-passes
-	npasses = 1000;
+		// Turn off step mode (needed for DDD chips next test) 
+		//sel_step_alct = 0x1FE0;
+		//adr     = vme_step_adr+base_adr;
+		//wr_data = sel_step_alct;
+		//status  = vme_write(adr,wr_data);
 
-	for (ipass=1; ipass<=npasses; ++ipass)	// 25465
-	{
-	if (ipass%10==0      ) printf("\tRPC cable: Running loopback test %4i \r",npasses-ipass);
-	if (ipass   ==npasses) printf("\t                                      \r");
+		// Take TMB and RAT out of loop-back mode
+		adr	    = vme_loopbk_adr+base_adr;
+		status  = vme_read(adr,rd_data);
+		wr_data = rd_data & 0xFFCD;			// turn off RPC loop bits
+		status  = vme_write(adr,wr_data);
 
-L25461:	
-	rpc_err = 0;
+		// Take RAT out sync mode, select posneg=1 to sync to rising edge of tmb clock in spartan
+		adr	    = rpc_txb_adr+base_adr;
+		wr_data = 0x0002;					// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0
+		status  = vme_write(adr,wr_data);
 
-// Send walking 1s to ALCT transmitter
-	for (itx=0; itx<=18; ++itx)	// 25464
-	{
-	wr_pat    = (1<<itx);
-	wr_pat_ck = wr_pat;
+		adr    = vme_ratctrl_adr+base_adr;
+		status = vme_read(adr,rd_data);
+		wr_data = rd_data & 0xFFFA;		// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0 [4]=dsn en [5]=clock en
+		wr_data = wr_data | 0x0020;		// 	enable clock bit
+		wr_data = wr_data | 0x03FA;
+		status  = vme_write(adr,wr_data);
 
-	if (itx>=16)  wr_pat = (wr_pat<<1);		// skip alct_tx16. tmb bdtest firmware sends rpc clock on alct_tx[16]
-	wr_pat_vlad = wr_pat ^0x00AEAAAA;		// pre-invert  ALCT tx data so RPC sees all 0s + 1
+		// Set RAT clock delay
+		adr	    = base_adr+vme_ddd0_adr; 
+		status	= vme_read(adr,rd_data);
+		wr_data = rd_data & 0x0FF0;
 
-	jtag_alct        = (wr_pat_vlad >>  0) & 0x001F;	// tx[4:0]
-	alct_tx_lo       = (wr_pat_vlad >>  5) & 0x1FFF;	// tx[17:5]
-	nhard_reset_alct = (wr_pat_vlad >> 18) & 0x0001;	// tx[18]	inverted on tmb
-	alct_tx_hi       = (wr_pat_vlad >> 19) & 0x001F;	// tx[23:19]
+		//	wr_data = wr_data | (3 << 12);	// RAT delay 3  for DDR mux
+		wr_data = wr_data | (9 << 12);	// RAT delay 9 for non-DDR
+		wr_data = wr_data | (2 <<  0);	// ALCTtx delay 2
 
-// Send to ALCT output registers
-	adr		= tmb_boot_adr+base_adr;
-	wr_data = sel_boot_jtag & 0xFEFF;		// blank alct_hard_reset bit
-	wr_data = wr_data | (nhard_reset_alct<<8);
-	wr_data	= wr_data | jtag_alct;
-	status	= vme_write(adr,wr_data);
+		status  = vme_write(adr,wr_data);
 
-	adr		= alct_txa_adr+base_adr;
-	wr_data	= alct_tx_lo;
-	status	= vme_write(adr,wr_data);
+		// Start DDD state machine
+		adr	    = base_adr+vme_dddsm_adr;
+		status  = vme_read(adr,rd_data);
+		autostart = rd_data & 0x0020;	// get current autostart state
+		wr_data	= 0x0000 | autostart;	// stop machine
+		status	= vme_write(adr,wr_data);
+		wr_data = 0x0001 | autostart;	// start machine
+		status	= vme_write(adr,wr_data);
+		wr_data = 0x0000 | autostart;	// unstart machine
+		status	= vme_write(adr,wr_data);
 
-	adr		= alct_txb_adr+base_adr;
-	wr_data	= alct_tx_hi;
-	status	= vme_write(adr,wr_data);
+		// Loop over repeat-passes
+		npasses = 1000;
 
-// Read back RPC data registers
-	for (i=0; i<38; ++i) rpc_data[i]=0;
+		for (ipass=1; ipass<=npasses; ++ipass)	// 25465
+		{
+			if (ipass%10==0      ) printf("\tRPC cable: Running loopback test %4i \r",npasses-ipass);
+			if (ipass   ==npasses) printf("\t                                      \r");
 
-	status	= vme_read(adr=(rpc_rxa_adr+base_adr),wr_data=rpc_rxa);	// 1st in time
-	status	= vme_read(adr=(rpc_rxb_adr+base_adr),wr_data=rpc_rxb);
-	status	= vme_read(adr=(rpc_rxc_adr+base_adr),wr_data=rpc_rxc);
+			L25461:	
+			rpc_err = 0;
 
-	status	= vme_read(adr=(rpc_rxd_adr+base_adr),wr_data=rpc_rxd);	// 2nd in time
-	status	= vme_read(adr=(rpc_rxe_adr+base_adr),wr_data=rpc_rxe);
-	status	= vme_read(adr=(rpc_rxf_adr+base_adr),wr_data=rpc_rxf);
+			// Send walking 1s to ALCT transmitter
+			for (itx=0; itx<=18; ++itx)	// 25464
+			{
+				wr_pat    = (1<<itx);
+				wr_pat_ck = wr_pat;
 
-	dprintf(test_file,"rpc_rxa=%4.4X rpc_rxb=%4.4X rpc_rxc=%4.4X rpc_rxd=%4.4X rpc_rxe=%4.4X rpc_rxf=%4.4X\n",rpc_rxa,  rpc_rxa,rpc_rxb,rpc_rxc,rpc_rxd,rpc_rxe,rpc_rxf); 
+				if (itx>=16)  
+					wr_pat = (wr_pat<<1);		// skip alct_tx16. tmb bdtest firmware sends rpc clock on alct_tx[16]
+				
+				wr_pat_vlad = wr_pat ^0x00AEAAAA;		// pre-invert  ALCT tx data so RPC sees all 0s + 1
 
-// Assemble rpc data words a,b,c=1st[37:0] d,e,f=2nd[37:0]
-	rpc_rx[0] = rpc_rxa & 0xFFFF;				// rx[15:0]	pack [15: 0]	// 1st in time
-	rpc_rx[1] = rpc_rxb & 0xFFFF;				// rx[15:0]	pack [34:19]	// 1st in time
+				jtag_alct        = (wr_pat_vlad >>  0) & 0x001F;	// tx[4:0]
+				alct_tx_lo       = (wr_pat_vlad >>  5) & 0x1FFF;	// tx[17:5]
+				nhard_reset_alct = (wr_pat_vlad >> 18) & 0x0001;	// tx[18]	inverted on tmb
+				alct_tx_hi       = (wr_pat_vlad >> 19) & 0x001F;	// tx[23:19]
 
-	rpc_bxn[0]= (rpc_rxc >> 0) & 0x0007;		// bxn[2:0]	pack [18:16]
-	rpc_bxn[1]= (rpc_rxc >> 3) & 0x0007;		// bxn[2:0]	pack [37:35]
+				//reset; blank alct_hard_reset bit
+				wr_data = sel_boot_jtag & 0xFEFF;		
+				wr_data = wr_data | (nhard_reset_alct<<8);
+				wr_data	= wr_data | jtag_alct;
+				status	= vme_write(adr=(tmb_boot_adr+base_adr),wr_data);
 
-	rpc_rx[2] = rpc_rxd & 0xFFFF;				// rx[15:0]	pack [15: 0]	// 1st in time
-	rpc_rx[3] = rpc_rxe & 0xFFFF;				// rx[15:0]	pack [34:19]	// 1st in time
+				// Send Patterns to ALCT output registers
+				status	= vme_write(adr=(alct_txa_adr+base_adr),wr_data=(alct_tx_lo));
+				status	= vme_write(adr=(alct_txb_adr+base_adr),wr_data=alct_tx_hi);
 
-	rpc_bxn[2]= (rpc_rxf >> 0) & 0x0007;		// bxn[2:0]	pack [18:16]
-	rpc_bxn[3]= (rpc_rxf >> 3) & 0x0007;		// bxn[2:0]	pack [37:35]
+				for (i=0; i<38; ++i);
+					rpc_data[i]=0;
 
-// Repack bxn, invert lvds bits
-	for (i=0; i<=3; ++i) {
-	rpc_word[i] = (rpc_rx[i]   |(rpc_bxn[i]<<16));		// append bxn to rpc data
-//	rpc_word[i] = (rpc_word[i] ^ 007FFFF);				// invert bits 18:0, 2/23/2006 we dont invert in rat any more, so dont uninvert here
-	dprintf(test_file,"rpc%i1 rpc_rx=%4.4X rpc_bxn=%4.4X\n",i,rpc_rx[i],rpc_bxn[i]);
-	}
+				// Read back RPC data registers
+				status	= vme_read(adr=(rpc_rxa_adr+base_adr),rpc_rxa);	// 1st in time
+				status	= vme_read(adr=(rpc_rxb_adr+base_adr),rpc_rxb);
+				status	= vme_read(adr=(rpc_rxc_adr+base_adr),rpc_rxc);
 
-// Compare RPC read data to ALCT write data
-	if (ipass>=npasses-1) rpc_word[irpc]=wr_pat_ck;		// temporary for rev 1 boards, rev 2 will not latch new data
+				status	= vme_read(adr=(rpc_rxd_adr+base_adr),rpc_rxd);	// 2nd in time
+				status	= vme_read(adr=(rpc_rxe_adr+base_adr),rpc_rxe);
+				status	= vme_read(adr=(rpc_rxf_adr+base_adr),rpc_rxf);
 
-	if ((rpc_word[irpc]!=wr_pat_ck || debug_step) && (!debug_loop || debug_beep)) {
-	rat_nfailed[itest]=1;
-	rpc_err++;
-	fprintf(stdout, "\tRPC: Failed irpc=%1i bit=%2i wr=%6.6X rd=%6.6X pass=%9i\n",irpc,itx,wr_pat_ck,rpc_word[irpc],ipass);
-	fprintf(test_file,"RPC: Failed irpc=%1i bit=%2i wr=%6.6X rd=%6.6X pass=%9i\n",irpc,itx,wr_pat_ck,rpc_word[irpc],ipass);
+				//printf("rpc_rxa=%4.4X rpc_rxb=%4.4X rpc_rxc=%4.4X rpc_rxd=%4.4X rpc_rxe=%4.4X rpc_rxf=%4.4X\n",rpc_rxa,rpc_rxb,rpc_rxc,rpc_rxd,rpc_rxe,rpc_rxf); 			
+				dprintf(test_file,"rpc_rxa=%4.4X rpc_rxb=%4.4X rpc_rxc=%4.4X rpc_rxd=%4.4X rpc_rxe=%4.4X rpc_rxf=%4.4X\n",rpc_rxa,rpc_rxb,rpc_rxc,rpc_rxd,rpc_rxe,rpc_rxf); 			
 
-	printf("\tSkip, Loop, Debug, Continue <cr> ");
+				// Assemble rpc data words a,b,c=1st[37:0] d,e,f=2nd[37:0]
+				rpc_rx[0] = rpc_rxa & 0xFFFF;				// rx[15:0]	pack [15: 0]	// 1st in time
+				rpc_rx[1] = rpc_rxb & 0xFFFF;				// rx[15:0]	pack [34:19]	// 1st in time
 
-	gets(line);
-	n = strlen(line);
-	i = line[0];
+				rpc_bxn[0]= (rpc_rxc >> 0) & 0x0007;		// bxn[2:0]	pack [18:16]
+				rpc_bxn[1]= (rpc_rxc >> 3) & 0x0007;		// bxn[2:0]	pack [37:35]
 
-	debug_beep = false;
+				rpc_rx[2] = rpc_rxd & 0xFFFF;				// rx[15:0]	pack [15: 0]	// 1st in time
+				rpc_rx[3] = rpc_rxe & 0xFFFF;				// rx[15:0]	pack [34:19]	// 1st in time
 
-	if (n==1 && (i=='S' || i=='s')) {rat_nskipped[itest]=1; goto L25470;};
-	if (n==1 && (i=='L' || i=='l'))  debug_loop = true;
-	if (n==1 && (i=='D' || i=='d'))  debug_step = true;
-	}	// close if rpc_word
+				rpc_bxn[2]= (rpc_rxf >> 0) & 0x0007;		// bxn[2:0]	pack [18:16]
+				rpc_bxn[3]= (rpc_rxf >> 3) & 0x0007;		// bxn[2:0]	pack [37:35]
 
-// Close itx loop
-	}	// close for itx 25464
-	if (debug_loop) goto L25461;
+				// Repack bxn, invert lvds bits
+				for (i=0; i<=3; ++i) {
+					rpc_word[i] = (rpc_rx[i] | (rpc_bxn[i]<<16));		// append bxn to rpc data
+					//rpc_word[i] = (rpc_word[i] ^ 007FFFF);				// invert bits 18:0, 2/23/2006 we dont invert in rat any more, so dont uninvert here
+					dprintf(test_file,"rpc%i1 rpc_rx=%4.4X rpc_bxn=%4.4X\n",i,rpc_rx[i],rpc_bxn[i]);
+				}
 
-// On next to last pass, turn off this RPCs receiver enables
-//	npasses-2	disable rpc,    checked on npasses-1
-//	npasses-1	re-enable rpc   checked on npasses
-//	npasses		do nothing		not checked, cuz switching to next rpc
-	if (ipass<=npasses-3) goto L25465;
+				// Compare RPC read data to ALCT write data
+				if (ipass>=npasses-1) rpc_word[irpc]=wr_pat_ck;		// temporary for rev 1 boards, rev 2 will not latch new data
 
-// Select RAT JTAG chain from TMB boot register
-	ichain = 0x000D;								// RAT jtag chain
-	adr    = boot_adr;								// Boot register address
-	vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
+				if ((rpc_word[irpc]!=wr_pat_ck || debug_step) && (!debug_loop || debug_beep)) {
+					rat_nfailed[itest]=1;
+					rpc_err++;
+					fprintf(stdout, "\tRPC: Failed irpc=%1i bit=%2i wr=%6.6X rd=%6.6X pass=%9i\n",irpc,itx,wr_pat_ck,rpc_word[irpc],ipass);
+					fprintf(test_file,"RPC: Failed irpc=%1i bit=%2i wr=%6.6X rd=%6.6X pass=%9i\n",irpc,itx,wr_pat_ck,rpc_word[irpc],ipass);
 
-// Read current RAT USER2
-	chip_id = 0;
-	opcode  = 0x03;									// FPGA USER2 opcode
-	reg_len = 32;									// USER2 register length, 3d rat
-	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-	dprintf("tdo="); for (i=0; i<reg_len; ++i) dprintf("%1i",tdo[i]); dprintf("\n");
+					printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-// Set new RAT USER2 bits to enable or disable rpcs
-	ibit = 0;
-	if (ipass==npasses-3) ibit=1;	// will disable this rpc
-	if (ipass==npasses-2) ibit=0;	// will re-enable this rpc
-	ival = (1<<irpc);				// 01 for rpc0, 10 for rpc1
-	ival = ival ^ 0x3;				// 10 for rpc1, 01 for rpc1, disables current rpc
-	if (ipass>=npasses-1) ival=0x3;
+					gets(line);
+					n = strlen(line);
+					i = line[0];
 
-	bit_to_array(ival,ivalarray,reg_len);
-	for (i=0; i<reg_len; ++i) rsd[i]=ivalarray[i];
+					debug_beep = false;
 
-// Write RAT USER2 register (5 bit opcode)
-	chip_id = 0;
-	opcode  = 0x03;								// VirtexE USER2 opcode
-	reg_len = 32;								// Register length
-	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-	vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);	// Write data
+					if (n==1 && (i=='S' || i=='s')) {rat_nskipped[itest]=1; goto L25470;};
+					if (n==1 && (i=='L' || i=='l'))  debug_loop = true;
+					if (n==1 && (i=='D' || i=='d'))  debug_step = true;
+				}	// close if rpc_word
 
-// RPC passes loop
-L25465:;
-	}	// close ipass 25465
+				// Close itx loop
+			}	// close for itx 25464
+			
+			if (debug_loop) goto L25461;
 
-// Take RAT out of sync mode
+			// On next to last pass, turn off this RPCs receiver enables
+			//	npasses-2	disable rpc,    checked on npasses-1
+			//	npasses-1	re-enable rpc   checked on npasses
+			//	npasses		do nothing		not checked, cuz switching to next rpc
+			if (ipass<=npasses-3) goto L25465;
+
+			// Select RAT JTAG chain from TMB boot register
+			ichain = 0x000D;								// RAT jtag chain
+			adr    = boot_adr;								// Boot register address
+			vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
+
+			// Read current RAT USER2
+			chip_id = 0;
+			opcode  = 0x03;									// FPGA USER2 opcode
+			reg_len = 32;									// USER2 register length, 3d rat
+			vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+			vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+			dprintf("tdo="); 
+			for (i=0; i<reg_len; ++i) dprintf("%1i",tdo[i]); dprintf("\n");
+
+			// Set new RAT USER2 bits to enable or disable rpcs
+			ibit = 0;
+			if (ipass==npasses-3) ibit=1;	// will disable this rpc
+			if (ipass==npasses-2) ibit=0;	// will re-enable this rpc
+			ival = (1<<irpc);				// 01 for rpc0, 10 for rpc1
+			ival = ival ^ 0x3;				// 10 for rpc1, 01 for rpc1, disables current rpc
+			if (ipass>=npasses-1) ival=0x3;
+
+			bit_to_array(ival,ivalarray,reg_len);
+			for (i=0; i<reg_len; ++i) rsd[i]=ivalarray[i];
+
+			// Write RAT USER2 register (5 bit opcode)
+			chip_id = 0;
+			opcode  = 0x03;								// VirtexE USER2 opcode
+			reg_len = 32;								// Register length
+			vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+			vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);	// Write data
+		
+			// RPC passes loop
+			L25465:;
+}	// close ipass 25465
+
+	// Take RAT out of sync mode
 	wr_data = 0x0000;	// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0
 	adr	    = rpc_txb_adr+base_adr;
 	status  = vme_write(adr,wr_data);
@@ -22690,14 +22716,20 @@ L25470:;
 	printf("\tEnter S to skip a delay channel\n");
 	printf("\n");
 
-// Turn on 40MHz FPGA output to drive RPC input clock
+	// Turn off step mode //Andrew
+	sel_step_alct = 0x1FE0;
+	adr     = vme_step_adr+base_adr;
+	wr_data = sel_step_alct;
+	status  = vme_write(adr,wr_data);
+
+	// Turn on 40MHz FPGA output to drive RPC input clock
 	adr     = vme_ratctrl_adr+base_adr;
 	status  = vme_read(adr,rd_data);
 	rat_ctrl_data = rd_data;
 	wr_data = rd_data | 0x0020;					// 	[0]=sync_mode [1]=posneg [2]=loop_tmb [3]=free_tx0 [4]=dsn en [5]=clock en
 	status  = vme_write(adr,wr_data);
 
-// Select RAT JTAG chain from TMB boot register
+	// Select RAT JTAG chain from TMB boot register
 	ichain = 0x000D;							// RAT jtag chain
 	adr    = boot_adr;							// Boot register address
 	vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
