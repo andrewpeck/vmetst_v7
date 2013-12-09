@@ -1,0 +1,1282 @@
+Test 1: ALCT tx clock delay scan: ALCT-to-TMB Teven/Todd
+
+	seq_cmd_bit[0]=1;	seq_cmd_bit[2]=1;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven/Todd pattern
+
+	When TMB sets this seq_cmd, ALCT enters the test mode
+	where it sends the alternating Teven Todd fixed-data
+	test pattern to TMB.
+	
+	The ALCT is the souce of the test pattern date,
+	it is not sent by TMB.
+
+Test 2:
+
+// Set alct_posneg
+	alct_posneg = 0;
+	adr     = alct_cfg_adr+base_adr;
+	status	= vme_read(adr,rd_data);
+	wr_data = rd_data & ~(1 << 14);
+	wr_data = wr_data | (alct_posneg << 14);
+	status	= vme_write(adr,wr_data);
+
+// Get current alct_tx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel = 0;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_tx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Get current alct_rx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel = 1;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_rx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Clear error accumulators
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {
+	for (ibit=0; ibit<=27; ++ibit) {
+	alct_tx_bad[ddd_delay][ibit]=0;
+	}}
+
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {
+	alct_sync_1st_err_ff[ddd_delay] = 0;
+	alct_sync_2nd_err_ff[ddd_delay] = 0;
+	}
+
+// Step alct tx clock delay
+	fprintf(unit,"\tChecking 80MHz Teven|Todd data TMB receives from ALCT\n");
+	fprintf(unit,"\tHolding  alct_rx_clock delay=%2i\n",alct_rx_default);
+	fprintf(unit,"\tStepping alct_tx_clock delay\n\n");
+
+	npasses = 1000;
+	for (ipass=1; ipass<=npasses; ++ipass) {			// L231015
+	for (ddd_delay=0; ddd_delay<=12; ++ ddd_delay) {	// L231010
+
+	ddd_chip    = 0;									// alct_tx_delay is chip0 ch0
+	ddd_channel = 0;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);	// Set new alct_tx_clock delay
+
+// Clear TMB data check flipflops for this delay value, set transmitted data delay depth
+	alct_sync_rxdata_dly = 0;
+	alct_sync_clr_err    = 1;
+
+	adr     = alct_sync_ctrl_adr+base_adr;		// Set delay depth, clear error FFs
+	wr_data = (alct_sync_rxdata_dly << 0) |
+			  (alct_sync_clr_err    << 5);
+	status	= vme_write(adr,wr_data);
+
+	wr_data = wr_data & ~(1 << 5);				// un-clear error FFs
+	status	= vme_write(adr,wr_data);
+
+// Read TMB received demux data
+	for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+	adr     = alctfifo1_adr+base_adr;
+	wr_data = 0x2000;				// select alct_loopback mode addressing
+	wr_data = wr_data | (i << 1);
+	status	= vme_write(adr,wr_data);
+
+	adr     = alctfifo2_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	alct_demux_rd[i]=rd_data;
+	}
+
+	alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+	alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+	alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+	alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+
+//	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
+//	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
+
+// Read TMB data check flipflops
+	adr     = alct_sync_ctrl_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+
+	alct_sync_1st_err[ddd_delay]    = ((rd_data >> 6) & 0x1);
+	alct_sync_2nd_err[ddd_delay]    = ((rd_data >> 7) & 0x1);
+	alct_sync_1st_err_ff[ddd_delay] = ((rd_data >> 8) & 0x1) | alct_sync_1st_err_ff[ddd_delay];
+	alct_sync_2nd_err_ff[ddd_delay] = ((rd_data >> 9) & 0x1) | alct_sync_1st_err_ff[ddd_delay];
+
+	if (ipass==1) {
+	fprintf(unit,"Teven/Todd: ddd_delay=%2i ",ddd_delay);
+	fprintf(unit,"rxdata_1st=%8.8X rxdata_2nd=%8.8X ",alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+	fprintf(unit,"1st_err=%1i/%1i 2nd_err=%1i/%1i\n",alct_sync_1st_err[ddd_delay],alct_sync_1st_err_ff[ddd_delay],alct_sync_2nd_err[ddd_delay],alct_sync_2nd_err_ff[ddd_delay]);
+//	fprintf(unit,"\t\t\t expect_1st=%8.8X expect_2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
+	}
+
+// Compare received bits to expected pattern
+	alct_1st_expect = 0xAAAAAAA;	// Teven
+	alct_2nd_expect = 0x5555555;	// Todd 
+
+	if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_sync_expect_1st %8.8X %8.8X",alct_1st_expect,alct_sync_expect_1st); pause("WTF!?");}
+	if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_sync_expect_2nd %8.8X %8.8X",alct_2nd_expect,alct_sync_expect_2nd); pause("WTF!?");}
+
+	for (ibit=0; ibit<=27; ++ibit) {
+	ibit_1st_expected = (alct_1st_expect		>> ibit) & 0x1;
+	ibit_2nd_expected = (alct_2nd_expect		>> ibit) & 0x1;
+	ibit_1st_received = (alct_sync_rxdata_1st	>> ibit) & 0x1;
+	ibit_2nd_received = (alct_sync_rxdata_2nd	>> ibit) & 0x1;
+	if ((ibit_1st_expected !=  ibit_1st_received) ||
+	    (ibit_2nd_expected !=  ibit_2nd_received)) alct_tx_bad[ddd_delay][ibit]++;
+	}	// Close for ibit
+
+	}	// Close for ipass L23101:
+	if (ipass==1   ) fprintf(unit,"\n\tAccumulating statistics...\n\n");
+	if (ipass%10==0) fprintf(unit,"\t%4i\r",npasses-ipass);
+	}	// Close for ddd_delay L231015:
+
+// Display timing window twice in case good area is near 0 or 25ns
+	fprintf(unit,"\t Tx_dly  Berrs Average 12 01234567890123456789012345678  %5i samples\n",npasses);	
+
+	for (j=0; j<=1; ++j) {
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {
+	nbad=0;
+	for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_tx_bad[ddd_delay][ibit];}
+	avgbad=double(nbad)/double(npasses);
+	nx=int(avgbad);
+	if ((nx==0) && (nbad != 0)) nx=1;
+	fprintf(unit,"\t%2ins  %8i %7.4f %c%c |",ddd_delay*2,nbad,avgbad,passfail[alct_sync_1st_err_ff[ddd_delay]],passfail[alct_sync_2nd_err_ff[ddd_delay]]);
+	if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
+	fprintf(unit,"\n");
+	}}
+
+// Display bad bits vs delay
+	fprintf(unit,"\nCable Pair Errors vs alct_tx_clock Delay\n");
+
+	fprintf(unit," delay ");
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {fprintf(unit,"%5i",ddd_delay);}	// display delay values header
+	fprintf(unit,"\n");
+
+	fprintf(unit,"pair   ");
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {fprintf(unit," ----");}
+	fprintf(unit,"\n");
+
+	for (ibit=0; ibit<=27; ++ibit) {
+	fprintf(unit,"rx[%2i] ",ibit);
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {fprintf(unit,"%5i",alct_tx_bad[ddd_delay][ibit]);}
+	fprintf(unit,"\n");
+	}
+
+// Set alct tx delay to new value or restore default
+L231018:
+	fprintf(unit,"\n\tDefault alct_tx_clock delay=%2.2i new delay[0-12]=",alct_tx_default);
+	gets(line);
+	n=strlen(line);
+	sscanf(line,"%i",&newdelay);
+
+	if (line[0]==NULL) newdelay=alct_tx_default;
+	if ((newdelay > 12) || (newdelay < 0)) goto L231018;
+
+	alct_tx_default = newdelay;
+	fprintf(unit,"\tSetting alct_tx_clock delay=%2.2i\n",alct_tx_default);
+
+	ddd_chip	= 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel	= 0;
+	ddd_delay	= alct_tx_default;
+
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);// Set new alct_tx_clock delay
+
+// Take ALCT firmware out of loopback mode
+	seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);				// Get current state
+	wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+	goto L2300;
+
+//------------------------------------------------------------------------------
+//	ALCT rx clock delay scan: TMB-to-ALCT Teven/Todd Loopback
+//------------------------------------------------------------------------------
+L231100:
+	unit = stdout;
+//	unit = log_file;
+
+	fprintf(unit,"\tALCT rx clock delay scan: TMB-to-ALCT Teven/Todd Loopback\n");
+
+// Turn off CCB inputs to zero alct_adb_sync and ext_trig
+	adr     = ccb_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+	wr_data = wr_data | 0x1;					// Turn off CCB backplane
+	status  = vme_write(adr,wr_data);
+
+// Put ALCT into loopback mode, turn off Teven/Todd xmit, seq_cmd[0],[2] share same wire pair
+	seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);			// Get current state
+	wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+// Set alct_posneg
+	alct_posneg = 0;
+	adr     = alct_cfg_adr+base_adr;
+	status	= vme_read(adr,rd_data);
+	wr_data = rd_data & ~(1 << 14);
+	wr_data = wr_data | (alct_posneg << 14);
+	status	= vme_write(adr,wr_data);
+
+// Get current alct_tx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel = 0;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_tx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Get current alct_rx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel = 1;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_rx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Clear error accumulators
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {
+	for (ibit=0; ibit<=27; ++ibit) {
+	alct_rx_bad[ddd_delay][ibit]=0;
+	}}
+
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {
+	alct_sync_1st_err_ff[ddd_delay] = 0;
+	alct_sync_2nd_err_ff[ddd_delay] = 0;
+	}
+
+// Step alct rx clock delay
+	fprintf(unit,"\tChecking 80MHz Teven|Todd data ALCT looped back from TMB\n");
+	fprintf(unit,"\tHolding  alct_tx_clock delay=%2i\n",alct_tx_default);
+	fprintf(unit,"\tStepping alct_rx_clock delay\n\n");
+
+	npasses = 1000;
+	for (ipass=1; ipass<=npasses; ++ipass) {			// L231115
+	for (ddd_delay=0; ddd_delay<=12; ++ ddd_delay) {	// L231110
+
+	ddd_chip    = 0;									// alct_rx_delay is chip0 ch1
+	ddd_channel = 1;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);	// Set new alct_rx_clock delay
+
+// Write Teven/Todd into ALCT loopback bank 0, writes 0s to banks 1,2
+	alct_1st_bank[0] = 0x2AA;	alct_2nd_bank[0] = 0x155;	//1st-in-time: Teven = 10'b10 1010 1010, 2nd-in-time: Todd  = 10'b01 0101 0101
+	alct_1st_bank[1] = 0;		alct_2nd_bank[1] = 0;
+	alct_1st_bank[2] = 0;		alct_2nd_bank[2] = 0;
+	seq_cmd_bit[0]   = 1;		seq_cmd_bit[2]   = 0;		// (seq_cmd[0] | seq_cmd[2] == 1) keeps ALCT in loopback mode
+
+	for (ibank=0; ibank<=2; ++ibank) {
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);				// Get current seq_cmd[3:0] state
+
+	seq_cmd_bit[1] = (ibank >> 0) & 0x1;
+	seq_cmd_bit[3] = (ibank >> 1) & 0x1;			// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+
+	wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);				// Write new seq_cmd to select ibank
+
+	adr		= alct_sync_txdata_1st+base_adr;
+	wr_data = alct_1st_bank[ibank];					// Write 1st-in-time data for this bank
+	status  = vme_write(adr,wr_data);	
+
+	adr		= alct_sync_txdata_2nd+base_adr;
+	wr_data = alct_2nd_bank[ibank];					// Write 2nd-in-time data for this bank
+	status  = vme_write(adr,wr_data);
+	}
+
+// Clear TMB data check flipflops for this delay value, set transmitted data delay depth
+	alct_sync_rxdata_dly = 0;
+	alct_sync_clr_err    = 1;
+
+	adr     = alct_sync_ctrl_adr+base_adr;			// Set delay depth, clear error FFs
+	wr_data = (alct_sync_rxdata_dly << 0) |
+			  (alct_sync_clr_err    << 5);
+	status	= vme_write(adr,wr_data);
+
+	wr_data = wr_data & ~(1 << 5);					// un-clear error FFs
+	status	= vme_write(adr,wr_data);	
+
+// Read TMB received demux data
+	for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+	adr     = alctfifo1_adr+base_adr;
+	wr_data = 0x2000;				// select alct_loopback mode addressing
+	wr_data = wr_data | (i << 1);
+	status	= vme_write(adr,wr_data);
+
+	adr     = alctfifo2_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	alct_demux_rd[i]=rd_data;
+	}
+
+	alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+	alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+	alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+	alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+
+//	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
+//	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
+
+// Read TMB data check flipflops
+	adr     = alct_sync_ctrl_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+
+	alct_sync_1st_err[ddd_delay]    = ((rd_data >> 6) & 0x1);
+	alct_sync_2nd_err[ddd_delay]    = ((rd_data >> 7) & 0x1);
+	alct_sync_1st_err_ff[ddd_delay] = ((rd_data >> 8) & 0x1) | alct_sync_1st_err_ff[ddd_delay];
+	alct_sync_2nd_err_ff[ddd_delay] = ((rd_data >> 9) & 0x1) | alct_sync_1st_err_ff[ddd_delay];
+	
+	if (ipass==1) {
+	fprintf(unit,"\tTeven/Todd: ddd_delay=%2i 1st=%8.8X 2nd=%8.8X ",ddd_delay,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+	fprintf(unit,  "1st_err=%1i/%1i 2nd_err=%1i/%1i\n",alct_sync_1st_err[ddd_delay],alct_sync_1st_err_ff[ddd_delay],alct_sync_2nd_err[ddd_delay],alct_sync_2nd_err_ff[ddd_delay]);
+	}
+
+// Compare received bits to expected pattern
+	alct_1st_expect = 0x2AA;	// Teven
+	alct_2nd_expect = 0x155;	// Todd 
+
+	if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_1st_expect=%8.8X alct_sync_expect_1st=%8.8X\n",alct_1st_expect,alct_sync_expect_1st);}
+	if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_2nd_expect=%8.8X alct_sync_expect_2nd %8.8X\n",alct_2nd_expect,alct_sync_expect_2nd);}
+
+	for (ibit=0; ibit<=27; ++ibit) {
+	ibit_1st_expected = (alct_1st_expect		>> ibit) & 0x1;
+	ibit_2nd_expected = (alct_2nd_expect		>> ibit) & 0x1;
+	ibit_1st_received = (alct_sync_rxdata_1st	>> ibit) & 0x1;
+	ibit_2nd_received = (alct_sync_rxdata_2nd	>> ibit) & 0x1;
+	if ((ibit_1st_expected !=  ibit_1st_received) ||
+	    (ibit_2nd_expected !=  ibit_2nd_received)) alct_rx_bad[ddd_delay][ibit]++;
+	}	// Close ibit
+
+	}	// Close for ipass L231110
+	if (ipass==1   ) fprintf(unit,"\n\tAccumulating statistics...\n\n");
+	if (ipass%10==0) fprintf(unit,"\t%4i\r",npasses-ipass);
+	}	// Close for ddd_delay L231115:
+
+// Display timing window twice in case good area is near 0 or 25ns
+	fprintf(unit,"\t Rx_dly  Berrs Average 12 01234567890123456789012345678  %5i samples\n",npasses);	
+
+	for (j=0; j<=1; ++j) {
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {
+	nbad=0;
+	for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_rx_bad[ddd_delay][ibit];}
+	avgbad=double(nbad)/double(npasses);
+	nx=int(avgbad);
+	if ((nx==0) && (nbad != 0)) nx=1;
+	fprintf(unit,"\t%2ins  %8i %7.4f %c%c |",ddd_delay*2,nbad,avgbad,passfail[alct_sync_1st_err_ff[ddd_delay]],passfail[alct_sync_2nd_err_ff[ddd_delay]]);
+	if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
+	fprintf(unit,"\n");
+	}}
+
+// Display bad bits vs delay
+	fprintf(unit,"\nCable Pair Errors vs alct_rx_clock Delay\n");
+
+	fprintf(unit," delay ");
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {fprintf(unit,"%5i",ddd_delay);}	// display delay values header
+	fprintf(unit,"\n");
+
+	fprintf(unit,"pair   ");
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {fprintf(unit," ----");}
+	fprintf(unit,"\n");
+
+	for (ibit=0; ibit<=27; ++ibit) {
+	fprintf(unit,"rx[%2i] ",ibit);
+	for (ddd_delay=0; ddd_delay<=12; ++ddd_delay) {fprintf(unit,"%5i",alct_rx_bad[ddd_delay][ibit]);}
+	fprintf(unit,"\n");
+	}
+
+// Set alct rx delay to new value or restore default
+L231118:
+	fprintf(unit,"\n\tDefault alct_rx_clock delay=%2.2i new delay[0-12]=",alct_rx_default);
+	gets(line);
+	n=strlen(line);
+	sscanf(line,"%i",&newdelay);
+
+	if (line[0]==NULL) newdelay=alct_rx_default;
+	if ((newdelay > 12) || (newdelay < 0)) goto L231118;
+
+	alct_rx_default = newdelay;
+	fprintf(unit,"\tSetting alct_rx_clock delay=%2.2i\n",alct_rx_default);
+
+	ddd_chip	= 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel	= 1;
+	ddd_delay	= alct_rx_default;
+
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);// Set new alct_rx_clock delay
+
+// Take ALCT firmware out of loopback mode
+	seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);				// Get current state
+	wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+	goto L2300;
+
+//------------------------------------------------------------------------------
+//	ALCT tx+rx default delays TMB-to-ALCT Walking 1 Loopback
+//------------------------------------------------------------------------------
+L231200:
+	unit  = stdout;
+//	unit  = log_file;
+	debug = false;
+
+	fprintf(unit,"\tALCT tx+rx default delays TMB-to-ALCT Walking 1 Loopback\n");
+	fprintf(unit,"\tIt is assumed you already set alct_tx_clock and alct_rx_clock delays\n");
+
+// Turn off CCB inputs to zero alct_adb_sync and ext_trig
+	adr     = ccb_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+	wr_data = wr_data | 0x1;					// Turn off CCB backplane
+	status  = vme_write(adr,wr_data);
+
+// Put ALCT into loopback mode, turn off Teven/Todd xmit, seq_cmd[0],[2] share same wire pair
+	seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);			// Get current state
+	wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+// Set alct_posneg
+	alct_posneg = 0;
+	adr     = alct_cfg_adr+base_adr;
+	status	= vme_read(adr,rd_data);
+	wr_data = rd_data & ~(1 << 14);
+	wr_data = wr_data | (alct_posneg << 14);
+	status	= vme_write(adr,wr_data);
+
+// Clear error accumulators
+	for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+	for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+	for (ibit=0; ibit<=27; ++ibit) {
+	alct_walking1_err[itx][ifs][ibit]=0;
+	alct_walking1_hit[itx][ifs][ibit][0]=0;
+	alct_walking1_hit[itx][ifs][ibit][1]=0;
+	}}}
+
+// Step walking 1 bit
+	fprintf(unit,"\tChecking 80MHz walking 1 data ALCT looped back from TMB\n\n");
+	fprintf(unit,"\t\t1st 0123456789012345678901234567 2nd 0123456789012345678901234567 \n");
+
+	npasses = 1000;
+	for (ipass=1; ipass<=npasses; ++ipass) {			// L231205
+	for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+	for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+
+// Write walking 1 into ALCT loopback bank 0,1,2
+	ibank = itx/10;		// 0-9 in bank 0, 10-19 in bank 1, 20-27 in bank 2
+	ibit  = itx%10;		// bit position within a bank
+
+	alct_1st_bank[0] = 0;
+	alct_1st_bank[1] = 0;
+	alct_1st_bank[2] = 0;
+	alct_1st_bank[ibank] = (1 << ibit) * (ifs==0);
+
+	alct_2nd_bank[0] = 0;
+	alct_2nd_bank[1] = 0;
+	alct_2nd_bank[2] = 0;
+	alct_2nd_bank[ibank] = (1 << ibit) * (ifs==1);
+
+	seq_cmd_bit[0]=1; seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) keeps ALCT in loopback mode
+
+	for (ibank=0; ibank<=2; ++ibank) {
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);				// Get current seq_cmd[3:0] state
+
+	seq_cmd_bit[1] = (ibank >> 0) & 0x1;
+	seq_cmd_bit[3] = (ibank >> 1) & 0x1;			// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+
+	wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);				// Write new seq_cmd to select ibank
+
+	adr		= alct_sync_txdata_1st+base_adr;
+	wr_data = alct_1st_bank[ibank];					// Write 1st-in-time data for this bank
+	status  = vme_write(adr,wr_data);	
+
+	adr		= alct_sync_txdata_2nd+base_adr;
+	wr_data = alct_2nd_bank[ibank];					// Write 2nd-in-time data for this bank
+	status  = vme_write(adr,wr_data);
+	}
+
+// Read TMB received demux data
+	for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+	adr     = alctfifo1_adr+base_adr;
+	wr_data = 0x2000;				// select alct_loopback mode addressing
+	wr_data = wr_data | (i << 1);
+	status	= vme_write(adr,wr_data);
+
+	adr     = alctfifo2_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	alct_demux_rd[i]=rd_data;
+	}
+
+	alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+	alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+	alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+	alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+
+//	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
+//	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
+//	if (ipass==1) fprintf(unit,"\tTeven/Todd: ddd_delay=%2i 1st=%8.8X 2nd=%8.8X\n",ddd_delay,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//	fprintf(unit,"\tWalking 1: 1st/2nd=%1i tx bit=%2i 1st=%8.8X 2nd=%8.8X\n",ifs,itx,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+
+// Display tx bits vs received bits
+	if (ipass==1) {
+	fprintf(unit,"\t%1i %2i tx",ifs,itx);
+	fprintf(unit,"\t1st "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(i==itx)*(ifs==0)]);
+	fprintf(unit, " 2nd "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(i==itx)*(ifs==1)]);
+	fprintf(unit,"\n");
+	fprintf(unit,"\t     rx");
+	fprintf(unit, " 1st "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(alct_sync_rxdata_1st >> i) & 0x1]);
+	fprintf(unit, " 2nd "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(alct_sync_rxdata_2nd >> i) & 0x1]);
+	fprintf(unit,"\n");
+	}
+
+// Compare received bits to expected pattern
+	alct_1st_expect = (1 << itx) * (ifs==0);
+	alct_2nd_expect = (1 << itx) * (ifs==1); 
+
+	if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_sync_expect_1st %8.8X %8.8X",alct_1st_expect,alct_sync_expect_1st); pause("WTF!?");}
+	if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_sync_expect_2nd %8.8X %8.8X",alct_2nd_expect,alct_sync_expect_2nd); pause("WTF!?");}
+
+	for (ibit=0; ibit<=27; ++ibit) {
+	ibit_1st_expected = (alct_1st_expect >> ibit) & 0x1;
+	ibit_2nd_expected = (alct_2nd_expect >> ibit) & 0x1;
+	ibit_1st_received = (alct_sync_rxdata_1st  >> ibit) & 0x1;
+	ibit_2nd_received = (alct_sync_rxdata_2nd  >> ibit) & 0x1;
+
+	if ((ibit_1st_expected !=  ibit_1st_received) ||
+	    (ibit_2nd_expected !=  ibit_2nd_received)) alct_walking1_err[itx][ifs][ibit]++;
+
+	alct_walking1_hit[itx][ifs][ibit][0]=alct_walking1_hit[itx][ifs][ibit][0]+ibit_1st_received;
+	alct_walking1_hit[itx][ifs][ibit][1]=alct_walking1_hit[itx][ifs][ibit][1]+ibit_2nd_received;
+	}	// Close ibit
+
+// Close bit, first, passes
+	}	// close itx bit loop
+	}	// close ifs first/second loop
+	if (ipass==1   ) fprintf(unit,"\n\tAccumulating statistics...\n\n");
+	if (ipass%10==0) fprintf(unit,"\t%4i\r",npasses-ipass);
+
+	}	// Close for ipass L231205
+
+// Display hit bits
+	if (debug) {
+	fprintf(unit,"\nALCT Sync-mode Walking 1: Errors\n"); 
+	for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+	for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+	fprintf(unit,"ifs=%1i itx=%2i ",ifs,itx);
+	for (ibit=0; ibit<=27; ++ibit) {
+	fprintf(unit,"%5i",alct_walking1_err[itx][ifs][ibit]);
+	}
+	fprintf(unit,"\n");
+	}}
+	}
+
+// Display summary
+	fprintf(unit,"ALCT Sync-mode Walking 1 Loopback: Any bit hit displays a 1\n"); 
+	fprintf(unit,"                            1         2         3         4         5\n"); 
+	fprintf(unit,"1st|2nd TxBit  Rx=01234567890123456789012345678901234567890123456789012345\n"); 
+	for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+	for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+	fprintf(unit,"ifs=%2i  itx=%2i    ",ifs,itx);
+	nbad=0;
+	for (ibit=0; ibit<=27; ++ibit) {fprintf(unit,"%c",dash1[(alct_walking1_hit[itx][ifs][ibit][0]!=0)]);}
+	for (ibit=0; ibit<=27; ++ibit) {fprintf(unit,"%c",dash1[(alct_walking1_hit[itx][ifs][ibit][1]!=0)]);}
+	for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_walking1_err[itx][ifs][ibit];}
+	fprintf(unit," %c",(passfail[nbad!=0]));
+	fprintf(unit,"\n");
+	}}
+
+// Take ALCT firmware out of loopback mode
+	seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);				// Get current state
+	wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+	goto L2300;
+
+//------------------------------------------------------------------------------
+//	ALCT tx+rx clock delay scan TMB-to-ALCT TMB Random Loopback
+//------------------------------------------------------------------------------
+L231300:
+	unit  = stdout;
+//	unit  = log_file;
+	debug = false;
+
+	fprintf(unit,"\tALCT tx+rx clock delay scan TMB-to-ALCT TMB Random Loopback\n");
+
+// Turn off CCB inputs to zero alct_adb_sync and ext_trig
+	adr     = ccb_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+	wr_data = wr_data | 0x1;					// Turn off CCB backplane
+	status  = vme_write(adr,wr_data);
+
+// Put ALCT into loopback mode, turn off Teven/Todd xmit, seq_cmd[0],[2] share same wire pair
+	seq_cmd_bit[0]=0;	seq_cmd_bit[2]=1;		// (seq_cmd[2] &!seq_cmd[0]) puts ALCT into loopback randoms mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[3] , seq_cmd[1]) selects alct storage bank 0,1,2
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);			// Get current state
+	wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+// Set alct_posneg
+	adr     = alct_cfg_adr+base_adr;
+	status	= vme_read(adr,rd_data);
+	alct_posneg = (rd_data << 14) & 0x1;
+
+	fprintf(unit,"\talct_posneg <cr>=%1i ",alct_posneg);
+	gets(line);
+	n=strlen(line);
+	sscanf(line,"%i",&i);
+	if(n!=0) alct_posneg=i;
+
+//	alct_posneg = 0;
+	adr     = alct_cfg_adr+base_adr;
+	status	= vme_read(adr,rd_data);
+	wr_data = rd_data & ~(1 << 14);
+	wr_data = wr_data | (alct_posneg << 14);
+	status	= vme_write(adr,wr_data);
+
+// Get current alct_rx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel = 1;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_rx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Get current alct_tx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel = 0;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_tx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Clear error accumulators
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]=0;
+	}}}
+
+// Step alct rx and tx clock delays, and transmitter pipeline depth
+	fprintf(unit,"\tChecking 80MHz Random numbers ALCT looped back from TMB\n");
+
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	 ddd_chip		= 0;	// alct_tx_delay is chip0 ch0
+	 ddd_channel	= 0;
+	 ddd_delay		= ddd_delay_tx;
+	 ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);		// Set new alct_tx_clock delay
+	 fprintf(unit,"\tddd_delay_tx=%2i\n",ddd_delay_tx);
+
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	 ddd_chip		= 0;	// alct_rx_delay is chip0 ch1
+	 ddd_channel	= 1;
+	 ddd_delay		= ddd_delay_rx;
+	 ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);		// Set new alct_rx_clock delay
+	 fprintf(unit,"\tddd_delay_rx=%2i\r",ddd_delay_rx);
+
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	 alct_sync_rxdata_dly = pipe_depth;
+	 alct_sync_tx_random  = 1;
+	 alct_sync_clr_err    = 1;
+
+// Set pipe depth, clear data check flip-flops
+	 adr     = alct_sync_ctrl_adr+base_adr;					// Set pipe depth, clear error FFs
+	 wr_data = (alct_sync_rxdata_dly << 0) |
+			   (alct_sync_tx_random  << 4) |
+			   (alct_sync_clr_err    << 5);
+	 status	= vme_write(adr,wr_data);
+
+	 wr_data = wr_data & ~(1 << 5);							// un-clear error FFs, hammer it a few times while system settles from delay changes
+	for (i=0; i<=100; ++i) {
+	 status	= vme_write(adr,wr_data);	
+	}
+
+// Wait for error stats to accumulate
+	msec=1000;
+	ibad=0;
+	for (i=0; i<=msec; i=i+100) {							// 0 msec first time thru for quick reject of  bad spots
+	sleep(i);
+
+// See if TMB data check flipflops are OK
+	adr     = alct_sync_ctrl_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+
+	alct_sync_1st_err_ff[0] = (rd_data >> 8) & 0x1;
+	alct_sync_2nd_err_ff[0] = (rd_data >> 9) & 0x1;
+
+	ibad = alct_sync_1st_err_ff[0] | alct_sync_2nd_err_ff[0];
+	alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]=ibad;
+//	fprintf(unit,"ddd_delay_tx=%1X ddd_delay_rx=%1X pipe_depth=%1X ibad=%1i\n",ddd_delay_tx,ddd_delay_rx,pipe_depth,ibad);
+
+	if (ibad != 0) break;			// TMB data check already went bad, so done with this rx tx pair
+	}	// close for msec
+
+// Read TMB received demux data just to see whats going on
+	if (debug) {
+	for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+	adr     = alctfifo1_adr+base_adr;
+	wr_data = 0x2000;				// select alct_loopback mode addressing
+	wr_data = wr_data | (i << 1);
+	status	= vme_write(adr,wr_data);
+
+	adr     = alctfifo2_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	alct_demux_rd[i]=rd_data;
+	}
+
+	alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+	alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+	alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+	alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+
+
+	fprintf(unit,"Random Loopback: ddd_delay_tx=%2i ddd_delay_rx=%2i", ddd_delay_tx,ddd_delay_rx);
+	fprintf(unit,"  read 1st=%8.8X 2nd=%8.8X ", alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+	fprintf(unit,"expect 1st=%8.8X 2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
+	}
+
+// Close tx,rx,depth loops
+	}}}
+
+// Find correct depth in the transmitter delay pipeline
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	ngood = 0;
+	alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx]=-1;
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	ibad = alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	if (ibad==0) {
+	alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx]=pipe_depth;
+	ngood++;
+	fprintf(log_file,"ddd_delay_tx=%1X ddd_delay_rx=%1X pipe_depth=%1X ibad=%1i\n",ddd_delay_tx,ddd_delay_rx,pipe_depth,ibad);
+	}	// close ibad
+	}	// close pipe
+	if (ngood>1) fprintf(unit,"Warning: data match found at >1 pipeline depths, should not happen tx=%2i rx=%2i ngood=%2i\n",ddd_delay_tx,ddd_delay_rx,ngood);
+	}}	// close ddd
+
+// Display alct_tx timing window vs good delay depths
+	ddd_delay_rx = alct_rx_default;
+	fprintf(unit,"\n\n\tPipeline depth where rx=tx data vs alct_tx_clock delay\n");
+	fprintf(unit,"\tpipe_depth=0123456789ABCDEF %3imsec=%ibx at default rx_step=%1X\n",msec,msec*int(40e3),ddd_delay_rx);	
+
+	for (i=0; i<=1; ++i) {	// i see everything twice
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	symbol='-';
+	if (alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]==0) symbol='G';
+	fprintf(unit,"%c",symbol);
+	}	// close pipe
+	fprintf(unit,"\n");
+	}	// close tx
+	}	// close i
+
+// Display alct_rx timing window vs good delay depths
+	ddd_delay_tx = alct_tx_default;
+	fprintf(unit,"\n\n\tPipeline depth where rx=tx data vs alct_rx_clock delay\n");
+	fprintf(unit,"\tpipe_depth=0123456789ABCDEF %3imsec=%ibx at default tx_step=%1X\n",msec,msec*int(40e3),ddd_delay_tx);	
+	
+	for (i=0; i<=1; ++i) {	// i see everything twice
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	fprintf(unit,"\trx_step=%2X ",ddd_delay_rx);
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	symbol='-';
+	if (alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]==0) symbol='G';
+	fprintf(unit,"%c",symbol);
+	}	// close pipe
+	fprintf(unit,"\n");
+	}	// close tx
+	}	// close i
+
+// Display timing matrix once
+	ndisp=2;	// 1 or 2 delay step cycles to display
+
+	if (ndisp==1) {
+	fprintf(unit,  "\n\n\t   rx_step=0123456789ABC %3imsec=%ibx\n",msec,msec*int(40e3));	
+
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	symbol=alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx];
+	if(symbol>=0) fprintf(unit,"%X",symbol); else fprintf(unit,  "-");
+	}	// close rx 1st pass
+	fprintf(unit,"\n");
+	}	// close tx 1st pass
+	}	// close ndisp
+
+// Display timing matrix once EXPERIMENTAL VERSION 4/6/2009
+	fprintf(unit,"\n\n\t   rx_step=0123456789ABC %3imsec=%ibx\n",msec,msec*int(40e3));	
+	ngood=0;
+
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	ibad=alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	if (ibad == 0) {
+	symbol=pipe_depth;
+	fprintf(unit,"%X",symbol);
+	ngood++;
+	goto L2313_next_1rx;
+	}	// close ibad
+	}	// close pipe
+	fprintf(unit,"-");
+L2313_next_1rx:
+	symbol=0;	// dummy statement, else cpp compiler error..dunno why
+	}	// close rx
+	fprintf(unit,"\n");
+	}	// close tx
+	fprintf(unit,"\tGood spots=%2i\n",ngood);
+
+
+// Display timing matrix twice in case good area is near 0 or 25ns
+	if (ndisp==2) {
+	fprintf(unit,"\n\n\t   rx_step=0123456789ABC0123456789ABC %3imsec=%ibx\n",msec,msec*int(40e3));	
+
+	for (i=0; i<=1; ++i) {
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (j=0; j<=1; ++j) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	symbol=alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx];
+	if(symbol>=0) fprintf(unit,"%X",symbol); else fprintf(unit,"-");
+	}	// close rx 1st pass
+	}	// close rx 2nd pass
+	fprintf(unit,"\n");
+	}	// close tx 1st pass
+	}	// close tx 2nd pass
+	}	// close ndisp
+
+// Display timing matrix twice in case good area is near 0 or 25ns EXPERIMENTAL VERSION 4/3/2009
+	fprintf(unit,"\n\n\t   rx_step=0123456789ABC0123456789ABC %3imsec=%ibx\n",msec,msec*int(40e3));	
+
+	for (i=0; i<=1; ++i) {
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (j=0; j<=1; ++j) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	ibad=alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	if (ibad == 0) {
+	symbol=pipe_depth;
+	fprintf(unit,"%X",symbol);
+	goto L2313_next_2rx;
+	}	// close ibad
+	}	// close pipe
+	fprintf(unit,"-");
+L2313_next_2rx:
+	symbol=0;	// dummy statement, else cpp compiler error..dunno why
+	}	// close rx 1st pass
+	}	// close rx 2nd pass
+	fprintf(unit,"\n");
+	}	// close tx 1st pass
+	}	// close tx 2nd pass
+
+// Restore default delays
+	fprintf(unit,"\n");
+	fprintf(unit,"\tRestoring default alct_tx_clock delay=%2.2i\n",alct_tx_default);
+	fprintf(unit,"\tRestoring default alct_rx_clock delay=%2.2i\n",alct_rx_default);
+
+	ddd_chip	= 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel	= 0;
+	ddd_delay	= alct_tx_default;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);	// Set new alct_tx_clock delay
+
+	ddd_chip	= 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel	= 1;
+	ddd_delay	= alct_rx_default;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);	// Set new alct_rx_clock delay
+
+// Take ALCT firmware out of loopback mode
+	seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);					// Get current state
+	wr_data = rd_data & 0xFF0F;							// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);			// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+	goto L2300;
+
+//------------------------------------------------------------------------------
+//	ALCT rx|tx clock delay scan ALCT-generated randoms and TMB checks ECCs
+//------------------------------------------------------------------------------
+L231400:
+	unit = stdout;
+//	unit = log_file;
+	debug = false;
+//	debug = true;
+	alct_ecc_en = 1;
+
+	fprintf(unit,"\tALCT rx|tx clock delay scan ALCT-generated randoms + ECC\n");
+
+// Turn off CCB inputs to zero alct_adb_sync and ext_trig
+	adr     = ccb_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+	wr_data = wr_data | 0x1;					// Turn off CCB backplane
+	status  = vme_write(adr,wr_data);
+
+// Set alct_posneg
+	alct_posneg = 0;
+	adr     = alct_cfg_adr+base_adr;
+	status	= vme_read(adr,rd_data);
+	wr_data = rd_data & ~(1 << 14);
+	wr_data = wr_data | (alct_posneg << 14);
+	status	= vme_write(adr,wr_data);
+
+// Get current alct_rx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel = 1;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_rx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Get current alct_tx_clock 3D3444 delay
+	ddd_chip    = 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel = 0;
+
+	adr	   = base_adr+vme_ddd0_adr+(2*ddd_chip);
+	status = vme_read(adr,rd_data);
+	alct_tx_default = (rd_data >> (ddd_channel*4)) & 0xF;
+
+// Clear error accumulators
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]=0;
+	}}}
+
+// Set ECC enable or disable
+	adr     = base_adr + alct_stat_adr;
+	status  = vme_read(adr,rd_data);			// Get current ecc_en
+	wr_data = rd_data & ~(1 << 11);				// Clear ecc_en bit 11
+	wr_data = wr_data | (alct_ecc_en << 11);	// Set new ecc_en
+	status  = vme_write(adr,wr_data);
+
+	fprintf(unit,"\tALCT-to-TMB ECC enable =%c\n",logical(alct_ecc_en));
+
+// Step alct_rx_clock over known good values, makes sure ALCT understands seq_cmd
+	fprintf(unit,"\tChecking 80MHz 56-bit random data TMB receives from ALCT\n");
+
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	ddd_chip	= 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel	= 1;
+	ddd_delay	= ddd_delay_rx;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);		// Set new alct_rx_clock delay
+//	fprintf(unit,"\tddd_delay_rx=%2i\r",ddd_delay_rx);
+
+// Step alct tx clock delays, and transmitter pipeline depth
+	fprintf(unit,"\tStepping alct_tx_clock delay\n");
+
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	ddd_chip	= 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel	= 0;
+	ddd_delay	= ddd_delay_tx;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);		// Set new alct_tx_clock delay
+//	fprintf(unit,"\tddd_delay_tx=%2i\n",ddd_delay_tx);
+
+// Put ALCT into normal running mode to turn off its LFSR
+	seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven/Todd pattern
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);			// Get current state
+	wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+// Put ALCT into xmit 49-bit random pattern + 7-bit ECC, seq_cmd[0],[2] share same wire pair
+	seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+	seq_cmd_bit[1]=1;	seq_cmd_bit[3]=1;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven/Todd pattern
+
+	adr     = alct_cfg_adr+base_adr;
+	status  = vme_read(adr,rd_data);			// Get current state
+	wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+	wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+	wr_data = wr_data | (seq_cmd_bit[1] << 5);
+	wr_data = wr_data | (seq_cmd_bit[2] << 6);
+	wr_data = wr_data | (seq_cmd_bit[3] << 7);
+	status  = vme_write(adr,wr_data);
+
+	alct_sync_rxdata_dly = 0;
+	alct_sync_tx_random  = 0;					// Do not turn on TMBs rng yet
+	alct_sync_clr_err    = 1;
+	adr     = alct_sync_ctrl_adr+base_adr;		// Set delay depth, clear error FFs
+	wr_data = (alct_sync_rxdata_dly << 0) |
+			  (alct_sync_tx_random  << 4) |
+			  (alct_sync_clr_err    << 5);
+	status	= vme_write(adr,wr_data);
+	wr_data = wr_data & ~(1 << 5);				// un-clear error FFs
+	status	= vme_write(adr,wr_data);
+
+// Set pipe depth, clear error FFs
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	alct_sync_rxdata_dly = pipe_depth;
+	alct_sync_tx_random  = 0;
+	alct_sync_clr_err    = 1;
+
+	adr     = alct_sync_ctrl_adr+base_adr;		// Set pipe depth, clear error FFs
+	wr_data = (alct_sync_rxdata_dly << 0) |
+			  (alct_sync_tx_random  << 4) |
+			  (alct_sync_clr_err    << 5);
+	status	= vme_write(adr,wr_data);
+	wr_data = wr_data & ~(1 << 5);				// un-clear error FFs
+	status	= vme_write(adr,wr_data);	
+
+// Clear ECC counters
+	adr    = base_adr+cnt_ctrl_adr;
+	wr_data= 0x0021;	// Clear
+	status = vme_write(adr,wr_data);
+	wr_data= 0x0020;	// Unclear
+	status = vme_write(adr,wr_data);
+
+// See if TMB data check flipflops are OK for a million random numbers, one per bx
+	megabx = 1563;								// My bit3 takes 16usec per read, a million bx=25millisec
+//	megabx = 1;									// My bit3 takes 16usec per read, a million bx=25millisec
+	ibad   = 0;
+
+	for (i=0; i<=megabx; ++i) {
+	adr     = alct_sync_ctrl_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+
+	alct_sync_1st_err_ff[0] = (rd_data >> 8) & 0x1;
+	alct_sync_2nd_err_ff[0] = (rd_data >> 9) & 0x1;
+
+	ibad = alct_sync_1st_err_ff[0] || alct_sync_2nd_err_ff[0];
+	if (ibad) break;										// exit bx loop if data already bad
+	}
+
+	alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]=ibad;
+	if (debug) fprintf(log_file,"ddd_delay_tx=%1X ddd_delay_rx=%1X pipe_depth=%1X ibad=%1i\n",ddd_delay_tx,ddd_delay_rx,pipe_depth,ibad);
+
+// Read TMB received demux data just to see whats going on
+	if (debug) {
+	for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+	adr     = alctfifo1_adr+base_adr;
+	wr_data = 0x2000;				// select alct_loopback mode addressing
+	wr_data = wr_data | (i << 1);
+	status	= vme_write(adr,wr_data);
+
+	adr     = alctfifo2_adr+base_adr;
+	status  = vme_read(adr,rd_data);
+	alct_demux_rd[i]=rd_data;
+	}
+
+	alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+	alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+	alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+	alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+
+	fprintf(log_file,"ALCT Randoms: ddd_delay_tx=%2i ddd_delay_rx=%2i pipe_depth=%2i", ddd_delay_tx,ddd_delay_rx,pipe_depth);
+	fprintf(log_file,"  read 1st=%8.8X 2nd=%8.8X ", alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+	fprintf(log_file,"expect 1st=%8.8X 2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
+	}
+
+// Read ECC counters
+	adr = base_adr+cnt_ctrl_adr;	// Take snapshot of current counter state
+	wr_data=0x0022;	//snap
+	status = vme_write(adr,wr_data);
+	wr_data=0x0020;	//unsnap
+	status = vme_write(adr,wr_data);
+
+	for (i=3; i<=8; ++i) {			// Read ecc counters 3,4,5, 6,7,8
+	for (j=0; j<=1; ++j) {			// Read lsb,msb
+	adr = base_adr+cnt_ctrl_adr;
+	wr_data=(i << 9) | 0x0020 | (j << 8);
+	status = vme_write(adr,wr_data);
+	adr = base_adr+cnt_rdata_adr;
+	status = vme_read(adr,rd_data);
+
+	if(j==0)			// Even addresses contain counter LSBs
+ 	 cnt_lsb=rd_data;
+	else {				// Odd addresses contain counter MSBs
+	 cnt_msb=rd_data;
+	 cnt_full=cnt_lsb | (cnt_msb << 16);
+	 cnt[i]=cnt_full;	// Assembled counter MSB,LSB
+	}
+	}}	//close j,i
+
+	alct_tx_ecc_1bit[ddd_delay_tx][ddd_delay_rx][pipe_depth] = cnt[3];
+	alct_tx_ecc_2bit[ddd_delay_tx][ddd_delay_rx][pipe_depth] = cnt[4];
+	alct_tx_ecc_nbit[ddd_delay_tx][ddd_delay_rx][pipe_depth] = cnt[5];
+
+	if (debug) {
+//	fprintf(log_file,"depth=%2i delay_tx=%2i delay_rx=%2i 1bit=%10i 2bit=%10i nbit=%10i\n",pipe_depth,ddd_delay_tx,ddd_delay_rx,cnt[3],cnt[4],cnt[5]);
+	}
+
+// Close tx,depth,rx loops
+	}}}
+
+// Display alct_tx timing window vs good delay depths
+	if (debug) {
+	fprintf(unit,"\n");
+	fprintf(unit,"\tPipeline depth where rx=tx data vs alct_tx_clock delay\n");
+	fprintf(unit,"\tpipe_depth=0123456789ABCDEF %5ivme_reads=%ibx at default rx_step=%1X\n",megabx,megabx*640,ddd_delay_rx);	
+
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	fprintf(unit,"\n\trx_step=%2X\n",ddd_delay_rx);
+
+	for (i=0; i<=1; ++i) {	// i see everything twice
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	symbol='-';
+	if (alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth]==0) symbol='G';
+	fprintf(unit,"%c",symbol);
+	}	// close pipe
+	fprintf(unit,"\n");
+	}	// close tx
+	}	// close i
+	}	// close rx
+	}	// close debug
+
+// Find correct depth in the transmitter delay pipeline
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	ngood = 0;
+	alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx]=-1;
+	for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+	ibad = alct_tx_rx_depth[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	if (ibad==0) {
+	alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx]=pipe_depth;
+	ngood++;
+	fprintf(log_file,"ddd_delay_tx=%1X ddd_delay_rx=%1X pipe_depth=%1X ibad=%1i\n",ddd_delay_tx,ddd_delay_rx,pipe_depth,ibad);
+	}	// close ibad
+	}	// close pipe
+	if (ngood>1) fprintf(unit,"Warning: data match found at >1 pipeline depths, should not happen tx=%2i rx=%2i ngood=%2i\n",ddd_delay_tx,ddd_delay_rx,ngood);
+	}}	// close ddd
+
+// Display timing matrix twice in case good area is near 0 or 25ns
+	fprintf(unit,"\n\n\t   rx_step=0123456789ABC0123456789ABC %5ivme_reads=%ibx\n",megabx,megabx*640);	
+
+	for (i=0; i<=1; ++i) {
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	fprintf(unit,"\ttx_step=%2X ",ddd_delay_tx);
+	for (j=0; j<=1; ++j) {
+	for (ddd_delay_rx=0; ddd_delay_rx<=12; ++ddd_delay_rx) {
+	symbol=alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx];
+	if(symbol>=0) fprintf(unit,"%X",symbol); else fprintf(unit,"-");
+	}	// close rx 1st pass
+	}	// close rx 2nd pass
+	fprintf(unit,"\n");
+	}	// close tx 1st pass
+	}	// close tx 2nd pass
+
+// Display ECC vs alct_tx_clock at default alct_rx_clock and good pipe depth
+//	ddd_delay_rx = alct_rx_default;
+//	pipe_depth = alct_tx_rx_depth_good[ddd_delay_tx][ddd_delay_rx];
+	ddd_delay_rx = 0;	 // temporarily set these manually
+	pipe_depth   = 0xA;
+
+	fprintf(unit,"\n");
+	fprintf(unit,"\tddd_delay_rx = %2X\n",ddd_delay_rx);
+	fprintf(unit,"\tpipe_depth   = %2X\n",pipe_depth);
+	fprintf(unit,"\talct_ecc_en  =  %c\n",logical(alct_ecc_en));
+	fprintf(unit,"\n");
+
+	err_max=0;
+	for (i=0; i<=1; ++i) {		// 1st pass, get maximum error for scaling
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	err1       = alct_tx_ecc_1bit[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	err2       = alct_tx_ecc_2bit[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	err3       = alct_tx_ecc_nbit[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	if (err1 > err_max) err_max = err1;
+	if (err2 > err_max) err_max = err2;
+	if (err3 > err_max) err_max = err3;
+	}	// close i
+	}	// close ddd_delay_tx
+
+	if (err_max<=0) err_max = 1;
+	if (err_max<20)	scale   = 1;
+	else			scale   = 20./float(err_max);
+
+	fprintf(unit,"\tFull scale    =  %6i\n",err_max);
+	fprintf(unit,"\n");
+
+	for (i=0; i<=1; ++i) {		// 2nd pass, display scaled
+	for (ddd_delay_tx=0; ddd_delay_tx<=12; ++ddd_delay_tx) {
+	err1       = alct_tx_ecc_1bit[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	err2       = alct_tx_ecc_2bit[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	err3       = alct_tx_ecc_nbit[ddd_delay_tx][ddd_delay_rx][pipe_depth];
+	fprintf(unit,"\ttx_step=%2X code 1=%6i 2=%6i 3=%6i | ",ddd_delay_tx,err1,err2,err3);
+	if (err1!=0) for (j=0; j<=err1*scale; ++j) printf("1");	// display 1 bit error length bar
+	if (err2!=0) for (j=0; j<=err2*scale; ++j) printf("2");	// display 2 bit error length bar
+	if (err3!=0) for (j=0; j<=err3*scale; ++j) printf("3");	// display N bit error length bar
+	fprintf(unit,"\n");
+	}	// close i
+	}	// close ddd_delay_tx
+
+// Restore default delays
+	fprintf(unit,"\n");
+	fprintf(unit,"\tRestoring default alct_tx_clock delay=%2.2i\n",alct_tx_default);
+	fprintf(unit,"\tRestoring default alct_rx_clock delay=%2.2i\n",alct_rx_default);
+
+	ddd_chip	= 0;	// alct_tx_delay is chip0 ch0
+	ddd_channel	= 0;
+	ddd_delay	= alct_tx_default;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);	// Set new alct_tx_clock delay
+
+	ddd_chip	= 0;	// alct_rx_delay is chip0 ch1
+	ddd_channel	= 1;
+	ddd_delay	= alct_rx_default;
+	ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay);	// Set new alct_rx_clock delay
+
+	goto L2300;
