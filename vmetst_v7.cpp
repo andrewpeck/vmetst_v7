@@ -1431,6 +1431,7 @@ char			colon=':';
 
 
 int				rec_len;
+int 			rec_base_adr;
 int				rec_type;
 int				adr_hi_byte;
 int				adr_lo_byte;
@@ -14282,7 +14283,7 @@ L19600:
 	status  = vme_write(adr,wr_data);
 
 	// Unmask inputs from RAT
-	adr	   = rpc_inj_adr+base_adr;
+    adr	      = cfeb0b_adr+cfeb_base;
 	status = vme_read(adr,rd_data);
 	wr_data= rd_data | 0x0001;		// 1=enable rat inputs to tmb 
 	status = vme_write(adr,wr_data);
