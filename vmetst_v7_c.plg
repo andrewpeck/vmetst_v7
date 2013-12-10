@@ -1,0 +1,92 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: vmetst_v7_c - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Nobody\LOCALS~1\Temp\RSP21A.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/vmetst_v7_c.pdb" /debug /machine:I386 /out:"Debug/vmetst_v7_c.exe" /pdbtype:sept 
+.\Debug\adc_read.obj
+.\Debug\cfebbx_rd.obj
+.\Debug\crc22.obj
+.\Debug\ddd_rd.obj
+.\Debug\ddd_wr.obj
+.\Debug\dddstr_rd.obj
+.\Debug\decode_readout.obj
+.\Debug\dow_crc.obj
+.\Debug\dsn_io.obj
+.\Debug\dsn_rd.obj
+.\Debug\lct_quality.obj
+.\Debug\lenval.obj
+.\Debug\micro.obj
+.\Debug\miniscope16.obj
+.\Debug\pattern_finder.obj
+.\Debug\pattern_unit.obj
+.\Debug\pause.obj
+.\Debug\phaser_rd.obj
+.\Debug\phaser_wr.obj
+.\Debug\ports_vme.obj
+.\Debug\posneg_rd.obj
+.\Debug\posneg_wr.obj
+.\Debug\scope160c.obj
+.\Debug\smb_read.obj
+.\Debug\smb_write.obj
+.\Debug\stop.obj
+.\Debug\vme_io_wxp.obj
+.\Debug\vme_jtag_io_byte.obj
+.\Debug\vme_jtag_io_ops.obj
+.\Debug\vmetst_v7.obj
+.\Debug\xsvf_writer.obj
+.\bit3_984.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\Nobody\LOCALS~1\Temp\RSP21A.tmp"
+<h3>Output Window</h3>
+Linking...
+Creating temporary file "C:\DOCUME~1\Nobody\LOCALS~1\Temp\RSP21C.tmp" with contents
+[
+/nologo /o"Debug/vmetst_v7_c.bsc" 
+.\Debug\adc_read.sbr
+.\Debug\cfebbx_rd.sbr
+.\Debug\crc22.sbr
+.\Debug\ddd_rd.sbr
+.\Debug\ddd_wr.sbr
+.\Debug\dddstr_rd.sbr
+.\Debug\decode_readout.sbr
+.\Debug\dow_crc.sbr
+.\Debug\dsn_io.sbr
+.\Debug\dsn_rd.sbr
+.\Debug\lct_quality.sbr
+.\Debug\lenval.sbr
+.\Debug\micro.sbr
+.\Debug\miniscope16.sbr
+.\Debug\pattern_finder.sbr
+.\Debug\pattern_unit.sbr
+.\Debug\pause.sbr
+.\Debug\phaser_rd.sbr
+.\Debug\phaser_wr.sbr
+.\Debug\ports_vme.sbr
+.\Debug\posneg_rd.sbr
+.\Debug\posneg_wr.sbr
+.\Debug\scope160c.sbr
+.\Debug\smb_read.sbr
+.\Debug\smb_write.sbr
+.\Debug\stop.sbr
+.\Debug\vme_io_wxp.sbr
+.\Debug\vme_jtag_io_byte.sbr
+.\Debug\vme_jtag_io_ops.sbr
+.\Debug\vmetst_v7.sbr
+.\Debug\xsvf_writer.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\Nobody\LOCALS~1\Temp\RSP21C.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+vmetst_v7_c.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

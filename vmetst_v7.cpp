@@ -21300,8 +21300,8 @@ L2500:
 
 	if (rat_board_id==5000) printf("\tUsing default board ID 5000\n");
 
-	if (rat_board_id>5600 || rat_board_id<5000) {
-		printf("\tBoard ID must be 5000-5600\n");
+	if (rat_board_id>5669 || rat_board_id<5000) {
+		printf("\tBoard ID must be 5000-5669\n");
 		pause("<cr> to continue");
 		goto L2500;
 	}
