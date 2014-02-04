@@ -21290,7 +21290,7 @@ L2500:
 	}
 
 	// Get RAT board ID
-	printf("\tEnter RAT Board ID Number [5xxx]: ");
+	printf("\tEnter RAT Board ID Number [5xxx] or [6xxx]: ");
 	gets(line);
 	n = strlen(line);
 	sscanf(line,"%i",&i);
@@ -21300,8 +21300,8 @@ L2500:
 
 	if (rat_board_id==5000) printf("\tUsing default board ID 5000\n");
 
-	if (rat_board_id>5669 || rat_board_id<5000) {
-		printf("\tBoard ID must be 5000-5669\n");
+	if (rat_board_id>6055 || rat_board_id<5000) {
+		printf("\tBoard ID must be 5000-5669, 6000-6055\n");
 		pause("<cr> to continue");
 		goto L2500;
 	}
@@ -21640,14 +21640,21 @@ L2505:
 		}
 		else 
 		{
-			if (idcode==0x05034093)
+			if (idcode==0xD5034093)
 			{
-				status=cks(string("RAT PROM ID Code ").append(sid),idcode,0x05034093);
+				status=cks(string("RAT PROM ID Code ").append(sid),idcode,0xD5034093);
+				if (status!=0) rat_nfailed[itest]=1;
+			}
+			else if (idcode==0x05024093)
+			{
+				status=cks(string("RAT PROM ID Code ").append(sid),idcode,0x05024093);
 				if (status!=0) rat_nfailed[itest]=1;
 			}
 			else 
 			{
-				status=cks(string("RAT PROM ID Code ").append(sid),idcode,0x05024093);
+				status = cks(string("RAT PROM ID Code ").append(sid),idcode,0x05024093);
+				status = status ^ cks(string("RAT PROM ID Code ").append(sid),idcode,0xD5024093);
+				status = !status; 
 				if (status!=0) rat_nfailed[itest]=1;
 			}
 
