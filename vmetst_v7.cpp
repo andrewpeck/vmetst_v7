@@ -22025,9 +22025,10 @@ L2506:
 			// Close loops
 		}	// close for ddd_delay 2510
 
-		if (ipass==1   ) fprintf(test_file,"RPC data: Running delay curve\n\n");
-		if (ipass%10==0) fprintf(stdout, "\tRPC data: Running delay curve %4i\r",npasses-ipass);
-
+		if (ipass==1) fprintf(test_file,"RPC data: Running delay curve\n\n");
+		if (ipass==0) fprintf(stdout,"\n");
+		if (ipass%10==0) fprintf(stdout, "\tRPC data: Running delay curve %4i \r",npasses-ipass);
+		if (ipass==npasses) fprintf(stdout, "\n");
 	}	// close for ipass 2515
 
 	// Take RAT out of sync mode,it consumes massive power, dunno why
@@ -22051,8 +22052,8 @@ L2506:
 		rat_window_nbad[ddd_delay] = nbad;
 
 		if (nbad!=0 && ddd_delay==9) {
-			fprintf(stdout,"\tError in RPC data: ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");}
-		fprintf(test_file,                  "ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");
+			fprintf(stdout, "\tError in RPC data: ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");}
+			fprintf(test_file, "ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");
 	}
 	fprintf(test_file,"Return to default delay %2i\n",(rpc_delay_default>>12) & 0xF);
 
