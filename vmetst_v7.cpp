@@ -3975,7 +3975,7 @@ void L900() {
 L900:
 
 	if (firmware_type != firmware_normal) {
-		pause("TMB has wrong firmware type for this operation");
+        pause("TMB has wrong firmware type for this operation. Expect firmware_type=normal");
 		return;
 	}
 
@@ -4041,7 +4041,7 @@ void L1000() {
 L1000:
 
 	if (firmware_type!=firmware_debug) {
-		pause("TMB has wrong firmware type for this operation");
+        pause("TMB has wrong firmware type for this operation. Expect firmware_type=debug");
 		return;
 	}
 
@@ -5762,7 +5762,7 @@ void L1600() {
 L1600:
 	// Check firmware type
 	if (firmware_type != firmware_normal) {
-		printf("\n\tTMB has wrong firmware type for this operation\n");
+        pause("\n\tTMB has wrong firmware type for this operation. Expect firmware_type=normal\n");
 		printf("\tContinue anyway? <cr>=n ");
 		gets(line);
 		if (line[0]==NULL) return;
@@ -10234,7 +10234,7 @@ void L1700() {
 L1700:
 
 	if (firmware_type != firmware_normal) {
-		printf("\n\tTMB has wrong firmware type for this operation\n");
+		printf("\n\tTMB has wrong firmware type for this operation. Expect firmware_type=normal\n");
 		printf("\tContinue anyway? <cr>=n ");
 		gets(line);
 		if (line[0]==NULL) return;
@@ -10866,7 +10866,7 @@ L1801:
 
 	if (firmware_type_ref!=firmware_debug) {
 		tmb_ref_exists = false;
-		printf("\n\tReference TMB has wrong firmware type %1.1X\n",firmware_type_ref);
+		printf("\n\tReference TMB has wrong firmware type. Expect firmware_type=debug\n");
 		if (!tmb_ref_skip) goto L1801;
 	}
 
@@ -13878,7 +13878,7 @@ L1900:
 	if (firmware_type != firmware_debug)
 	{
 		printf("\r\n");
-		printf("\tTMB has wrong firmware type for tests 1-5\n");
+		printf("\tTMB has wrong firmware type for tests 1-5. Expect firmware_type=debug\n");
 	}
 	printf("       > ");
 
@@ -21240,7 +21240,7 @@ L2500:
 
 	if (firmware_type_ref!=0xD) {
 		tmb_ref_exists =  false;
-		printf("\n\tReference TMB has wrong firmware type %X1.1\n",firmware_type_ref);
+		printf("\n\tReference TMB has wrong firmware type. Expect=debug, found=%X1.1\n",firmware_type_ref);
 		pause("<cr> to continue");
 		return;
 	}
