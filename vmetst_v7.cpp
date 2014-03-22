@@ -14283,7 +14283,7 @@ L19600:
 	status  = vme_write(adr,wr_data);
 
 	// Unmask inputs from RAT
-    adr	      = cfeb0b_adr+cfeb_base;
+    adr	   = rpc_inj_adr+base_adr;
 	status = vme_read(adr,rd_data);
 	wr_data= rd_data | 0x0001;		// 1=enable rat inputs to tmb 
 	status = vme_write(adr,wr_data);
@@ -23119,8 +23119,7 @@ L30200:
 		   // MCS output file
 L30201:
 		   mcs_file_name_default   = "userprom256.mcs";
-
-		   printf("\tMCS   output file name: <cr=%s>",ascii_file_name_default.c_str());
+           printf("\tMCS   output file name: <cr=%s>",mcs_file_name_default.c_str());
 
 		   gets(line);
 		   if (line[0]==0) {mcs_file_name = mcs_file_name_default;}
@@ -23139,6 +23138,7 @@ L30201:
 		   segment    = 0;
 		   cksum      = 0xFC;
 		   nwrite     = 1;
+		   rec_base_adr = 0;
 
 		   fprintf(mcs_file,"%c%2.2X%4.4X%2.2X%4.4X%2.2X\n",colon,rec_len,adr_offset,rec_type,segment,cksum);
 
@@ -23150,9 +23150,10 @@ L30201:
 L30210:
 		   iadr_previous = iadr;
 
-		   if (feof(ascii_file)) goto L30230;			// hit end of file
 		   fgets(line,81,ascii_file);					// get a new line
 		   sscanf(line,"%4X %2X%*[^\n]",&iadr,&idata);	// get adr and data, skip comments
+           if (feof(ascii_file)) goto L30230;			// hit end of file
+		   printf("\nadr=%4X, data=%2X", iadr, idata);
 
 		   nwords++;
 		   if (iadr!=0 && (iadr%65536==0)        ) goto L30240; // 64K boundary
@@ -23162,6 +23163,7 @@ L30210:
 		   // Pack data into 1 MCS record of up to 16 words
 L30220:
 		   ibyte++;
+		   if (ibyte==0) rec_base_adr=iadr; 
 		   outbuf[ibyte] = idata;
 		   cksum         = cksum+idata;
 		   if (ibyte==15) goto L30230;
@@ -23171,7 +23173,7 @@ L30220:
 L30230:
 		   rec_len=ibyte+1;
 		   if (rec_len<=0) goto L30250;	// end of file and buffer is empty, so dont write
-		   adr         = (iadr/16)*16-adr_offset;
+           adr         = rec_base_adr; 
 		   rec_type    = 0;
 		   adr_hi_byte = (adr>>8) & 0xFF;
 		   adr_lo_byte = adr & 0xFF;
@@ -23180,7 +23182,7 @@ L30230:
 		   cksum       = (0x100-cksum) & 0x000000FF;
 
 		   fprintf(mcs_file,"%c%2.2X%4.4X%2.2X",colon,rec_len,adr,rec_type);
-		   for (i=0; i<=ibyte; ++i) fprintf(mcs_file,"%4.4X",outbuf[i]);
+           for (i=0; i<=ibyte; ++i) fprintf(mcs_file,"%2.2X",outbuf[i]);
 		   fprintf(mcs_file,"%2.2X\n",cksum);
 		   nwrite++;
 		   ibyte = -1;
@@ -24084,7 +24086,141 @@ L31180:
 		   // Convert VME PROM ascii to Intel MCS-86 PROM format
 		   //------------------------------------------------------------------------------
 L31200:
-		   pause ("Use xsvfwriter to convert txt to xsvf");
+           // ASCII input file
+           sprintf(csize,"%3.3i",ilen);
+           ssize = string(csize);
+           ascii_file_name_default = string("vmeprom").append(ssize).append(".txt");
+
+           printf("\tASCII input  file name: <cr=%s>",ascii_file_name_default.c_str());
+
+           gets(line);
+           if (line[0]==0) {ascii_file_name = ascii_file_name_default;}
+           else            {ascii_file_name = string(line);}
+
+           // open ascii file for reading
+           if (ascii_file!=NULL) fclose(ascii_file);
+           ascii_file = fopen(ascii_file_name.c_str(),"r");
+
+           if (ascii_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",ascii_file_name.c_str());}
+           else                  {fprintf(stdout,"\tFailed to open %s\n",ascii_file_name.c_str()); pause("WTF?"); goto L31200;}
+
+L31201:
+           // default MCS output file
+           mcs_file_name_default   = "vmeprom256.mcs";
+ 
+           // get new MCS output file name
+           printf("\tMCS   output file name: <cr=%s>",mcs_file_name_default.c_str());
+
+           gets(line);
+           if (line[0]==0) {mcs_file_name = mcs_file_name_default;}
+           else            {mcs_file_name = string(line);}
+
+           // open MCS file for writing
+           if (mcs_file!=NULL) fclose(mcs_file);
+           mcs_file = fopen(mcs_file_name.c_str(),"w");
+
+           if (mcs_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",mcs_file_name.c_str());}
+           else                {fprintf(stdout,"\tFailed to open %s\n",mcs_file_name.c_str()); pause("WTF?"); goto L31201;}
+
+           // Output MCS first word: extended address record
+           rec_len      = 2;
+           adr_offset   = 0;
+           rec_type     = 2;
+           segment      = 0;
+           cksum        = 0xFC;
+           nwrite       = 1;
+		   rec_base_adr = 0;
+
+           // Write first word to file
+           fprintf(mcs_file,"%c%2.2X%4.4X%2.2X%4.4X%2.2X\n",colon,rec_len,adr_offset,rec_type,segment,cksum);
+
+           // Read input data stream: expect format AAAA DDD, presumes addresses are sequential
+           ibyte  = -1;
+           cksum  =  0;
+           nwords =  0;
+
+L31210:
+           //read one line of data from ASCII file 
+           
+           iadr_previous = iadr;
+
+           fgets(line,81,ascii_file);					 // get a new line
+           sscanf(line,"%4X %2X%*[^\n]",&iadr,&idata);	 // get adr and data, skip comments
+           if (feof(ascii_file)) goto L31230;			 // quit reading when end of file is reached
+		   printf("\tadr=%4X, data=%2X\n", iadr, idata); // debug output
+
+           nwords++;
+           if (iadr!=0 && (iadr%65536==0)        ) goto L31240; // 64K boundary
+           if (iadr >  512*1024/8-1              ) pause("\tfile: prom address out of range");
+           if (iadr!=0 && iadr != iadr_previous+1) pause("\tfile: prom address out of order");
+
+L31220:
+           // Pack data into 1 MCS record of up to 16 words
+           ibyte++;
+		   if (ibyte==0) rec_base_adr=iadr;
+           outbuf[ibyte] = idata;
+           cksum         = cksum+idata;
+           if (ibyte==15) goto L31230;
+           goto L31210;
+
+L31230:
+           // Output MCS data record
+           rec_len=ibyte+1;
+           if (rec_len<=0) goto L31250;	// end of file and buffer is empty, so dont write
+           adr         = rec_base_adr;
+           rec_type    = 0;
+           adr_hi_byte = (adr>>8) & 0xFF;
+           adr_lo_byte = adr & 0xFF;
+           cksum       = cksum+rec_len+adr_hi_byte+adr_lo_byte+rec_type;
+           cksum       = cksum & 0x000000FF;
+           cksum       = (0x100-cksum) & 0x000000FF;
+
+           fprintf(mcs_file,"%c%2.2X%4.4X%2.2X",colon,rec_len,adr,rec_type);
+           for (i=0; i<=ibyte; ++i) fprintf(mcs_file,"%2.2X",outbuf[i]);
+           fprintf(mcs_file,"%2.2X\n",cksum);
+           nwrite++;
+           ibyte = -1;
+           cksum =  0;
+
+           if (feof(ascii_file)) goto L31250;	// end of record
+           goto L31210;
+
+           // Output MCS Extended Address Record at 64K Boundary
+L31240:
+           adr_offset  = adr_offset+65536;
+           adr         = (adr_offset>>16);
+           rec_len     = 2;
+           rec_type    = 4;
+           segment     = 0;
+           adr_hi_byte = (adr>>8) & 0x00FF;
+           adr_lo_byte = adr & 0x00FF;
+           cksum       = cksum+rec_len+adr_hi_byte+adr_lo_byte+rec_type;
+           cksum       = cksum & 0x000000FF;
+           nwrite++;
+
+           fprintf(mcs_file,"%c%2.2X%4.4X%2.2X%4.4X%2.2X\n",colon,rec_len,adr_offset,rec_type,segment,cksum);
+
+           printf("\tExtended address at %8.8X\n",adr_offset);
+           goto L31220;
+
+           // Output MCS end of file record
+L31250:
+           rec_len  = 0;
+           filler   = 0;
+           rec_type = 1;
+           cksum    = 0xFF;
+           nwrite++;
+
+           fprintf(mcs_file,"%c%2.2X%4.4X%2.2X%2.2X\n",colon,rec_len,filler,rec_type,cksum);
+
+           // Close up
+           if (ascii_file!=NULL) fclose(ascii_file);
+           if (mcs_file  !=NULL) fclose(mcs_file  );
+
+           printf("\n");
+           printf("\tRead  %6i data words  \n",nwords);
+           printf("\tWrote %6i mcs  records\n",nwrite);
+
 		   goto L3100;
 
 		   //------------------------------------------------------------------------------
