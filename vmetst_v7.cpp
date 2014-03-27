@@ -21736,6 +21736,7 @@ L2505:
 	dprintf("tdo="); for (i=0; i<reg_len; ++i) dprintf("%1i",tdo[i]); dprintf("\n");
 
 	// Decode RAT USER1 register
+	printf("\t      ");
 	for (i=0; i<reg_len; ++i) rs[i]=tdo[i];
 
 	tdi_to_i4(&tdo[  0], rat_user1[0], 32,0);
@@ -21745,6 +21746,7 @@ L2505:
 	tdi_to_i4(&tdo[128], rat_user1[4], 32,0);
 	tdi_to_i4(&tdo[160], rat_user1[5], 32,0);
 	tdi_to_i4(&tdo[192], rat_user1[6], 32,0);
+    fprintf(test_file,"RAT USER1="); 
 	fprintf(test_file,"RAT USER1="); for(i=6; i>=0; --i) printf("%8.8X",rat_user1[i]); printf("\n");
 
 	tdi_to_i4(&rs[  0], rs_begin,           4,0);
@@ -21883,7 +21885,7 @@ L2505:
 	}
 
 	if (rat_nfailed[itest]==0)rat_npassed[itest]=1;	
-	aokf("RAT: JTAG USER1 Register",itest,rat_npassed[itest]);
+    aokf("RAT JTAG USER1 Register",itest,rat_npassed[itest]);
 	if (pause_on_fail && rat_nfailed[itest]!=0) pause("\tFailed. <cr> to continue anyway");
 
 	//------------------------------------------------------------------------------
