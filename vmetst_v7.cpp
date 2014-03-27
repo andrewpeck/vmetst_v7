@@ -14042,9 +14042,9 @@ L19105:
 
 			if (ipass==1) {
 				printf("\tdelay=%2i",ddd_delay);
-				printf(" rpc_rx_1st[37:0]="); for(i=37;i>=0;--i) printf("%1i",rpc_data_1st[i]); printf("%2i\n",bad_1st);
+                printf(" rpc_rx_1st[37:0]="); for(i=37;i>=0;--i) printf("%1i",rpc_data_1st[i]); printf(" bad=%2i\n",bad_1st);
 				printf("             ");
-				printf(" rpc_rx_2nd[37:0]="); for(i=37;i>=0;--i) printf("%1i",rpc_data_2nd[i]); printf("%2i\n",bad_2nd);
+                printf(" rpc_rx_2nd[37:0]="); for(i=37;i>=0;--i) printf("%1i",rpc_data_2nd[i]); printf(" bad=%2i\n",bad_2nd);
 			}
 
 			// Close loops
@@ -21633,9 +21633,26 @@ L2505:
 
 		if (chip_id==0)
 		{
+            if (idcode==0x20A10093)
+            {
 			status=cks(string("RAT FPGA ID Code ").append(sid),idcode,0x20A10093);
-			if (status!=0            ) rat_nfailed[itest]=1;
-			if (rat_nfailed[itest]==0) rat_npassed[itest]=1;	
+                if (status!=0) 
+                    rat_nfailed[itest]=1;
+            }
+            else if (idcode==0x10A10093)
+            {
+                status=cks(string("RAT FPGA ID Code ").append(sid),idcode,0x10A10093);
+                if (status!=0) 
+                    rat_nfailed[itest]=1;
+            }
+            else 
+            {
+                status=1;
+                rat_nfailed[itest]=1;
+                printf("RAT FPGA ID Code Failed");
+            }
+            if (rat_nfailed[itest]==0) 
+                rat_npassed[itest]=1;   
 			aokf(string("RAT FPGA ID Code ").append(sid).append(string(" ")).append(sidc),itest,rat_npassed[itest]);
 		}
 		else 
@@ -21652,10 +21669,9 @@ L2505:
 			}
 			else 
 			{
-				status = cks(string("RAT PROM ID Code ").append(sid),idcode,0x05024093);
-				status = status ^ cks(string("RAT PROM ID Code ").append(sid),idcode,0xD5024093);
-				status = !status; 
-				if (status!=0) rat_nfailed[itest]=1;
+                status=1; 
+                rat_nfailed[itest]=1;
+                printf("RAT PROM ID Code failed.");
 			}
 
 			if (rat_nfailed[itest]==0) rat_npassed[itest]=1;	
@@ -22026,6 +22042,7 @@ L2506:
 		}	// close for ddd_delay 2510
 
 		if (ipass==1) fprintf(test_file,"RPC data: Running delay curve\n\n");
+		if (ipass==1) fprintf(stdout, "\t 10 RAT RPC Sync Mode Delay Scan\n");
 		if (ipass==0) fprintf(stdout,"\n");
 		if (ipass%10==0) fprintf(stdout, "\tRPC data: Running delay curve %4i \r",npasses-ipass);
 		if (ipass==npasses) fprintf(stdout, "\n");
@@ -22043,6 +22060,7 @@ L2506:
 
 	// Display timing results
 	fprintf(test_file,"2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
+	printf("\t2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
 
 	for (ddd_delay=0; ddd_delay<=15; ++ddd_delay)
 	{
@@ -22051,9 +22069,16 @@ L2506:
 		if (pctbad!=0.0 && nbad==0)  nbad=1;
 		rat_window_nbad[ddd_delay] = nbad;
 
+
 		if (nbad!=0 && ddd_delay==9) {
-			fprintf(stdout, "\tError in RPC data: ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");}
-			fprintf(test_file, "ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");
+            fprintf(stdout, "\tError in RPC data: ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); 
+			printf("\t");
+			printf("\t  %2i  %7i%7.0f ",ddd_delay,rpc_bad[ddd_delay],pctbad);
+			for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");}
+			fprintf(test_file, "ddd_delay=%2i rpc_bad=%7i pctbad=%7.0f"); 
+			printf("\t");
+			printf("\t  %2i  %7i%7.0f ",ddd_delay,rpc_bad[ddd_delay],pctbad);
+			for(i=1;i<=nbad;++i) printf("%c",'x'); printf("\n");
 	}
 	fprintf(test_file,"Return to default delay %2i\n",(rpc_delay_default>>12) & 0xF);
 
