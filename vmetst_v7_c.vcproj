@@ -246,6 +246,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ck.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\common.cpp"
+				>
+			</File>
+			<File
 				RelativePath="crc22.cpp"
 				>
 				<FileConfiguration
@@ -434,24 +442,8 @@
 				>
 			</File>
 			<File
-				RelativePath="micro.cpp"
+				RelativePath=".\micro.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="miniscope16.cpp"
@@ -819,6 +811,14 @@
 			Filter="h;hpp;hxx;hm;inl;fi;fd"
 			>
 			<File
+				RelativePath=".\adc_read.h"
+				>
+			</File>
+			<File
+				RelativePath=".\adc_read_mez.h"
+				>
+			</File>
+			<File
 				RelativePath="btapi.h"
 				>
 			</File>
@@ -843,15 +843,139 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cfebbx_rd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ck.h"
+				>
+			</File>
+			<File
+				RelativePath=".\common.h"
+				>
+			</File>
+			<File
+				RelativePath=".\crc22.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ddd_rd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ddd_wr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dddstr_rd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\decode_raw_hits.h"
+				>
+			</File>
+			<File
+				RelativePath=".\decode_readout.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dow_crc.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dsn_io.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dsn_rd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\idcode_decode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lct_quality.h"
+				>
+			</File>
+			<File
 				RelativePath="lenval.h"
 				>
 			</File>
 			<File
-				RelativePath="micro.h"
+				RelativePath=".\lfsr_rng.h"
+				>
+			</File>
+			<File
+				RelativePath=".\miniscope16.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pattern_finder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pattern_unit.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pause.h"
+				>
+			</File>
+			<File
+				RelativePath=".\phaser_rd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\phaser_wr.h"
 				>
 			</File>
 			<File
 				RelativePath="ports.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ports_vme.h"
+				>
+			</File>
+			<File
+				RelativePath=".\posneg_rd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\posneg_wr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\scope160c.h"
+				>
+			</File>
+			<File
+				RelativePath=".\smb_read.h"
+				>
+			</File>
+			<File
+				RelativePath=".\smb_write.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stop.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vme_io_wxp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vme_jtag_io_byte.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vmetst_v7.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xsvf_writer.h"
 				>
 			</File>
 		</Filter>
