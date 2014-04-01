@@ -162,487 +162,54 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <string>
+//------------------------------------------------------------------------------
+//	Local Includes
+//------------------------------------------------------------------------------
+#include "vmetst_v7.h"
+#include "adc_read.h"
+#include "adc_read_mez.h"
+#include "cfebbx_rd.h"
+#include "ck.h"
+#include "ddd_rd.h"
+#include "common.h"
+#include "dddstr_rd.h"
+#include "crc22.h"
+#include "ddd_wr.h"
+#include "dow_crc.h"
+#include "dsn_rd.h"
+#include "idcode_decode.h"
+#include "lct_quality.h"
+#include "lfsr_rng.h"
+#include "pattern_finder.h"
+#include "pause.h"
+#include "phaser_rd.h"
+#include "phaser_wr.h"
+#include "ports_vme.h"
+#include "posneg_rd.h"
+#include "posneg_wr.h"
+#include "smb_read.h"
+#include "smb_write.h"
+#include "stop.h"
+#include "vme_io_wxp.h"
+#include "vme_jtag_io_byte.h"
+#include "vme_jtag_io_ops.h"
+#include "xsvf_writer.h"
+#include "decode_readout.h"
+#include "scope160c.h"
 using namespace std;
 
-//------------------------------------------------------------------------------
-//	Common
-//------------------------------------------------------------------------------
-FILE			*log_file;
-FILE			*xsvf_file;
-FILE			*unit;
-
-const int		mxframe	= 8192;		// Max raw hits frame number, scope adds 512*160/16=5120 frames
-const int		mxtbins	= 32;		// Highest time bin, 0 implies 32
-const int		mxly	= 6;		// # CSC Layers
-const int		mxds	= 8;		// # DiStrips per CFEB
-const int		mxdsabs	= 40;		// # DiStrips per CSC
-const int		mxcfeb	= 5;		// # CFEBs
-const int		mxbitstream=200;	// Max # bits in a jtag cycle
-
-// Common/decode_readout_common/
-int				scp_tbins;
-int				scp_playback;
-int				fifo_tbins_mini;
-int				first_event;
-int				itriad[mxtbins][mxdsabs][mxly];
-int				clct0_vme;
-int				clct1_vme;
-int				clctc_vme;
-int				mpc0_frame0_vme;
-int				mpc0_frame1_vme;
-int				mpc1_frame0_vme;
-int				mpc1_frame1_vme;
-int				nonzero_triads;
-int				adjcfeb_dist;
-int				mpc_me1a_block;
-
-int				expect_zero_alct;
-int				expect_zero_clct;
-int				expect_one_alct;
-int				expect_one_clct;
-int				expect_two_alct;
-int				expect_two_clct;
-int				expect_dupe_alct;
-int				expect_dupe_clct;
-int				vme_bx0_emu_en;
-bool			first_scn;
-
-// Common/adc_common/
-double			adc_voltage[14];
-double			v5p0;
-double			v3p3;
-double			v1p5core;
-double			vcore_expect;
-double			vcore_noload;
-double			v1p5tt;
-double			v1p0;
-double			v1p0_expect;
-double			a5p0;
-double			a3p3;
-double			a1p5core;
-double			a1p5tt;
-double			a3p3rat;
-double			a1p8rat;
-double			v3p3rat;
-double			v1p8rat;
-double			vref2;
-double			vzero;
-double			vref;
-
-// Common/adc_common_mez/
-double			adc_voltage_mez[14];
-double			v3p3_mez;
-double			v2p5_mez;
-double			vcore_mez;
-double			v1p8_mez;
-double			v1p2_mez;
-double			tfpga_mez;
-double			tsink_mez;
-double			vch07_mez;
-double			vch08_mez;
-double			vch09_mez;
-double			vch10_mez;
-double			vref2_mez;
-double			vzero_mez;
-double			vref_mez;
-
-// Common/portsf_common/
-const int		setport_mxnwords = 4096;
-unsigned long	xilinx_boot_adr;
-unsigned short	xilinx_boot_data;
-int				setport_calls;
-int				setport_writes;
-int				setport_reads;
-int				setport_writes_expected;
-int				setport_nwords;
-int				setport_peak_nwords;
-unsigned short	setport_buffer[setport_mxnwords];
-int				xsvf_verbosity;
-bool			wlog;
-int				numwrites;
-int				numreads;
-
-// Common/jtag_common/
-FILE			*jtag_file;
-bool			jtaglogmode;
-
-//	Common/TMB_VME_addresses
-unsigned long		base_adr;
-const unsigned long	tmb_global_slot			= 26;
-const unsigned long	tmb_brcst_slot			= 27;
-const unsigned long	tmb_boot_adr			= 0x070000;
-//------------------------------------------------------------------------------
-const unsigned long	vme_idreg_adr			= 0x000000;	// For tmb2005 and bdtest_v5
-const unsigned long	vme_status_adr			= 0x000008;
-const unsigned long	vme_adr0_adr			= 0x00000A;
-const unsigned long	vme_adr1_adr			= 0x00000C;
-const unsigned long	vme_loopbk_adr			= 0x00000E;
-
-const unsigned long	vme_usr_jtag_adr		= 0x000010;
-const unsigned long	vme_prom_adr			= 0x000012;
-
-const unsigned long	vme_dddsm_adr			= 0x000014;
-const unsigned long	vme_ddd0_adr			= 0x000016;
-const unsigned long	vme_ddd1_adr			= 0x000018;
-const unsigned long	vme_ddd2_adr			= 0x00001A;
-const unsigned long	vme_dddoe_adr			= 0x00001C;
-const unsigned long	vme_ratctrl_adr			= 0x00001E;
-
-const unsigned long	vme_step_adr			= 0x000020;
-const unsigned long	vme_led_adr				= 0x000022;
-const unsigned long	vme_adc_adr				= 0x000024;
-const unsigned long	vme_dsn_adr				= 0x000026;
-//------------------------------------------------------------------------------
-const unsigned long	mod_cfg_adr				= 0x000028;	// For tmb2005 normal firmware
-const unsigned long	ccb_cfg_adr				= 0x00002A;
-const unsigned long	ccb_trig_adr			= 0x00002C;
-const unsigned long	ccb_stat0_adr			= 0x00002E;
-const unsigned long	alct_cfg_adr			= 0x000030;
-const unsigned long	alct_inj_adr			= 0x000032;
-const unsigned long	alct0_inj_adr			= 0x000034;
-const unsigned long	alct1_inj_adr			= 0x000036;
-const unsigned long	alct_stat_adr			= 0x000038;
-const unsigned long	alct_alct0_adr			= 0x00003A;
-const unsigned long	alct_alct1_adr			= 0x00003C;
-const unsigned long	alct_fifo_adr			= 0x00003E;
-const unsigned long	dmb_mon_adr				= 0x000040;
-const unsigned long	cfeb_inj_adr			= 0x000042;
-const unsigned long	cfeb_inj_adr_adr		= 0x000044;
-const unsigned long	cfeb_inj_wdata_adr		= 0x000046;
-const unsigned long	cfeb_inj_rdata_adr		= 0x000048;
-const unsigned long	hcm001_adr				= 0x00004A;
-const unsigned long	hcm023_adr				= 0x00004C;
-const unsigned long	hcm045_adr				= 0x00004E;
-const unsigned long	hcm101_adr				= 0x000050;
-const unsigned long	hcm123_adr				= 0x000052;
-const unsigned long	hcm145_adr				= 0x000054;
-const unsigned long	hcm201_adr				= 0x000056;
-const unsigned long	hcm223_adr				= 0x000058;
-const unsigned long	hcm245_adr				= 0x00005A;
-const unsigned long	hcm301_adr				= 0x00005C;
-const unsigned long	hcm323_adr				= 0x00005E;
-const unsigned long	hcm345_adr				= 0x000060;
-const unsigned long	hcm401_adr				= 0x000062;
-const unsigned long	hcm423_adr				= 0x000064;
-const unsigned long	hcm445_adr				= 0x000066;
-const unsigned long	seq_trig_en_adr			= 0x000068;
-const unsigned long	seq_trig_dly0_adr		= 0x00006A;
-const unsigned long	seq_trig_dly1_adr		= 0x00006C;
-const unsigned long	seq_id_adr				= 0x00006E;
-const unsigned long	seq_clct_adr			= 0x000070;
-const unsigned long	seq_fifo_adr			= 0x000072;
-const unsigned long	seq_l1a_adr				= 0x000074;
-const unsigned long	seq_offset0_adr			= 0x000076;
-const unsigned long	seq_clct0_adr			= 0x000078;
-const unsigned long	seq_clct1_adr			= 0x00007A;
-const unsigned long	seq_trig_src_adr		= 0x00007C;
-const unsigned long	dmb_ram_adr				= 0x00007E;
-const unsigned long	dmb_wdata_adr			= 0x000080;
-const unsigned long	dmb_wdcnt_adr			= 0x000082;
-const unsigned long	dmb_rdata_adr			= 0x000084;
-const unsigned long	tmb_trig_adr			= 0x000086;
-const unsigned long	mpc0_frame0_adr			= 0x000088;
-const unsigned long	mpc0_frame1_adr			= 0x00008A;
-const unsigned long	mpc1_frame0_adr			= 0x00008C;
-const unsigned long	mpc1_frame1_adr			= 0x00008E;
-const unsigned long	mpc_inj_adr				= 0x000090;
-const unsigned long	mpc_ram_adr				= 0x000092;
-const unsigned long	mpc_ram_wdata_adr		= 0x000094;
-const unsigned long	mpc_ram_rdata_adr		= 0x000096;
-unsigned long		scp_ctrl_adr			= 0x000098;
-unsigned long		scp_rdata_adr			= 0x00009A;
-const unsigned long	ccb_cmd_adr				= 0x00009C;
-
-const unsigned long	buf_stat0_adr			= 0x00009E;
-const unsigned long	buf_stat1_adr			= 0x0000A0;
-const unsigned long	buf_stat2_adr			= 0x0000A2;
-const unsigned long	buf_stat3_adr			= 0x0000A4;
-const unsigned long	buf_stat4_adr			= 0x0000A6;
-const unsigned long	alctfifo1_adr			= 0x0000A8;
-const unsigned long	alctfifo2_adr			= 0x0000AA;
-const unsigned long	seqmod_adr				= 0x0000AC;
-const unsigned long	seqsm_adr				= 0x0000AE;
-const unsigned long	seq_clctm_adr			= 0x0000B0;
-const unsigned long	tmbtim_adr				= 0x0000B2;
-const unsigned long	lhc_cycle_adr			= 0x0000B4;
-const unsigned long	rpc_cfg_adr				= 0x0000B6;
-const unsigned long	rpc_rdata_adr			= 0x0000B8;
-const unsigned long	rpc_raw_delay_adr		= 0x0000BA;
-const unsigned long	rpc_inj_adr				= 0x0000BC;
-const unsigned long	rpc_inj_adr_adr			= 0x0000BE;
-const unsigned long	rpc_inj_wdata_adr		= 0x0000C0;
-const unsigned long	rpc_inj_rdata_adr		= 0x0000C2;
-const unsigned long	rpc_tbins_adr			= 0x0000C4;
-const unsigned long	rpc_rpc0_hcm_adr		= 0x0000C6;
-const unsigned long	rpc_rpc1_hcm_adr		= 0x0000C8;
-const unsigned long	bx0_delay_adr			= 0x0000CA;
-const unsigned long	non_trig_adr			= 0x0000CC;
-const unsigned long	scp_trig_adr			= 0x0000CE;
-const unsigned long	cnt_ctrl_adr			= 0x0000D0;
-const unsigned long	cnt_rdata_adr			= 0x0000D2;
-
-const unsigned long	jtagsm0_adr				= 0x0000D4;
-const unsigned long	jtagsm1_adr				= 0x0000D6;
-const unsigned long	jtagsm2_adr				= 0x0000D8;
-
-const unsigned long	vmesm0_adr				= 0x0000DA;
-const unsigned long	vmesm1_adr				= 0x0000DC;
-const unsigned long	vmesm2_adr				= 0x0000DE;
-const unsigned long	vmesm3_adr				= 0x0000E0;
-const unsigned long	vmesm4_adr				= 0x0000E2;
-
-const unsigned long	dddrsm_adr				= 0x0000E4;
-const unsigned long	dddr0_adr				= 0x0000E6;
-
-const unsigned long	uptimer_adr				= 0x0000E8;
-const unsigned long	bdstatus_adr			= 0x0000EA;
-
-const unsigned long	bxn_clct_adr			= 0x0000EC;
-const unsigned long	bxn_alct_adr			= 0x0000EE;
-
-const unsigned long	layer_trig_adr			= 0x0000F0;
-const unsigned long	ise_version_adr			= 0x0000F2;
-
-const unsigned long	temp0_adr				= 0x0000F4;
-const unsigned long	temp1_adr				= 0x0000F6;
-const unsigned long	temp2_adr				= 0x0000F8;
-
-const unsigned long	parity_adr				= 0x0000FA;
-const unsigned long	ccb_stat1_adr			= 0x0000FC;
-const unsigned long	bxn_l1a_adr				= 0x0000FE;
-const unsigned long	l1a_lookback_adr		= 0x000100;
-const unsigned long	seq_debug_adr			= 0x000102;
-
-const unsigned long	alct_sync_ctrl_adr		= 0x000104;	// ALCT sync mode control
-const unsigned long	alct_sync_txdata_1st	= 0x000106;	// ALCT sync mode transmit data, 1st in time
-const unsigned long	alct_sync_txdata_2nd	= 0x000108;	// ALCT sync mode transmit data, 2nd in time
-
-const unsigned long	seq_offset1_adr			= 0x00010A;
-const unsigned long	miniscope_adr			= 0x00010C;
-
-const unsigned long	phaser0_adr				= 0x00010E;
-const unsigned long	phaser1_adr				= 0x000110;
-const unsigned long	phaser2_adr				= 0x000112;
-const unsigned long	phaser3_adr				= 0x000114;
-const unsigned long	phaser4_adr				= 0x000116;
-const unsigned long	phaser5_adr				= 0x000118;
-const unsigned long	phaser6_adr				= 0x00011A;
-
-const unsigned long	delay0_int_adr			= 0x00011C;
-const unsigned long	delay1_int_adr			= 0x00011E;
-
-const unsigned long	sync_err_ctrl_adr		= 0x000120;	// Synchronization Error Control
-
-const unsigned long	cfeb_badbits_ctrl_adr	= 0x000122;	// CFEB  Bad Bit Control/Status
-const unsigned long	cfeb_badbits_timer_adr	= 0x000124;	// CFEB  Bad Bit Check Interval
-
-const unsigned long	cfeb0_badbits_ly01_adr	= 0x000126;	// CFEB0 Bad Bit Array
-const unsigned long	cfeb0_badbits_ly23_adr	= 0x000128;	// CFEB0 Bad Bit Array
-const unsigned long	cfeb0_badbits_ly45_adr	= 0x00012A;	// CFEB0 Bad Bit Array
-
-const unsigned long	cfeb1_badbits_ly01_adr	= 0x00012C;	// CFEB1 Bad Bit Array
-const unsigned long	cfeb1_badbits_ly23_adr	= 0x00012E;	// CFEB1 Bad Bit Array
-const unsigned long	cfeb1_badbits_ly45_adr	= 0x000130;	// CFEB1 Bad Bit Array
-
-const unsigned long	cfeb2_badbits_ly01_adr	= 0x000132;	// CFEB2 Bad Bit Array
-const unsigned long	cfeb2_badbits_ly23_adr	= 0x000134;	// CFEB2 Bad Bit Array
-const unsigned long	cfeb2_badbits_ly45_adr	= 0x000136;	// CFEB2 Bad Bit Array
-
-const unsigned long	cfeb3_badbits_ly01_adr	= 0x000138;	// CFEB3 Bad Bit Array
-const unsigned long	cfeb3_badbits_ly23_adr	= 0x00013A;	// CFEB3 Bad Bit Array
-const unsigned long	cfeb3_badbits_ly45_adr	= 0x00013C;	// CFEB3 Bad Bit Array
-
-const unsigned long	cfeb4_badbits_ly01_adr	= 0x00013E;	// CFEB4 Bad Bit Array
-const unsigned long	cfeb4_badbits_ly23_adr	= 0x000140;	// CFEB4 Bad Bit Array
-const unsigned long	cfeb4_badbits_ly45_adr	= 0x000142;	// CFEB4 Bad Bit Array
 
 
-const unsigned long	adr_alct_startup_delay	= 0x000144;	// ALCT startup delay milliseconds for Spartan-6
-const unsigned long	adr_alct_startup_status	= 0x000146;	// ALCT startup delay machine status
-
-const unsigned long	adr_virtex6_snap12_qpll	= 0x000148;	// Virtex-6 SNAP12 Serial interface + QPLL
-const unsigned long	adr_virtex6_gtx_rx_all	= 0x00014A;	// Virtex-6 GTX  common control
-const unsigned long	adr_virtex6_gtx_rx0		= 0x00014C;	// Virtex-6 GTX0 control and status
-const unsigned long	adr_virtex6_gtx_rx1		= 0x00014E;	// Virtex-6 GTX1 control and status
-const unsigned long	adr_virtex6_gtx_rx2		= 0x000150;	// Virtex-6 GTX2 control and status
-const unsigned long	adr_virtex6_gtx_rx3		= 0x000152;	// Virtex-6 GTX3 control and status
-const unsigned long	adr_virtex6_gtx_rx4		= 0x000154;	// Virtex-6 GTX4 control and status
-const unsigned long	adr_virtex6_gtx_rx5		= 0x000156;	// Virtex-6 GTX5 control and status
-const unsigned long	adr_virtex6_gtx_rx6		= 0x000158;	// Virtex-6 GTX6 control and status
-const unsigned long	adr_virtex6_sysmon		= 0x00015A;	// Virtex-6 Sysmon ADC
-
-const unsigned long	last_vme_adr			= 0x00015C;	// Last valid address instantiated
-//------------------------------------------------------------------------------
-const unsigned long	vme_gpio_adr			= 0x000028;	// For bdtestv3
-const unsigned long	vme_cfg_adr				= 0x00002A;
-
-const unsigned long	cfeb0a_adr				= 0x00002C;	// Repeats 2C-48 for CFEBs1-4
-const unsigned long	cfeb0b_adr				= 0x00002E;
-const unsigned long	cfeb0c_adr				= 0x000030;
-const unsigned long	cfeb_offset_adr			= 0x000006;
-
-const unsigned long	alct_rxa_adr			= 0x00004A;
-const unsigned long	alct_rxb_adr			= 0x00004C;
-const unsigned long	alct_rxc_adr			= 0x00004E;
-const unsigned long	alct_rxd_adr			= 0x000050;
-
-const unsigned long	dmb_rxa_adr				= 0x000052;
-const unsigned long	dmb_rxb_adr				= 0x000054;
-const unsigned long	dmb_rxc_adr				= 0x000056;
-const unsigned long	dmb_rxd_adr				= 0x000058;
-
-const unsigned long	mpc_rxa_adr				= 0x00005A;
-const unsigned long	mpc_rxb_adr				= 0x00005C;
-
-const unsigned long	rpc_rxa_adr				= 0x00005E;
-const unsigned long	rpc_rxb_adr				= 0x000060;
-const unsigned long	rpc_rxc_adr				= 0x000062;
-const unsigned long	rpc_rxd_adr				= 0x000064;
-const unsigned long	rpc_rxe_adr				= 0x000066;
-const unsigned long	rpc_rxf_adr				= 0x000068;
-
-const unsigned long	ccb_rxa_adr				= 0x00006A;
-const unsigned long	ccb_rxb_adr				= 0x00006C;
-const unsigned long	ccb_rxc_adr				= 0x00006E;
-const unsigned long	ccb_rxd_adr				= 0x000070;
-
-const unsigned long	alct_txa_adr			= 0x000072;
-const unsigned long	alct_txb_adr			= 0x000074;
-
-const unsigned long	rpc_txa_adr				= 0x000076;
-const unsigned long	rpc_txb_adr				= 0x000078;
-
-const unsigned long	dmb_txa_adr				= 0x00007A;
-const unsigned long	dmb_txb_adr				= 0x00007C;
-const unsigned long	dmb_txc_adr				= 0x00007E;
-const unsigned long	dmb_txd_adr				= 0x000080;
-
-const unsigned long	mpc_txa_adr				= 0x000082;
-const unsigned long	mpc_txb_adr				= 0x000084;
-
-const unsigned long	ccb_txa_adr				= 0x000086;
-const unsigned long	ccb_txb_adr				= 0x000088;
-
-const unsigned long	heater_adr				= 0x00008A;	// Last bdtestv3 address instantiated
 
 //------------------------------------------------------------------------------
-//	Prototypes
+// File scope declarations
 //------------------------------------------------------------------------------
-#define			logical(L)		((L)?'T':'F')
-#define			yesno(L)		((L)?'y':'n')
-void			pause			(string s);
-void			stop			(string s);
-void			sleep			(clock_t msec);
-bool			pass_fail		(string prompt);
-
-void			lct_quality		(int &ACC, int &A, int &C, int &A4, int &C4, int &P, int &CPAT, int &Q);
-int				flip_pid		(int pid);
-void			crc22a			(long int &din, long int &crc, int reset);
-
-void			ddd_wr			(unsigned long &base_adr, const int &ddd_chip, const int &ddd_channel, const int &ddd_delay);
-int				ddd_rd			(unsigned long &base_adr, const int &ddd_chip, const int &ddd_channel);
-void			dsn_rd			(unsigned long &vme_dsn_adr, const int &itype, int dsn[]);
-void			idcode_decode	(long &idcode, string &sdevice_type, string &sdevice_name, string &sdevice_version, string &sdevice_size);
-
-void			phaser_wr		(unsigned long &base_adr, const string phaser_bank, const int &phaser_delay, const int &phaser_delta);
-int				phaser_rd		(unsigned long &base_adr, const string phaser_bank, const int &phaser_delta);
-void			posneg_wr		(unsigned long &base_adr, const string phaser_bank, const int &posneg);
-int				posneg_rd		(unsigned long &base_adr, const string phaser_bank);
-int				dddstr_rd		(unsigned long &base_adr, const string ddd_delay);
-int				cfebbx_rd		(unsigned long &base_adr, const string nbx_delay);
-
-void			decode_readout	(int vf_data[], int &dmb_wdcnt, bool &err_check);
-void			smb_write		(unsigned long &adc_adr, int &smb_adr, int &smb_cmd,       int &smb_data);
-void			smb_read		(unsigned long &adc_adr, int &smb_adr, int &smb_data_tmb,  int &smb_data_rat);
-
-void			lfsr_rng		(const int &reset, __int64 &lfsr);
-void			dow_crc			(int in[7], int &crc);
-void			adc_read		(unsigned long &base_adr);
-void			adc_read_mez	(unsigned long &base_adr);
-void			aok				(string msg_string);
-void			aokf			(string msg_string, const int itest, const int status);	
-void			ck				(string data_string, int data_read, int data_expect);
-int				cks				(string data_string, int data_read, int data_expect);
-void			tok				(string msg_string, double fdata_read, double fdata_expect, double tolerance, int &status);
-void			inquire			(string prompt, const int &minv, const int &maxv, const int &radix, int &now);
-void			inquir2			(string prompt, const int &minv, const int &maxv, const int &radix, int &num, int &now);
-void			inquirl			(string prompt, const int &minv, const int &maxv, const int &radix, long int &now);
-void			inquirb			(string prompt, bool &now);
-void			xsvf_writer		(int &islot, string xsvf_file_name, int &nerrors);
-
-long int		vme_open		();
-long int		vme_read		(unsigned long &adr, unsigned short &rd_data);
-long int		vme_write		(unsigned long &adr, unsigned short &wr_data);
-long int		vme_sysreset	();
-long int		vme_close		();
-long int		vme_errs		(const int &print_mode);
-
-void			i4_to_tdi		(long int &i4, char  tdi[], const int &nbits, const int &spi);
-void			tdi_to_i4		(char  tdi[], long int &i4, const int &nbits, const int &spi);
-void			bit_to_array	(const int &idata, int iarray[], const int &n);
-
-int				xsvfExecute		();
-void			setPort			(short int p, short int val);
-unsigned char	readTDOBit		();
-
-void			vme_jtag_anystate_to_rti(unsigned long &adr, int &ichain);
-void			vme_jtag_write_ir		(unsigned long &adr, int &ichain, int &chip_id, int &opcode);
-void			vme_jtag_write_dr		(unsigned long &adr, int &ichain, int &chip_id, char wr_data[], char rd_data[], int &nbits);
-bool			vme_jtag_cable_detect	(unsigned long &base_adr);
-
-// Scope160c
-void			scope160c
-(
- unsigned long	 base_adr,
- unsigned long	 scp_ctrl_adr,
- unsigned long	 scp_rdata_adr,
- int				 scp_arm,
- int				 scp_readout,
- int				 scp_raw_decode,
- int				 scp_silent,
- int				 scp_playback,
- int				 scp_raw_data[512*160/16]
- );
-
-// Pattern_finder
-void pattern_finder
-(
- int hs[6][160],			// inputs
-
- int &csc_type, 
- int &clct_sep, 
- int &adjcfeb_dist,
- int	&layer_trig_en,
- int	cfeb_en[5],
-
- int &hit_thresh_pretrig,
- int &pid_thresh_pretrig,
- int &dmb_thresh_pretrig,
- int &lyr_thresh_pretrig,
-
- int cfeb_active[5],		// outputs
- int &nlayers_hit,
- int	&layer_trig,
-
- int &hs_key_1st,
- int &hs_pid_1st,
- int &hs_hit_1st,
-
- int &hs_key_2nd,
- int &hs_pid_2nd,
- int &hs_hit_2nd
- );
-
- //------------------------------------------------------------------------------
- // File scope declarations
- //------------------------------------------------------------------------------
- // JTAG stream
- char			tdi[mxbitstream]={0};
+// JTAG stream
+char			tdi[mxbitstream]={0};
 char			tdo[mxbitstream]={0};
 
 // VME calls
 long			status;
-//	unsigned long	base_adr;
 unsigned long	boot_adr;
 unsigned long	adr;
 unsigned short	rd_data;
@@ -1861,52 +1428,7 @@ string			sprom;
 unsigned char	outbuf[16];
 char			colon=':';
 
-string			log_file_name;
-FILE*			img_file;
 
-FILE*			sum_file=NULL;
-string			sum_file_name;
-
-FILE*			scn_file=NULL;
-string			scn_file_name;
-
-FILE*			vme_file=NULL;
-string			vme_file_name;
-string			vme_file_name_default;
-char			cid_rev[4+1];
-string			sid_rev="byte";
-
-FILE*			dump_file=NULL;
-string			dump_file_name;
-string			dump_file_name_default;
-
-FILE*			prom_file=NULL;
-string			prom_file_name;
-string			prom_file_name_default;
-
-FILE*			test_file=NULL;
-string			test_file_name;
-string			logfolder;
-string			jtag_file_name;
-
-FILE*			raw_file=NULL;
-string			raw_file_name;
-string			raw_file_name_default;
-
-FILE*			ascii_file=NULL;
-string			ascii_file_name;
-string			ascii_file_name_default;
-
-FILE*			mcs_file=NULL;
-string			mcs_file_name;
-string			mcs_file_name_default;
-
-FILE*			compare_file=NULL;
-string			compare_file_name;
-string			compare_file_name_default;
-
-FILE*			ram_file=NULL;
-string			ram_file_name;
 
 int				rec_len;
 int				rec_type;
@@ -21747,7 +21269,7 @@ L2505:
 	tdi_to_i4(&tdo[160], rat_user1[5], 32,0);
 	tdi_to_i4(&tdo[192], rat_user1[6], 32,0);
     fprintf(test_file,"RAT USER1="); 
-	fprintf(test_file,"RAT USER1="); for(i=6; i>=0; --i) printf("%8.8X",rat_user1[i]); printf("\n");
+	for(i=6; i>=0; --i) printf("%8.8X",rat_user1[i]); printf("\n");
 
 	tdi_to_i4(&rs[  0], rs_begin,           4,0);
 	tdi_to_i4(&rs[  4], rs_version,         4,0);
@@ -25609,212 +25131,183 @@ L3800:
 		   printf("\tVME bus contention test started. Ctrl-c to exit\n");
 		   adr     = hcm001_adr+base_adr;
 L3900:
-		   wr_data = 0xAAAA;
-		   status  = vme_write(adr,wr_data);				// Write teven
-		   wr_data = 0x5555;
-		   status  = vme_write(adr,wr_data);				// Write tod
-		   goto L3900;										// Bang mode
-	   }
-	   //------------------------------------------------------------------------------
-	   //	GTX Optical Receiver Status
-	   //------------------------------------------------------------------------------
-	   void L4000() {
-		   //L4000:
-		   printf("\tGTX Optical Receiver Status\n");
-		   printf("\n");
+           wr_data = 0xAAAA;
+           status  = vme_write(adr,wr_data);				// Write teven
+           wr_data = 0x5555;
+           status  = vme_write(adr,wr_data);				// Write tod
+           goto L3900;										// Bang mode
+       }
+       //------------------------------------------------------------------------------
+       //	GTX Optical Receiver Status
+       //------------------------------------------------------------------------------
+       void L4000() {
+           //L4000:
+           printf("\tGTX Optical Receiver Status\n");
+           printf("\n");
 
-		   // Read QPPL status and SNAP12 serial interface
-		   adr    = adr_virtex6_snap12_qpll+base_adr;
-		   status = vme_read(adr,rd_data);
+           // Read QPPL status and SNAP12 serial interface
+           adr    = adr_virtex6_snap12_qpll+base_adr;
+           status = vme_read(adr,rd_data);
 
-		   qpll_nrst	= (rd_data >> 0) & 0x1;	// RW	nReset QPLL, 0=reset
-		   qpll_lock	= (rd_data >> 1) & 0x1;	// R	QPLL locked status
-		   qpll_err	= (rd_data >> 2) & 0x1;	// R	QPLL error status
+           qpll_nrst	= (rd_data >> 0) & 0x1;	// RW	nReset QPLL, 0=reset
+           qpll_lock	= (rd_data >> 1) & 0x1;	// R	QPLL locked status
+           qpll_err	= (rd_data >> 2) & 0x1;	// R	QPLL error status
 
-		   r12_sclk	= (rd_data >> 4) & 0x1;	// RW	Serial interface clock, drive high
-		   r12_sdat	= (rd_data >> 5) & 0x1;	// R	Serial interface data
-		   r12_fok		= (rd_data >> 6) & 0x1;	// R	Serial interface status
+           r12_sclk	= (rd_data >> 4) & 0x1;	// RW	Serial interface clock, drive high
+           r12_sdat	= (rd_data >> 5) & 0x1;	// R	Serial interface data
+           r12_fok		= (rd_data >> 6) & 0x1;	// R	Serial interface status
 
-		   printf("\tQPLL Status\n");
-		   printf("\t[0] qpll_nrst  = %1i\n",qpll_nrst);
-		   printf("\t[1] qpll_lock  = %1i\n",qpll_lock);
-		   printf("\t[2] qpll_err   = %1i\n",qpll_err);
-		   printf("\n");
+           printf("\tQPLL Status\n");
+           printf("\t[0] qpll_nrst  = %1i\n",qpll_nrst);
+           printf("\t[1] qpll_lock  = %1i\n",qpll_lock);
+           printf("\t[2] qpll_err   = %1i\n",qpll_err);
+           printf("\n");
 
-		   printf("\tGTX Optical Receiver Status\n");
-		   printf("\t[4] r12_sclk   = %1i\n",r12_sclk);
-		   printf("\t[5] r12_sdat   = %1i\n",r12_sdat);
-		   printf("\t[6] r12_fok    = %1i\n",r12_fok);
-		   printf("\n");
+           printf("\tGTX Optical Receiver Status\n");
+           printf("\t[4] r12_sclk   = %1i\n",r12_sclk);
+           printf("\t[5] r12_sdat   = %1i\n",r12_sdat);
+           printf("\t[6] r12_fok    = %1i\n",r12_fok);
+           printf("\n");
 
-		   // Read Virtex-6 GTX  common control
-		   adr    = adr_virtex6_gtx_rx_all+base_adr;
-		   status = vme_read(adr,rd_data);
+           // Read Virtex-6 GTX  common control
+           adr    = adr_virtex6_gtx_rx_all+base_adr;
+           status = vme_read(adr,rd_data);
 
-		   gtx_rx_enable_all			= (rd_data >>  0) & 0x1;	// RW	Enable all GTX optical inputs, you should disable copper via mask_all
-		   gtx_rx_reset_all			= (rd_data >>  1) & 0x1;	// RW	Reset all GTX
-		   gtx_rx_reset_err_cnt_all	= (rd_data >>  2) & 0x1;	// RW	Reset all PRBS test error counters
-		   gtx_rx_en_prbs_test_all		= (rd_data >>  3) & 0x1;	// RW	Select all  random input test data mode
-		   gtx_rx_start_all			= (rd_data >>  4) & 0x1;	// R	Set when the DCFEB Start Pattern is present
-		   gtx_rx_fc_all				= (rd_data >>  5) & 0x1;	// R	Flags when Rx sees "FC" code (sent by Tx) for latency measurement
-		   gtx_rx_valid_all			= (rd_data >>  6) & 0x1;	// R	Valid data detected on link
-		   gtx_rx_match_all			= (rd_data >>  7) & 0x1;	// R	PRBS test data match detected, for PRBS tests, a VALID = "should have a match" such that !MATCH is an error
-		   gtx_rx_sync_done_all		= (rd_data >>  8) & 0x1;	// R	Use these to determine gtx_ready
-		   gtx_rx_pol_swap_all			= (rd_data >>  9) & 0x1;	// R	GTX 5,6 [ie dcfeb 4,5] have swapped rx board routes
-		   gtx_rx_err_all				= (rd_data >> 10) & 0x1;	// R	PRBS test detects an error
+           gtx_rx_enable_all			= (rd_data >>  0) & 0x1;	// RW	Enable all GTX optical inputs, you should disable copper via mask_all
+           gtx_rx_reset_all			= (rd_data >>  1) & 0x1;	// RW	Reset all GTX
+           gtx_rx_reset_err_cnt_all	= (rd_data >>  2) & 0x1;	// RW	Reset all PRBS test error counters
+           gtx_rx_en_prbs_test_all		= (rd_data >>  3) & 0x1;	// RW	Select all  random input test data mode
+           gtx_rx_start_all			= (rd_data >>  4) & 0x1;	// R	Set when the DCFEB Start Pattern is present
+           gtx_rx_fc_all				= (rd_data >>  5) & 0x1;	// R	Flags when Rx sees "FC" code (sent by Tx) for latency measurement
+           gtx_rx_valid_all			= (rd_data >>  6) & 0x1;	// R	Valid data detected on link
+           gtx_rx_match_all			= (rd_data >>  7) & 0x1;	// R	PRBS test data match detected, for PRBS tests, a VALID = "should have a match" such that !MATCH is an error
+           gtx_rx_sync_done_all		= (rd_data >>  8) & 0x1;	// R	Use these to determine gtx_ready
+           gtx_rx_pol_swap_all			= (rd_data >>  9) & 0x1;	// R	GTX 5,6 [ie dcfeb 4,5] have swapped rx board routes
+           gtx_rx_err_all				= (rd_data >> 10) & 0x1;	// R	PRBS test detects an error
 
-		   printf("\tGTX Optical Receiver Common CSR\n");
-		   printf("\t[0] gtx_rx_enable_all        = %1i\n",gtx_rx_enable_all);
-		   printf("\t[1] gtx_rx_reset_all         = %1i\n",gtx_rx_reset_all );
-		   printf("\t[2] gtx_rx_reset_err_cnt_all = %1i\n",gtx_rx_reset_err_cnt_all);
-		   printf("\t[3] gtx_rx_en_prbs_test_all  = %1i\n",gtx_rx_en_prbs_test_all);
-		   printf("\t[4] gtx_rx_start_all         = %1i\n",gtx_rx_start_all);
-		   printf("\t[5] gtx_rx_fc_all            = %1i\n",gtx_rx_fc_all);
-		   printf("\t[6] gtx_rx_valid_all         = %1i\n",gtx_rx_valid_all);
-		   printf("\t[7] gtx_rx_match_all         = %1i\n",gtx_rx_match_all);
-		   printf("\t[8] gtx_rx_sync_done_all     = %1i\n",gtx_rx_sync_done_all);
-		   printf("\t[9] gtx_rx_pol_swap_all      = %1i\n",gtx_rx_pol_swap_all);
-		   printf("\t[A] gtx_rx_err_all           = %1i\n",gtx_rx_err_all);
-		   printf("\n");
+           printf("\tGTX Optical Receiver Common CSR\n");
+           printf("\t[0] gtx_rx_enable_all        = %1i\n",gtx_rx_enable_all);
+           printf("\t[1] gtx_rx_reset_all         = %1i\n",gtx_rx_reset_all );
+           printf("\t[2] gtx_rx_reset_err_cnt_all = %1i\n",gtx_rx_reset_err_cnt_all);
+           printf("\t[3] gtx_rx_en_prbs_test_all  = %1i\n",gtx_rx_en_prbs_test_all);
+           printf("\t[4] gtx_rx_start_all         = %1i\n",gtx_rx_start_all);
+           printf("\t[5] gtx_rx_fc_all            = %1i\n",gtx_rx_fc_all);
+           printf("\t[6] gtx_rx_valid_all         = %1i\n",gtx_rx_valid_all);
+           printf("\t[7] gtx_rx_match_all         = %1i\n",gtx_rx_match_all);
+           printf("\t[8] gtx_rx_sync_done_all     = %1i\n",gtx_rx_sync_done_all);
+           printf("\t[9] gtx_rx_pol_swap_all      = %1i\n",gtx_rx_pol_swap_all);
+           printf("\t[A] gtx_rx_err_all           = %1i\n",gtx_rx_err_all);
+           printf("\n");
 
-		   // Read Virtex-6 GTX receiver 0 = 0x14C through receiver 6 = 0x158 status
-		   for (idcfeb=0; idcfeb<7; idcfeb++)
-		   {
-			   adr    = adr_virtex6_gtx_rx0+(idcfeb*2)+base_adr;
-			   status = vme_read(adr,rd_data);
+           // Read Virtex-6 GTX receiver 0 = 0x14C through receiver 6 = 0x158 status
+           for (idcfeb=0; idcfeb<7; idcfeb++)
+           {
+               adr    = adr_virtex6_gtx_rx0+(idcfeb*2)+base_adr;
+               status = vme_read(adr,rd_data);
 
-			   gtx_rx_enable[idcfeb]			= (rd_data >>  0) & 0x1;	// RW	Enable all GTX optical inputs, you should disable copper via mask_all
-			   gtx_rx_reset[idcfeb]			= (rd_data >>  1) & 0x1;	// RW	Reset all GTX
-			   gtx_rx_reset_err_cnt[idcfeb]	= (rd_data >>  2) & 0x1;	// RW	Reset all PRBS test error counters
-			   gtx_rx_en_prbs_test[idcfeb]		= (rd_data >>  3) & 0x1;	// RW	Select all  random input test data mode
-			   gtx_rx_start[idcfeb]			= (rd_data >>  4) & 0x1;	// R	Set when the DCFEB Start Pattern is present
-			   gtx_rx_fc[idcfeb]				= (rd_data >>  5) & 0x1;	// R	Flags when Rx sees "FC" code (sent by Tx) for latency measurement
-			   gtx_rx_valid[idcfeb]			= (rd_data >>  6) & 0x1;	// R	Valid data detected on link
-			   gtx_rx_match[idcfeb]			= (rd_data >>  7) & 0x1;	// R	PRBS test data match detected, for PRBS tests, a VALID = "should have a match" such that !MATCH is an error
-			   gtx_rx_sync_done[idcfeb]		= (rd_data >>  8) & 0x1;	// R	Use these to determine gtx_ready
-			   gtx_rx_pol_swap[idcfeb]			= (rd_data >>  9) & 0x1;	// R	GTX 5,6 [ie dcfeb 4,5] have swapped rx board routes
-			   gtx_rx_err[idcfeb]				= (rd_data >> 10) & 0x1;	// R	PRBS test detects an error
-		   }
+               gtx_rx_enable[idcfeb]			= (rd_data >>  0) & 0x1;	// RW	Enable all GTX optical inputs, you should disable copper via mask_all
+               gtx_rx_reset[idcfeb]			= (rd_data >>  1) & 0x1;	// RW	Reset all GTX
+               gtx_rx_reset_err_cnt[idcfeb]	= (rd_data >>  2) & 0x1;	// RW	Reset all PRBS test error counters
+               gtx_rx_en_prbs_test[idcfeb]		= (rd_data >>  3) & 0x1;	// RW	Select all  random input test data mode
+               gtx_rx_start[idcfeb]			= (rd_data >>  4) & 0x1;	// R	Set when the DCFEB Start Pattern is present
+               gtx_rx_fc[idcfeb]				= (rd_data >>  5) & 0x1;	// R	Flags when Rx sees "FC" code (sent by Tx) for latency measurement
+               gtx_rx_valid[idcfeb]			= (rd_data >>  6) & 0x1;	// R	Valid data detected on link
+               gtx_rx_match[idcfeb]			= (rd_data >>  7) & 0x1;	// R	PRBS test data match detected, for PRBS tests, a VALID = "should have a match" such that !MATCH is an error
+               gtx_rx_sync_done[idcfeb]		= (rd_data >>  8) & 0x1;	// R	Use these to determine gtx_ready
+               gtx_rx_pol_swap[idcfeb]			= (rd_data >>  9) & 0x1;	// R	GTX 5,6 [ie dcfeb 4,5] have swapped rx board routes
+               gtx_rx_err[idcfeb]				= (rd_data >> 10) & 0x1;	// R	PRBS test detects an error
+           }
 
-		   printf("\tGTX Optical Receiver   GTX:6543210\n");
-		   printf("\t[0] gtx_rx_enable        = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_enable[i]);        printf("\n");
-		   printf("\t[1] gtx_rx_reset         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_reset[i]);         printf("\n");
-		   printf("\t[2] gtx_rx_reset_err_cnt = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_reset_err_cnt[i]); printf("\n");
-		   printf("\t[3] gtx_rx_en_prbs_test  = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_en_prbs_test[i]);  printf("\n");
-		   printf("\t[4] gtx_rx_start         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_start[i]);         printf("\n");
-		   printf("\t[5] gtx_rx_fc            = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_fc[i]);            printf("\n");
-		   printf("\t[6] gtx_rx_valid         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_valid[i]);         printf("\n");
-		   printf("\t[7] gtx_rx_match         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_match[i]);         printf("\n");
-		   printf("\t[8] gtx_rx_sync_done     = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_sync_done[i]);     printf("\n");
-		   printf("\t[9] gtx_rx_pol_swap      = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_pol_swap[i]);      printf("\n");
-		   printf("\t[A] gtx_rx_err           = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_err[i]);           printf("\n");
-		   printf("\n");
+           printf("\tGTX Optical Receiver   GTX:6543210\n");
+           printf("\t[0] gtx_rx_enable        = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_enable[i]);        printf("\n");
+           printf("\t[1] gtx_rx_reset         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_reset[i]);         printf("\n");
+           printf("\t[2] gtx_rx_reset_err_cnt = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_reset_err_cnt[i]); printf("\n");
+           printf("\t[3] gtx_rx_en_prbs_test  = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_en_prbs_test[i]);  printf("\n");
+           printf("\t[4] gtx_rx_start         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_start[i]);         printf("\n");
+           printf("\t[5] gtx_rx_fc            = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_fc[i]);            printf("\n");
+           printf("\t[6] gtx_rx_valid         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_valid[i]);         printf("\n");
+           printf("\t[7] gtx_rx_match         = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_match[i]);         printf("\n");
+           printf("\t[8] gtx_rx_sync_done     = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_sync_done[i]);     printf("\n");
+           printf("\t[9] gtx_rx_pol_swap      = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_pol_swap[i]);      printf("\n");
+           printf("\t[A] gtx_rx_err           = "); for(i=6;i>=0;--i) printf("%1i",gtx_rx_err[i]);           printf("\n");
+           printf("\n");
 
-		   // Take snapshot of current counter state
-		   adr = base_adr+cnt_ctrl_adr;
-		   wr_data=0x0022;	//snap
-		   status = vme_write(adr,wr_data);
-		   wr_data=0x0020;	//unsnap
-		   status = vme_write(adr,wr_data);
+           // Take snapshot of current counter state
+           adr = base_adr+cnt_ctrl_adr;
+           wr_data=0x0022;	//snap
+           status = vme_write(adr,wr_data);
+           wr_data=0x0020;	//unsnap
+           status = vme_write(adr,wr_data);
 
-		   // Read counters
-		   for (i=0; i<mxcounter; ++i) {
-			   for (j=0; j<=1; ++j) {
-				   adr = base_adr+cnt_ctrl_adr;
-				   wr_data=(i << 9) | 0x0020 | (j << 8);
-				   status = vme_write(adr,wr_data);
-				   adr = base_adr+cnt_rdata_adr;
-				   status = vme_read(adr,rd_data);
+           // Read counters
+           for (i=0; i<mxcounter; ++i) {
+               for (j=0; j<=1; ++j) {
+                   adr = base_adr+cnt_ctrl_adr;
+                   wr_data=(i << 9) | 0x0020 | (j << 8);
+                   status = vme_write(adr,wr_data);
+                   adr = base_adr+cnt_rdata_adr;
+                   status = vme_read(adr,rd_data);
 
-				   // Combine lsbs+msbs
-				   if (j==0)			// Even addresses contain counter LSBs
-					   cnt_lsb=rd_data;
-				   else {				// Odd addresses contain counter MSBs
-					   cnt_msb=rd_data;
-					   cnt_full=cnt_lsb | (cnt_msb << 16);
-					   cnt[i]=cnt_full;	// Assembled counter MSB,LSB
-				   }
-			   }}	//close j,i
+                   // Combine lsbs+msbs
+                   if (j==0)			// Even addresses contain counter LSBs
+                       cnt_lsb=rd_data;
+                   else {				// Odd addresses contain counter MSBs
+                       cnt_msb=rd_data;
+                       cnt_full=cnt_lsb | (cnt_msb << 16);
+                       cnt[i]=cnt_full;	// Assembled counter MSB,LSB
+                   }
+               }}	//close j,i
 
-		   // Dislay counters
-		   printf("\tGTX Optical Receiver Error Counters\n");
-		   for (i=79; i<=85; ++i) {
-			   printf("\t%2.2i %10i %s\n",i,cnt[i],scnt[i].c_str());
-		   }
-		   printf("\n");
+           // Dislay counters
+           printf("\tGTX Optical Receiver Error Counters\n");
+           for (i=79; i<=85; ++i) {
+               printf("\t%2.2i %10i %s\n",i,cnt[i],scnt[i].c_str());
+           }
+           printf("\n");
 
-		   pause ("\tReturn to main menu <cr>");
-		   return;
-	   }
-	   //------------------------------------------------------------------------------
-	   //
-	   // Service routines for main
-	   //
-	   //------------------------------------------------------------------------------
-	   //	Flip pattern ID numbers, because Im too lazy to flip the hs image
-	   //------------------------------------------------------------------------------
-	   int flip_pid(int pid)
-	   {	
-		   return (pid==0xA) ? 0xA : pid^0x1;	// invert pid lsb unless its pattern A
-	   }
+           pause ("\tReturn to main menu <cr>");
+           return;
+       }
+       //------------------------------------------------------------------------------
+       //
+       // Service routines for main
+       //
+       //------------------------------------------------------------------------------
+       //	Flip pattern ID numbers, because Im too lazy to flip the hs image
+       //------------------------------------------------------------------------------
+       int flip_pid(int pid)
+       {	
+           return (pid==0xA) ? 0xA : pid^0x1;	// invert pid lsb unless its pattern A
+       }
 
-	   //------------------------------------------------------------------------------
-	   //	Check data read vs data expected
-	   //------------------------------------------------------------------------------
-	   void ck(string msg_string, int data_read, int data_expect)
-	   {	
-		   if (data_read != data_expect) {
-			   fprintf(stdout,  "ERRm: in %s: read=%8.8X expect=%8.8X\n",msg_string.c_str(),data_read,data_expect);
-			   fprintf(log_file,"ERRm: in %s: read=%8.8X expect=%8.8X\n",msg_string.c_str(),data_read,data_expect);
-			   //	pause(" ");
-		   }
-		   return;
-	   }
-	   //------------------------------------------------------------------------------
-	   //	Check data read vs data expected, with status return
-	   //------------------------------------------------------------------------------
-	   int cks(string msg_string, int data_read, int data_expect)
-	   {
-		   int status;
+       //------------------------------------------------------------------------------
+       //	Check data read vs data expected, floating point version  with tolerance
+       //------------------------------------------------------------------------------
+       void tok(string msg_string, double fdata_read, double fdata_expect, double tolerance, int &status)
+       {
+           double err;
+           double errpct;
 
-		   status = 0;	// good return
-		   if (data_read != data_expect) {
-			   status = 1;	// bad return
-			   fprintf(stdout,  "\tERRm: in %s: read=%8.8X expect=%8.8X\n",msg_string.c_str(),data_read,data_expect);
-			   fprintf(log_file,"\tERRm: in %s: read=%8.8X expect=%8.8X\n",msg_string.c_str(),data_read,data_expect);
-			   //	pause(" ");
-		   }
+           err    = (fdata_read-fdata_expect)/__max(fdata_expect,.01);
+           errpct = err*100.;
 
-		   return status;
-	   }
-	   //------------------------------------------------------------------------------
-	   //	Check data read vs data expected, floating point version  with tolerance
-	   //------------------------------------------------------------------------------
-	   void tok(string msg_string, double fdata_read, double fdata_expect, double tolerance, int &status)
-	   {
-		   double err;
-		   double errpct;
+           status=0;
+           if (abs(err)>tolerance) {
+               status=1;
+               fprintf(stdout,  "\tERRm: in %s: read=%10.4g expect=%10.4g %10.2f\n",msg_string.c_str(),fdata_read,fdata_expect,errpct);
+               fprintf(log_file,"\tERRm: in %s: read=%10.4g expect=%10.4g %10.2f\n",msg_string.c_str(),fdata_read,fdata_expect,errpct);
+           }
 
-		   err    = (fdata_read-fdata_expect)/__max(fdata_expect,.01);
-		   errpct = err*100.;
-
-		   status=0;
-		   if (abs(err)>tolerance) {
-			   status=1;
-			   fprintf(stdout,  "\tERRm: in %s: read=%10.4g expect=%10.4g %10.2f\n",msg_string.c_str(),fdata_read,fdata_expect,errpct);
-			   fprintf(log_file,"\tERRm: in %s: read=%10.4g expect=%10.4g %10.2f\n",msg_string.c_str(),fdata_read,fdata_expect,errpct);
-		   }
-
-		   return;
-	   }
-	   //------------------------------------------------------------------------------
-	   //	Inquire prompt for integer
-	   //------------------------------------------------------------------------------
-	   void inquire(string prompt, const int &minv, const int &maxv, const int &radix, int &now)
-	   {
-		   char	line[80];
-		   int		i;
-		   int		n;
+           return;
+       }
+       //------------------------------------------------------------------------------
+       //	Inquire prompt for integer
+       //------------------------------------------------------------------------------
+       void inquire(string prompt, const int &minv, const int &maxv, const int &radix, int &now)
+       {
+           char	line[80];
+           int		i;
+           int		n;
 
 ask:
 		   printf(prompt.c_str(),now);

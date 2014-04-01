@@ -4,7 +4,8 @@
 //	08/31/09 Initial
 //
 //------------------------------------------------------------------------------------------
-	#include <stdio.h>
+#include <stdio.h>
+#include "lfsr_rng.h"
 
 	void lfsr_rng(const int &reset, __int64	&lfsr)
 {

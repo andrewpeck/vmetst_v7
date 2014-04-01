@@ -7,13 +7,10 @@
 //------------------------------------------------------------------------------
 	#include <stdio.h>
 	#include <iostream>
+    #include "posneg_rd.h"
+    #include "pause.h"
+    #include "vme_io_wxp.h"
 	using namespace std;
-
-//------------------------------------------------------------------------------
-//	Prototypes
-//------------------------------------------------------------------------------
-	long int	vme_read	(unsigned long &adr, unsigned short &rd_data);
-	void		pause		(string s);
 
 //------------------------------------------------------------------------------------------
 // Function posneg_rd(base_adr, phaser_bank) returns posneg

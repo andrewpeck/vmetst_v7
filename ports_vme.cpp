@@ -9,30 +9,11 @@
 	#include <stdio.h>
 	#include <time.h>
 	#include <iostream>
+    #include "ports_vme.h"
+    #include "pause.h"
+    #include "vme_io_wxp.h"
+    #include "common.h"
 	using namespace std;
-
-//------------------------------------------------------------------------------
-//	Common
-//------------------------------------------------------------------------------
-// Files
-	extern	FILE			*log_file;
-	extern	FILE			*xsvf_file;
-
-//	common/portsf_common/
-	const int				setport_mxnwords = 4096;
-	extern unsigned long	xilinx_boot_adr;
-	extern unsigned short	xilinx_boot_data;
-	extern int				setport_calls;
-	extern int				setport_writes;
-	extern int				setport_reads;
-	extern int				setport_writes_expected;
-	extern int				setport_nwords;
-	extern int				setport_peak_nwords;
-	extern unsigned short	setport_buffer[setport_mxnwords];
-	extern int				xsvf_verbosity;
-	extern bool				wlog;
-	extern int				numwrites;
-	extern int				numreads;
 
 //------------------------------------------------------------------------------
 //	Debug print mode
@@ -44,17 +25,6 @@
 	#else
 	 #define dprintf //
 	#endif
-
-//------------------------------------------------------------------------------
-//	Prototypes
-//------------------------------------------------------------------------------
-	#define			logical(L)		((L)?'T':'F')
-	void			pause			(string s);
-	void			sleep			(clock_t msec);
-
-	long int		vme_read		(unsigned long &adr, unsigned short &rd_data);
-	long int		vme_write		(unsigned long &adr, unsigned short &wr_data);
-	long int		vme_bwrite		(unsigned long &adr, unsigned short wr_data[], long &nbytes);
 
 //------------------------------------------------------------------------------
 	void setPort(short p, short val)
