@@ -1,11 +1,10 @@
-/*******************************************************/
-/* file: lenval.h                                      */
-/* abstract:  This file contains a description of the  */
-/*            data structure "lenval".                 */
-/*******************************************************/
-
-#ifndef lenval_dot_h
-#define lenval_dot_h
+//------------------------------------------------------------------------------
+// file: lenval.h                                      
+// abstract:  This file contains a description of the  
+//            data structure "lenval".                 
+//------------------------------------------------------------------------------
+#ifndef LENVAL_H
+#define LENVAL_H
 
 /* the lenVal structure is a byte oriented type used to store an */
 /* arbitrary length binary value. As an example, the hex value   */
@@ -90,4 +89,3 @@ extern void SetBit(lenVal *lv, int byte, int bit, short val);
 extern void  readVal(lenVal *x, short numBytes);
 
 #endif
-

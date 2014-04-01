@@ -39,4 +39,3 @@
 extern int xsvfExecute();
 
 #endif  /* XSVF_MICRO_H */
-
