@@ -28397,6 +28397,7 @@ vga_done:
                    printf("\n");
                    printf("\tTMB Firmware type = Debug Loopback");
                    printf("\tPLEASE Load TMB Normal Firmware for S6 Mezzanine Tests"); 
+                   printf("\tMake SURE that SW 2/1 is set to 0x1A, and SH62 is set to GEO!");
                }
                else if (firmware_type==firmware_normal) {
                    firmware_name = "Normal        ";	// Normal TMB type
