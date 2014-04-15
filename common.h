@@ -1,6 +1,3 @@
-//------------------------------------------------------------------------------
-// Common
-//------------------------------------------------------------------------------
 #ifndef COMMON_H
 #define COMMON_H
 //------------------------------------------------------------------------------
@@ -15,60 +12,60 @@ const int		mxly	= 6;		// # CSC Layers
 const int		mxds	= 8;		// # DiStrips per CFEB
 const int		mxdsabs	= 40;		// # DiStrips per CSC
 const int		mxcfeb	= 5;		// # CFEBs
-const int		mxbitstream=200;	// Max # bits in a jtag cycle
+const int		mxbitstream=1000;	// Max # bits in a jtag cycle
 
 //------------------------------------------------------------------------------
 
-extern FILE			*unit;
+extern FILE			    *unit;
 
-extern FILE			*log_file;
-extern string			log_file_name;
+extern FILE			    *log_file;
+extern std::string			log_file_name;
 
 extern FILE*			img_file;
 
 extern FILE*			sum_file;
-extern string			sum_file_name;
+extern std::string			sum_file_name;
 
 extern FILE*			scn_file;
-extern string			scn_file_name;
+extern std::string			scn_file_name;
 
 extern FILE*			vme_file;
-extern string			vme_file_name;
-extern string			vme_file_name_default;
-extern char			cid_rev[4+1];
-extern string			sid_rev;
+extern std::string			vme_file_name;
+extern std::string			vme_file_name_default;
+extern char			    cid_rev[4+1];
+extern std::string			sid_rev;
 
 extern FILE*			dump_file;
-extern string			dump_file_name;
-extern string			dump_file_name_default;
+extern std::string			dump_file_name;
+extern std::string			dump_file_name_default;
 
 extern FILE*			prom_file;
-extern string			prom_file_name;
-extern string			prom_file_name_default;
+extern std::string			prom_file_name;
+extern std::string			prom_file_name_default;
 
 extern FILE*			test_file;
-extern string			test_file_name;
-extern string			logfolder;
-extern string			jtag_file_name;
+extern std::string			test_file_name;
+extern std::string			logfolder;
+extern std::string			jtag_file_name;
 
 extern FILE*			raw_file;
-extern string			raw_file_name;
-extern string			raw_file_name_default;
+extern std::string			raw_file_name;
+extern std::string			raw_file_name_default;
 
 extern FILE*			ascii_file;
-extern string			ascii_file_name;
-extern string			ascii_file_name_default;
+extern std::string			ascii_file_name;
+extern std::string			ascii_file_name_default;
 
 extern FILE*			mcs_file;
-extern string			mcs_file_name;
-extern string			mcs_file_name_default;
+extern std::string			mcs_file_name;
+extern std::string			mcs_file_name_default;
 
 extern FILE*			compare_file;
-extern string			compare_file_name;
-extern string			compare_file_name_default;
+extern std::string			compare_file_name;
+extern std::string			compare_file_name_default;
 
 extern FILE*			ram_file;
-extern string			ram_file_name;
+extern std::string			ram_file_name;
 
 //------------------------------------------------------------------------------
 
@@ -136,7 +133,7 @@ extern unsigned short	wr_buf[mx_bitstream];
 //	0xC	1100	FPGA Monitor      For TMB self-test
 //	0xD	1101	RAT  Module       FPGA+PROM
 
-const int	mxchain   = 8;									// Chain_id
+const int	mxchain   = 9;									// Chain_id
 const int	mxdevices = 5;									// Devices in chain
 
 const int			devices_in_chain[mxchain]={2,2,2,5,1,2,3,3};	// Chain 0,1,2,3,4,5,6,7
@@ -227,4 +224,139 @@ extern double		vref;
 extern unsigned long	base_adr;
 extern unsigned long	scp_ctrl_adr;
 extern unsigned long	scp_rdata_adr;
+
+// ALCT single cable test
+extern int				itest;
+extern int				itest_first;
+extern int				itest_last;
+extern int				ipass;
+extern int				ipf;
+extern int				npasses;
+extern int				ipattern;
+extern int				npatterns;
+
+extern int				adb_wr_ch;
+extern long			adb_rd_ch;
+extern long			adb_rd_data;
+extern long			scsi_rd_data;
+extern int				scsi_wr_data;
+
+extern long			alct_fpga;
+extern long			alct_fmonthday;
+extern long			alct_fmonth;
+extern long			alct_fday;
+extern long			alct_fyear;
+extern long			alct_todd;
+extern long			alct_teven;
+extern long			alct_crc_err;
+extern long			adb_hit;
+extern long			adb_hit_expect;
+
+extern std::string			salct_fpga;
+extern std::string			sok;
+
+extern bool			iprint;
+extern bool			ifail;
+extern bool			adb_auto;
+extern bool			adb_passed[24];
+
+const int		alct_ntests=90;
+extern int				alct_npassed[alct_ntests+1];
+extern int				alct_nfailed[alct_ntests+1];
+extern int				alct_nskipped[alct_ntests+1];
+extern int				alct_npassed_sc[alct_ntests+1];
+
+// Slow control walking 0 test
+extern long			sc_begin;
+extern long			sc_end;
+extern int				ipin;
+extern int				ones;
+extern int				zeros;
+extern char			ipin_state[208+1];	// FPGA pins 1-208
+extern int				ipin_driven[208+1];
+extern int				ipin_shorted[208+1];
+extern int				ipin_skip[208+1];
+extern std::string			ipin_name[208+1];
+extern int				nshorted;
+extern int				iexpect;
+
+// Slow control normal firmware
+extern __int64			i64;
+extern long			sc_id_reg[2];
+extern long			sc_rd_standby[2];
+extern long			sc_wr_standby[2];
+extern long			sc_wr_tp_group;
+extern long			sc_rd_tp_group;
+extern long			sc_wr_tp_strip;
+extern long			sc_rd_tp_strip;
+extern long			sc_wr_vga_pd;
+extern long			sc_rd_vga_pd;
+extern long			sc_id_chip;
+extern long			sc_id_version;
+extern long			sc_id_day;
+extern long			sc_id_month;
+extern long			sc_id_year;
+
+extern int				vga_data;
+extern int				vga_len;
+extern bool			vga_ramp;
+//extern bool			bans;
+extern int				istep;
+extern int				npulses;
+extern int				ipulse;
+
+extern int				idac;
+extern int				ithr;
+extern int				dac_bit;
+extern int				dac_adr;
+extern int				dac_data;
+extern int				dac_word;
+extern double			vdac;
+extern double			err;
+
+extern bool			dac_ramp;
+//extern bool			debug;
+
+extern int				iadc;
+extern int				adc_ch;
+extern int				adc_word;
+extern int				iadc_driven;
+extern int				adc_ch_driven;
+extern int				adc_value[24][256];
+extern int				opcode0;
+
+extern int				bad_thr[24];
+//extern int				nerrors;
+extern int				ncycles;
+//extern int				icycle;
+extern int				ndone;
+
+extern double			adc_error[24][256];
+extern double			adc_expect;
+extern int				yaxis;
+extern int				yvalue;
+extern char			ichar;
+
+extern double			vref_sc;
+extern double			vlsb_sc;
+
+extern double			vadc_offset;
+extern double			vadc_scaled;
+extern double			vadc;
+extern double			vadc_base[5][14];
+
+extern std::string			adc_ch_name[5][14];
+extern std::string			adc_ch_unit[5][14];
+extern double			adc_ch_scale[5][14];
+
+// misc alct test
+//extern int				opcode;
+extern int				opcode_rd;
+extern int				opcode_wr;
+
+//------------------------------------------------------------------------------
+// Function Prototypes
+//------------------------------------------------------------------------------
+int count0s(char tdo[], int &nbits);
+int count1s(char tdo[], int &nbits);
 #endif

@@ -1,22 +1,21 @@
+//------------------------------------------------------------------------------
 #ifndef VMETST_V7_H
 #define VMETST_V7_H
-
+//------------------------------------------------------------------------------
 #include <stdio.h>
 #include <iostream>
-using namespace std; 
-
 //------------------------------------------------------------------------------
 //	Prototypes
 //------------------------------------------------------------------------------
-bool			pass_fail		(string prompt);
+bool			pass_fail		(std::string prompt);
 int				flip_pid		(int pid);
-void			aok				(string msg_string);
-void			aokf			(string msg_string, const int itest, const int status);	
-void			tok				(string msg_string, double fdata_read, double fdata_expect, double tolerance, int &status);
-void			inquire			(string prompt, const int &minv, const int &maxv, const int &radix, int &now);
-void			inquir2			(string prompt, const int &minv, const int &maxv, const int &radix, int &num, int &now);
-void			inquirl			(string prompt, const int &minv, const int &maxv, const int &radix, long int &now);
-void			inquirb			(string prompt, bool &now);
+void			aok				(std::string msg_string);
+void			aokf			(std::string msg_string, const int itest, const int status);	
+void			tok				(std::string msg_string, double fdata_read, double fdata_expect, double tolerance, int &status);
+void			inquire			(std::string prompt, const int &minv, const int &maxv, const int &radix, int &now);
+void			inquir2			(std::string prompt, const int &minv, const int &maxv, const int &radix, int &num, int &now);
+void			inquirl			(std::string prompt, const int &minv, const int &maxv, const int &radix, long int &now);
+void			inquirb			(std::string prompt, bool &now);
 void			bit_to_array	(const int &idata, int iarray[], const int &n);
 
 //extern
