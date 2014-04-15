@@ -7,29 +7,15 @@
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
-	#include <stdio.h>
-	#include <iostream>
-	using namespace std;
-
-//------------------------------------------------------------------------------
-// Common
-//------------------------------------------------------------------------------
-	extern FILE *log_file;
-
-//------------------------------------------------------------------------------
-//	Prototypes
-//------------------------------------------------------------------------------
-	void		vme_jtag_anystate_to_rti(unsigned long &adr, int &ichain);
-	void		vme_jtag_write_ir		(unsigned long &adr, int &ichain, int &chip_id, int &opcode);
-	void		vme_jtag_write_dr		(unsigned long &adr, int &ichain, int &chip_id, char wr_data[], char rd_data[], int &nbits);
-
-	long int	jtag_read				(unsigned long &adr, int &ichain, int &chip_id, int &opcode, int &reg_len, unsigned short &rd_data);
-	long int	jtag_write				(unsigned long &adr, int &ichain, int &chip_id, int &opcode, int &reg_len, unsigned short &wr_data);
-
-	void		i4_to_tdi				(long int &i4, char  tdi[], const int &nbits, const int &spi);
-	void		tdi_to_i4				(char  tdi[], long int &i4, const int &nbits, const int &spi);
-	void		pause					(string s);
-
+#include <stdio.h>
+#include <iostream>
+#include "common.cpp"
+#include "vme_jtag_io_ops.h"
+#include "jtag_io.h"
+#include "pause.h"
+#include "dsn_io_alct.h"
+using namespace std;
+//
 //------------------------------------------------------------------------------------------
 // ALCT JTAG register definitions
 //------------------------------------------------------------------------------------------
@@ -50,41 +36,40 @@
 //------------------------------------------------------------------------------------------
 // Entry dsn_io_alct(adr,wr_data,rd_data)
 //------------------------------------------------------------------------------------------
-	void dsn_io_alct (unsigned long &adr, int &ichain, int &chip_id, int &opcode_rd, int &opcode_wr, int &reg_len, unsigned short &wr_data, unsigned short &rd_data)
-//------------------------------------------------------------------------------------------
+void dsn_io_alct (unsigned long &adr, int &ichain, int &chip_id, int &opcode_rd, int &opcode_wr, int &reg_len, unsigned short &wr_data, unsigned short &rd_data)
 {
-// Local
-	long int		status;
-	unsigned short	wr_datax;
-	int				busy_alct;
-	int				busy_mez;
-	int				busy;
-	int				nbusy;
+    // Local
+    long int		status;
+    unsigned short	wr_datax;
+    int				busy_alct;
+    int				busy_mez;
+    int				busy;
+    int				nbusy;
 
-// Write to the DSN state machine register
-	nbusy  = 0;
-	vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
-	status = jtag_write(adr,ichain,chip_id,opcode_wr,reg_len,wr_data);	
+    // Write to the DSN state machine register
+    nbusy  = 0;
+    vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
+    status = jtag_write(adr,ichain,chip_id,opcode_wr,reg_len,wr_data);	
 rd:	status = jtag_read (adr,ichain,chip_id,opcode_rd,reg_len,rd_data);
 
-	busy_alct = (rd_data >>  3) & 0x1;
-	busy_mez  = (rd_data >>  8) & 0x1;
-	busy      = busy_alct | busy_mez;
+    busy_alct = (rd_data >>  3) & 0x1;
+    busy_mez  = (rd_data >>  8) & 0x1;
+    busy      = busy_alct | busy_mez;
 
-// Wait for state machine to finish. 1ms worst case
-	if (busy==0) goto done;
-	nbusy++;
-	if (nbusy<1000) goto rd;
+    // Wait for state machine to finish. 1ms worst case
+    if (busy==0) goto done;
+    nbusy++;
+    if (nbusy<1000) goto rd;
 
-	printf("\tDSN state machine stuck busy. rd_data=%5.4X\n",rd_data);
-	pause("<cr> to continue: ");
+    printf("\tDSN state machine stuck busy. rd_data=%5.4X\n",rd_data);
+    pause("<cr> to continue: ");
 
-// End previous cycle
+    // End previous cycle
 done:
-	wr_datax = 0x0000;
-	status   = jtag_write(adr,ichain,chip_id,opcode_wr,reg_len,wr_datax);
-	vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
-	return;
+    wr_datax = 0x0000;
+    status   = jtag_write(adr,ichain,chip_id,opcode_wr,reg_len,wr_datax);
+    vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
+    return;
 }
 
 //------------------------------------------------------------------------------------------
