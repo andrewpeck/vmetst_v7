@@ -96,6 +96,7 @@ void vme_jtag_io_byte (unsigned long &adr, int &ichain, int &nframes, char tms[]
     wr_data = jtag_word;
     status  = vme_write(adr,wr_data);				//Write boot reg
     if (jtaglogmode) fprintf(jtag_file,"%4.4X\n",jtag_word);
+	if (jtaglogmode) fprintf(jtag_file,"\t#50 tck=%1i; tms=%1i; tdi=%1i;\n",tck_bit!=0,tms_bit!=0,tdi_bit!=0);
 
     // Loop over jtag frames
     if  (nframes<=0) goto done;						//No frames to send
@@ -114,7 +115,8 @@ void vme_jtag_io_byte (unsigned long &adr, int &ichain, int &nframes, char tms[]
         jtag_out = jtag_out | tck_bit | tms_bit | tdi_bit;
         wr_data  = jtag_out;
         status   = vme_write(adr,wr_data);				//Write boot reg
-        if (jtaglogmode) fprintf(jtag_file,"%4.4X\n",jtag_out),
+        if (jtaglogmode) fprintf(jtag_file,"%4.4X\n",jtag_word);
+        if (jtaglogmode) fprintf(jtag_file,"\t#50 tck=%1i; tms=%1i; tdi=%1i;\n",tck_bit!=0,tms_bit!=0,tdi_bit!=0);
 
             status  = vme_read(adr,rd_data);				//Read boot reg
         jtag_in = rd_data;
@@ -128,6 +130,7 @@ void vme_jtag_io_byte (unsigned long &adr, int &ichain, int &nframes, char tms[]
         wr_data  = jtag_out;
         status   = vme_write(adr,wr_data);				//Write boot reg
         if (jtaglogmode) fprintf(jtag_file,"%4.4X\n",jtag_out);
+        if (jtaglogmode) fprintf(jtag_file,"\t#50 tck=%1i; tms=%1i; tdi=%1i;\n",tck_bit!=0,tms_bit!=0,tdi_bit!=0);
 
         status  = vme_read(adr,rd_data);				//Read boot reg
         jtag_in = rd_data;
@@ -144,6 +147,7 @@ done:
     wr_data  = jtag_out;
     status   = vme_write(adr,wr_data);				//Write boot reg
     if (jtaglogmode) fprintf(jtag_file,"%4.4X\n",jtag_out);
+	if (jtaglogmode) fprintf(jtag_file,"\t#50 tck=%1i; tms=%1i; tdi=%1i;\n",tck_bit!=0,tms_bit!=0,tdi_bit!=0);
 
     // Debug print
 #ifdef debug_jtag_io_byte

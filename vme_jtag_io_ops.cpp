@@ -6,6 +6,7 @@
 //	04/16/2012	Add ALCT slow control chain
 //	04/24/2012	Restructure to separate chain address from chain type
 //	05/15/2012	Add TMB Spartan-6 chain
+//	06/21/2012	Add ALCT slow control user chain
 //	09/21/2012	Remove PROMs from Virtex-6 mez chain
 //------------------------------------------------------------------------------
 //	Headers
@@ -14,6 +15,7 @@
 #include <iostream>
 #include "vme_jtag_io_ops.h"
 #include "vme_jtag_io_byte.h"
+#include "vme_io_wxp.h"
 #include "pause.h"
 using namespace std;
 
@@ -391,8 +393,6 @@ void vme_jtag_write_dr(unsigned long &adr, int &ichain, int &chip_id, char wr_da
 //------------------------------------------------------------------------------
 bool vme_jtag_cable_detect (unsigned long &base_adr)
 {
-    // Prototypes
-    long int			vme_read (unsigned long &adr, unsigned short &rd_data);
 
     // Local
     const unsigned long	vme_usr_jtag_adr = 0x000010;

@@ -26,7 +26,6 @@ using namespace std;
 // Entry dsn_rd(vme_dsn_adr,itype,dsn)
 //------------------------------------------------------------------------------------------
 void dsn_rd(unsigned long &vme_dsn_adr, const int &itype, int dsn[])
-    //------------------------------------------------------------------------------------------
 {
     unsigned long	adr;
     unsigned short	wr_data;

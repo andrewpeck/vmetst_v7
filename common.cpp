@@ -144,7 +144,8 @@ const int			bits_per_opcode[mxchain][mxdevices]={
     {10, 0, 0, 0, 0},		// 4 TMB  Virtex6  mez chain	FPGA, PROM, PROM
     { 3, 8, 0, 0, 0},		// 5 ALCT slow control chain	FPGA, PROM
     { 6,16,16, 0, 0},		// 6 ALCT Spartan6 mez chain	FPGA, PROM, PROM
-    { 6,16,16, 0, 0}};		// 7 TMB  Spartan6 mez chain	FPGA, PROM, PROM
+    { 6,16,16, 0, 0}		// 7 TMB  Spartan6 mez chain	FPGA, PROM, PROM
+    { 6, 0, 0, 0, 0}};		// 8 ALCT Slow control chain	User JTAG
 
 // Common/adc_common_mez/
 double		adc_voltage_mez[14];
