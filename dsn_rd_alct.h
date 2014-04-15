@@ -3,7 +3,7 @@
 #define DSN_RD_ALCT_H
 //------------------------------------------------------------------------------------------
 	void dsn_rd_alct (unsigned long &adr, int &ichain, int &chip_id, int &opcode_rd, 
-            int &opcode_wr, int &reg_len, const int &itype, int dsn[])
+            int &opcode_wr, int &reg_len, const int &itype, int dsn[]);
 //------------------------------------------------------------------------------------------
 #endif
 //------------------------------------------------------------------------------------------
