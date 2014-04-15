@@ -36,7 +36,7 @@ void ck(std::string msg_string, int data_read, int data_expect)
 //------------------------------------------------------------------------------
 //	Check data read vs data expected, with status return
 //------------------------------------------------------------------------------
-int cks(string msg_string, int data_read, int data_expect)
+int cks(std::string msg_string, int data_read, int data_expect)
 {
     int status;
 
