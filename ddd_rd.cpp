@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------------------
 // Function ddd_rd(base_adr,ddd_chip,ddd_channel) returns ddd_delay
 //---------------------------------------------------------------------------------------------------------
-int ddd_rd(unsigned long &base_adr, const int &ddd_chip, const int &ddd_channel)
+int ddd_rd(unsigned long &base_adr, int ddd_chip, int ddd_channel)
 {
     // VME address
     const unsigned long	vme_ddd0_adr =0x000016;
