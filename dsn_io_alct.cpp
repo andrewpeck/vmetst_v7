@@ -9,11 +9,10 @@
 //------------------------------------------------------------------------------
 #include <stdio.h>
 #include <iostream>
-#include "common.cpp"
-#include "vme_jtag_io_ops.h"
+#include "dsn_io_alct.h"
 #include "jtag_io.h"
 #include "pause.h"
-#include "dsn_io_alct.h"
+#include "vme_jtag_io_ops.h"
 using namespace std;
 //
 //------------------------------------------------------------------------------------------
