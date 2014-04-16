@@ -10400,10 +10400,13 @@ L1800:
 
     if (fpga_series=="XC6VLX195T") id_rev_fpga_expect=6;
 
-    printf("\tExpect Referece TMB in slot=%2i with Debug firmware and Hex SH62=LCL, SW2/1=VME Adr=27=0x1B\n",islot_dut-1);
-    printf("\tExpect Test     TMB in slot=%2i with Debug firmware and Hex SH62=GEO, SW2/1=VME Adr=26=0x1A\n",islot_dut);
-    printf("\tExpect Test     TMB to have SH105 set to 2-3 else FPGA may not load from PROMs\n");
+    printf("\n");
+    printf("\tExpect Ref.     TMB in slot=%2i with SH62=LCL, HEX SW2/1=27=0x1B\n",islot_dut-1);
+    printf("\tExpect Test     TMB in slot=%2i with SH62=GEO, HEX SW2/1=26=0x1A\n",islot_dut);
     printf("\tExpect Debug    Firmware version=%2.2X/%2.2X/%4.4X\n",id_month_expect,id_day_expect,id_year_expect);
+	printf("\tExpect Test     TMB to have SH105 set to 2-3 else FPGA\n");
+	printf("\t                may not load from PROMs\n");
+    printf("\n");
 
     // Check for reference TMB in left slot
     tmb_ref_exists = false;
