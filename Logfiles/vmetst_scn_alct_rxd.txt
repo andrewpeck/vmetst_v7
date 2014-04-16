@@ -1,0 +1,54 @@
+Started:    02/19/10 18:51:42
+ToF=11 alct_rxd_delay= 0 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1   0 287 state=OK
+ToF=12 alct_rxd_delay= 1 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  10 287 state=OK
+ToF= 0 alct_rxd_delay= 2 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  20 287 state=OK
+ToF= 0 alct_rxd_delay= 3 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  30 287 state=OK
+ToF= 1 alct_rxd_delay= 4 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  40 287 state=OK
+ToF= 1 alct_rxd_delay= 5 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  50 287 state=OK
+ToF= 2 alct_rxd_delay= 6 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  60 287 state=OK
+ToF= 2 alct_rxd_delay= 7 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  70 287 state=OK
+ToF= 3 alct_rxd_delay= 8 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  80 287 state=OK
+ToF= 3 alct_rxd_delay= 9 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1  90 287 state=OK
+ToF= 3 alct_rxd_delay=10 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1 100 287 state=OK
+ToF= 4 alct_rxd_delay=11 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 110 288 state=OK
+ToF= 4 alct_rxd_delay=12 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 120 288 state=OK
+ToF= 5 alct_rxd_delay=13 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 130 288 state=OK
+ToF= 5 alct_rxd_delay=14 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 140 288 state=OK
+ToF= 6 alct_rxd_delay=15 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 150 288 state=OK
+ToF= 6 alct_rxd_delay=16 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 160 288 state=OK
+ToF= 7 alct_rxd_delay=17 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 170 288 state=OK
+ToF= 7 alct_rxd_delay=18 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 180 288 state=OK
+ToF= 8 alct_rxd_delay=19 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 190 288 state=OK
+ToF= 8 alct_rxd_delay=20 alct_rxd_posneg=0 bx0_offset_at_match=-15 nmatches= 1 200 288 state=OK
+ToF= 9 alct_rxd_delay=21 alct_rxd_posneg=0 bx0_offset_at_match=-99 nmatches= 0 210 204 state=BAD
+ToF= 9 alct_rxd_delay=22 alct_rxd_posneg=0 bx0_offset_at_match=-99 nmatches= 0 220 204 state=BAD
+ToF=10 alct_rxd_delay=23 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1 230 287 state=OK
+ToF=11 alct_rxd_delay=24 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1 240 287 state=OK
+ToF=11 alct_rxd_delay=25 alct_rxd_posneg=0 bx0_offset_at_match=-16 nmatches= 1 250 287 state=OK
+
+ToF=11 alct_rxd_delay= 0 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1   0 288 state=OK
+ToF=12 alct_rxd_delay= 1 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  10 288 state=OK
+ToF= 0 alct_rxd_delay= 2 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  20 288 state=OK
+ToF= 0 alct_rxd_delay= 3 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  30 288 state=OK
+ToF= 1 alct_rxd_delay= 4 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  40 288 state=OK
+ToF= 1 alct_rxd_delay= 5 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  50 288 state=OK
+ToF= 2 alct_rxd_delay= 6 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  60 288 state=OK
+ToF= 2 alct_rxd_delay= 7 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1  70 288 state=OK
+ToF= 3 alct_rxd_delay= 8 alct_rxd_posneg=1 bx0_offset_at_match=-99 nmatches= 0  80 204 state=BAD
+ToF= 3 alct_rxd_delay= 9 alct_rxd_posneg=1 bx0_offset_at_match=-99 nmatches= 0  90 204 state=BAD
+ToF= 3 alct_rxd_delay=10 alct_rxd_posneg=1 bx0_offset_at_match=-16 nmatches= 1 100 287 state=OK
+ToF= 4 alct_rxd_delay=11 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 110 288 state=OK
+ToF= 4 alct_rxd_delay=12 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 120 288 state=OK
+ToF= 5 alct_rxd_delay=13 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 130 288 state=OK
+ToF= 5 alct_rxd_delay=14 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 140 288 state=OK
+ToF= 6 alct_rxd_delay=15 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 150 288 state=OK
+ToF= 6 alct_rxd_delay=16 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 160 288 state=OK
+ToF= 7 alct_rxd_delay=17 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 170 288 state=OK
+ToF= 7 alct_rxd_delay=18 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 180 288 state=OK
+ToF= 8 alct_rxd_delay=19 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 190 288 state=OK
+ToF= 8 alct_rxd_delay=20 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 200 288 state=OK
+ToF= 9 alct_rxd_delay=21 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 210 288 state=OK
+ToF= 9 alct_rxd_delay=22 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 220 288 state=OK
+ToF=10 alct_rxd_delay=23 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 230 288 state=OK
+ToF=11 alct_rxd_delay=24 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 240 288 state=OK
+ToF=11 alct_rxd_delay=25 alct_rxd_posneg=1 bx0_offset_at_match=-15 nmatches= 1 250 288 state=OK

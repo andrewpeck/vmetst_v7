@@ -1,0 +1,601 @@
+Started:    06/10/10 13:54:46
+Firmware    TMB200x type unknown...beware
+RevCode     CCCC=06/12/06
+ISE Version CC.C SPC
+TMB Slot    [26] adr=D00000
+Determined  CSC Type=C flags_ok=ERR
+C++ Compile Tue May 25 17:30:56 2010
+
+
+!DDU TMB Dump for ME-2/2/22 evt 18799
+read:     0  0DB0C  0DA23  0D961  0D066
+read:     4  040AA  0226A  0777F  0542E
+read:     8  00989  0010C  00000  000AB
+read:    12  00000  000AB  00000  00170
+read:    16  00000  07C6F  00062  00765
+read:    20  04203  03C44  07A01  007F8
+read:    24  00311  0038B  00000  00015
+read:    28  00957  01000  06010  07415
+read:    32  05283  00000  00000  07D01
+read:    36  01D90  01CD3  007FF  00001
+read:    40  04002  01334  06E0B  00000
+read:    44  00000  00000  00000  00000
+read:    48  00000  00100  00100  00100
+read:    52  00100  00100  00100  00200
+read:    56  00200  00200  00200  00200
+read:    60  00200  00300  00300  00300
+read:    64  00300  00300  00300  00400
+read:    68  00400  00400  00400  00400
+read:    72  00400  00500  00500  00500
+read:    76  00500  00500  00500  00600
+read:    80  00600  00600  00600  00600
+read:    84  00600  00700  00700  00700
+read:    88  00700  00700  00700  00800
+read:    92  00800  00800  00800  00800
+read:    96  00800  00900  00900  00900
+read:   100  00900  00900  00900  00A00
+read:   104  00A00  00A00  00A00  00A00
+read:   108  00A00  00B00  00B00  00B00
+read:   112  00B00  00B00  00B00  01000
+read:   116  01000  01000  01000  01000
+read:   120  01000  01100  01100  01100
+read:   124  01100  01100  01100  01200
+read:   128  01200  01200  01200  01200
+read:   132  01200  01300  01300  01300
+read:   136  01300  01300  01300  01400
+read:   140  01400  01400  01400  01400
+read:   144  01400  01500  01500  01500
+read:   148  01500  01500  01500  01600
+read:   152  01600  01600  01600  01600
+read:   156  01600  01700  01700  01700
+read:   160  01700  01700  01700  01800
+read:   164  01800  01800  01800  01800
+read:   168  01800  01900  01900  01900
+read:   172  01900  01900  01900  01A00
+read:   176  01A00  01A00  01A00  01A00
+read:   180  01A00  01B00  01B00  01B00
+read:   184  01B00  01B00  01B00  02000
+read:   188  02000  02000  02000  02000
+read:   192  02000  02100  02100  02100
+read:   196  02100  02100  02100  02200
+read:   200  02200  02200  02200  02200
+read:   204  02200  02300  02300  02300
+read:   208  02300  02300  02300  02400
+read:   212  02400  02400  02400  02400
+read:   216  02400  02500  02500  02500
+read:   220  02500  02500  02500  02600
+read:   224  02600  02600  02600  02600
+read:   228  02600  02700  02700  02700
+read:   232  02700  02700  02700  02800
+read:   236  02800  02800  02800  02800
+read:   240  02800  02900  02900  02900
+read:   244  02900  02900  02900  02A00
+read:   248  02A00  02A00  02A00  02A00
+read:   252  02A00  02B00  02B00  02B00
+read:   256  02B00  02B00  02B00  03000
+read:   260  03000  03000  03000  03000
+read:   264  03000  03100  03100  03100
+read:   268  03100  03100  03100  03200
+read:   272  03200  03200  03200  03200
+read:   276  03200  03300  03300  03300
+read:   280  03300  03300  03300  03400
+read:   284  03400  03400  03400  03400
+read:   288  03400  03500  03500  03500
+read:   292  03500  03500  03500  03600
+read:   296  03600  03600  03600  03600
+read:   300  03600  03700  03700  03700
+read:   304  03700  03700  03700  03800
+read:   308  03800  03800  03800  03800
+read:   312  03800  03900  03900  03900
+read:   316  03900  03900  03900  03A00
+read:   320  03A00  03A00  03A00  03A00
+read:   324  03A00  03B00  03B00  03B00
+read:   328  03B00  03B00  03B00  04000
+read:   332  04000  04002  04000  04000
+read:   336  04000  04100  04102  04102
+read:   340  04100  04100  04100  04200
+read:   344  04202  04202  04204  04202
+read:   348  04204  04300  04302  04300
+read:   352  04300  04302  04300  04400
+read:   356  04400  04400  04400  04402
+read:   360  04400  04500  04500  04500
+read:   364  04500  04500  04500  04601
+read:   368  04600  04601  04600  04600
+read:   372  04600  04701  04700  04701
+read:   376  04702  04701  04700  04801
+read:   380  04800  04801  04800  04801
+read:   384  04800  04900  04900  04900
+read:   388  04900  04900  04901  04A00
+read:   392  04A00  04A00  04A00  04A00
+read:   396  04A01  04B00  04B00  04B00
+read:   400  04B00  04B00  04B00  06B04
+read:   404  06E04  06E0C  02AAA  05555
+read:   408  0DE0F  0D8DB  0DBA7  0D99C
+
+First frame marker found at Adr=    0 Data= 0DB0C
+Last  frame marker found at Adr=  411 Data= 0D99C
+Calculated word count=  412
+Callers    word count=  412
+TMB wdcnt is a multiple of 4. wdcnt=412
+TMB readout long header with raw hits mode. wdcnt=412
+header_only_short = F
+header_only_long  = F
+header_full       = T
+header_filler     = F
+calc crc=1D38DB tmb crc=1D38DB crc_match=T
+Header inferred CSC Type=A Normal
+Expected header             frames =   42
+Expected cfeb  tbins        frames =  360
+Expected cfeb  e0b/e0c      frames =    2
+Expected rpc   tbins        frames =    0
+Expected rpc   b04e04       frames =    2
+Expected scope data         frames =    0
+Expected scope b05e05       frames =    0
+Expected miniscope data     frames =    0
+Expected miniscope b07e07   frames =    0
+Expected blockedbits bcbecb frames =    0
+Expected blockedbits data   frames =    0
+Expected filler             frames =    2
+Expected trailer            frames =    4
+Expected frame count from header =  412
+Frame count stored in trailer    =  412
+Frame count from DMB RAM         =  412
+Frame count OK   412
+adr_b0c=    0 data=DB0C
+adr_e0b=   42 data=6E0B
+adr_b04=  403 data=6B04
+adr_e04=  404 data=6E04
+adr_b05=   -1
+adr_e05=   -1
+adr_b07=   -1
+adr_e07=   -1
+adr_bcb=   -1
+adr_ecb=   -1
+adr_e0c=  405 data=6E0C
+adr_fil=  406 data=2AAA
+adr_e0f=  408 data=DE0F
+No RPC frames in this event
+
+Header Frame   0    0DB0C
+boc                =  B0C
+ddu                =    D
+
+Header Frame   1    0DA23
+pop_bxn_counter    = 0A23
+ddu                =    D
+
+Header Frame   2    0D961
+pop_l1a_rx_counter = 0961
+ddu                =    D
+
+Header Frame   3    0D066
+readout_counter    = 0066
+ddu                =    D
+
+Header Frame   4    040AA
+board_id           =   10
+csc_id             =    5
+run_id             =    0
+h4_buf_q_ovf_err   =    0
+r_sync_err         =    1
+ddu                =    0
+
+Header Frame   5    0226A
+r_nheaders         =   42
+fifo_mode          =    1  Dump=Full  Header=Full 
+readout_type       =    1  Dump=Full  Header=Full 
+l1a_type           =    0  Buffer=yes CLCT trig+L1A match
+r_has_buf          =    1
+r_buf_stalled      =    0
+ddu                =    0
+
+Header Frame   6    0777F
+bd_status_ok       =    1
+vstat_5p0vs        =    1
+vstat_3p3v         =    1
+vstat_1p8v         =    1
+vstat_1p5v         =    1
+_t_crit            =    1
+vsm_ok             =    1
+vsm_aborted        =    0
+vsm_cksum_ok       =    1
+vsm_wdcnt_ok       =    1
+jsm_ok             =    1
+jsm_aborted        =    0
+jsm_cksum_ok       =    1
+jsm_wdcnt_ok       =    1
+sm_tck_fpga_ok     =    1
+ddu                =    0
+
+Header Frame   7    0542E
+revcode            = 542E  Decodes as 01/14/10 xc2v4000
+ddu                =    0
+
+Header Frame   8    00989
+r_bxn_counter_ff   =  989
+r_tmb_clct0_discard=    0
+r_tmb_clct1_discard=    0
+clock_lock_lost    =    0
+ddu                =    0
+
+Header Frame   9    0010C
+r_pretrig_cnt_lsb  = 010C
+ddu                =    0
+
+Header Frame  10    00000
+r_pretrig_cnt_msb  = 0000  Full pretrig_countr=       268
+ddu                =    0
+
+Header Frame  11    000AB
+r_clct_cnt_lsb     = 00AB
+ddu                =    0
+
+Header Frame  12    00000
+r_clct_cnt_msb     = 0000  Full clct_counter  =       171
+ddu                =    0
+
+Header Frame  13    000AB
+r_trig_cnt_lsb     = 00AB
+ddu                =    0
+
+Header Frame  14    00000
+r_trig_cnt_msb     = 0000  Full trig_counter  =       171
+ddu                =    0
+
+Header Frame  15    00170
+r_alct_cnt_lsb     = 0170
+ddu                =    0
+
+Header Frame  16    00000
+r_alct_cnt_msb     = 0000  Full alct_counter  =       368
+ddu                =    0
+
+Header Frame  17    07C6F
+r_orbit_cnt_lsb    = 7C6F
+ddu                =    0
+
+Header Frame  18    00062
+r_orbit_cnt_msb    = 0062  Full orbit_counter =  00317C6F  =   288 seconds
+ddu                =    0
+
+Header Frame  19    00765
+r_ncfebs           =    5
+r_fifo_tbins       =   12
+fifo_pretrig       =    7
+scope_exists       =    0
+miniscope_exists   =    0
+ddu                =    0
+
+Header Frame  20    04203
+hit_thresh_pretrig =    3
+pid_thresh_pretrig =    0
+hit_thresh_postdrf =    4
+pid_thresh_postdrf =    0
+stagger_csc        =    1
+ddu                =    0
+
+Header Frame  21    03C44
+triad_persist      =    4
+dmb_thresh         =    4
+alct_delay         =    8
+clct_window        =    7
+ddu                =    0
+
+Header Frame  22    07A01
+r_trig_source_vec  = 0001  Decodes as 000000001
+r_layers_hit       = 003D  Decodes as 111101
+ddu                =    0
+
+Header Frame  23    007F8
+r_active_feb_ff    = 0018  Decodes as 11000
+r_febs_read        = 001F  Decodes as 11111
+r_l1a_match_win    =    1
+active_feb_src     =    0
+ddu                =    0
+
+Header Frame  24    00311
+r_tmb_match        =    1
+r_tmb_alct_only    =    0
+r_tmb_clct_only    =    0
+r_tmb_match_win    =    2
+r_no_alct_tmb      =    0
+r_one_alct_tmb     =    1
+r_one_clct_tmb     =    1
+r_two_alct_tmb     =    0
+r_two_clct_tmb     =    0
+r_dupe_alct_tmb    =    0
+r_dupe_clct_tmb    =    0
+r_rank_err_tmb     =    0
+ddu                =    0
+
+Header Frame  25    0038B
+r_clct0_tmb_lsb    = 038B
+ddu                =    0
+
+Header Frame  26    00000
+r_clct1_tmb_lsb    = 0000
+ddu                =    0
+
+Header Frame  27    00015
+r_clct0_tmb_msb    =   01
+r_clct1_tmb_msb    =   00
+r_clct0_invp       =    0
+r_clct1_invp       =    0
+r_clct1_busy       =    0
+perr_cfeb_ff       =    0  Decodes as 00000
+perr_rpc_ff        =    0
+perr_ff            =    0
+ddu                =    0
+
+Header Frame  28    00957
+r_alct0_valid      =    1
+r_alct0_quality    =    3
+r_alct0_amu        =    0
+r_alct0_key        =   21
+r_alct_pretrig_win =    1
+ddu                =    0
+
+Header Frame  29    01000
+r_alct1_valid      =    0
+r_alct1_quality    =    0
+r_alct1_amu        =    0
+r_alct1_key        =    0
+drift_delay        =    2
+h_bcb_read_enable  =    0
+hs_layer_trig      =    0
+ddu                =    0
+
+Header Frame  30    06010
+r_alct_bxn         =   10
+alct_ecc_err       =    0
+cfeb_badbits_found =    0
+cfeb_badbits_blockd=    0
+alct_cfg_done      =    1
+bx0_match          =    1
+ddu                =    0
+
+Header Frame  31    07415
+r_mpc0_frame0_lsb  = 7415
+ddu                =    0
+
+Header Frame  32    05283
+r_mpc0_frame1_lsb  = 5283
+ddu                =    0
+
+Header Frame  33    00000
+r_mpc1_frame0_lsb  = 0000
+ddu                =    0
+
+Header Frame  34    00000
+r_mpc1_frame1_lsb  = 0000
+ddu                =    0
+
+Header Frame  35    07D01
+r_mpc0_frame0_msb  =    1
+r_mpc0_frame1_msb  =    0
+r_mpc1_frame0_msb  =    0
+r_mpc1_frame1_msb  =    0
+mpc_tx_delay       =    0
+r_mpc_accept       =    1
+cfeb_en            =   1F  Decodes as 11111
+ddu                =    0
+
+Header Frame  36    01D90
+rd_rpc_list        =   00  Decodes as 00
+rd_nrpcs           =    0
+rpc_read_enable    =    1
+fifo_tbins_rpc     =   12
+fifo_pretrig_rpc   =    7
+ddu                =    0
+
+Header Frame  37    01CD3
+r_wr_buf_adr       =  4D3
+r_wr_buf_ready     =    1
+wr_buf_ready       =    1
+buf_q_full         =    0
+buf_q_empty        =    0
+ddu                =    0
+
+Header Frame  38    007FF
+r_buf_fence_dist   =  7FF 2047
+buf_q_ovf_err      =    0
+buf_q_udf_err      =    0
+buf_q_adr_err      =    0
+buf_stalled        =    0
+ddu                =    0
+
+Header Frame  39    00001
+buf_fence_cnt      =    1
+reverse_hs_csc     =    0
+reverse_hs_me1a    =    0
+reverse_hs_me1b    =    0
+ddu                =    0
+
+Header Frame  40    04002
+buf_fence_cnt_peak =    2
+r_trig_source_vec9 =    0
+r_trig_source_vec10=    0
+tmb_trig_pulse     =    1
+ddu                =    0
+
+Header Frame  41    01334
+tmb_allow_alct     =    0
+tmb_allow_clct     =    0
+tmb_allow_match    =    1
+tmb_allow_alct_ro  =    0
+tmb_allow_clct_ro  =    1
+tmb_allow_match_ro =    1
+tmb_alct_ro        =    0
+tmb_clct_ro        =    0
+tmb_match_ro       =    1
+tmb_trig_keep      =    1
+tmb_nontrig_keep   =    0
+lyr_thresh_pretrig =    2
+layer_trig_en      =    0
+ddu                =    0
+
+Header Frame  42    06E0B
+eob                = 6E0B
+ddu                =    0
+
+Header Frame 405    06E0C
+eoc                = 6E0C
+ddu                =    0
+
+Header Frame 406    02AAA
+opt2aaa            = 2AAA
+ddu                =    0
+
+Header Frame 407    05555
+opt5555            = 5555
+ddu                =    0
+
+Header Frame 408    0DE0F
+lctype3            =    1
+eof                =  E0F
+ddu                =    D
+
+Header Frame 409    0D8DB
+crc22lsb           =  0DB
+lctype2            =    1
+ddu                =    D
+
+Header Frame 410    0DBA7
+crc22msb           =  3A7
+lctype1            =    1
+ddu                =    D
+
+Header Frame 411    0D99C
+frame_cnt          =  412
+lctype0            =    1
+ddu                =    D
+
+CLCT0 Decode      000838B
+clct0_vpf          =    1
+clct0_nhit         =    5
+clct0_pat          =    8
+clct0_key          =    3
+clct0_cfeb         =    4
+clct0_fullkey      =  131
+
+CLCT1 Decode      0000000
+clct1_vpf          =    0
+clct1_nhit         =    0
+clct1_pat          =    0
+clct1_key          =    0
+clct1_cfeb         =    0
+clct1_fullkey      =    0
+
+clctc_bxn          =  001
+clctc_sync         =    1
+
+MPC0 Decode From Header
+mpc_alct0_key      =   21
+mpc_clct0_pat      =    8
+mpc_lct0_quality   =   14
+mpc_lct0_vpf       =    1
+mpc_clct0_key      =  131
+mpc_clct0_bend     =    0
+mpc_sync_err0      =    1
+mpc_alct0_bxn      =    0
+mpc_bx0_clct       =    0
+mpc_csc_id0        =    5
+
+MPC1 Decode From Header
+mpc_alct1_key      =    0
+mpc_clct1_pat      =    0
+mpc_lct1_quality   =    0
+mpc_lct1_vpf       =    0
+mpc_clct1_key      =    0
+mpc_clct1_bend     =    0
+mpc_sync_err1      =    0
+mpc_alct1_bxn      =    0
+mpc_bx0_alct       =    0
+mpc_csc_id1        =    0
+
+     Raw Hits Triads
+Cfeb-|00000000|11111111|22222222|33333333|44444444|
+Ds---|01234567|01234567|01234567|01234567|01234567|
+Ly Tb
+0  0 |00000000|00000000|00000000|00000000|00000000|
+0  1 |00000000|00000000|00000000|00000000|00000000|
+0  2 |00000000|00000000|00000000|00000000|00000000|
+0  3 |00000000|00000000|00000000|00000000|00000000|
+0  4 |00000000|00000000|00000000|00000000|00000000|
+0  5 |00000000|00000000|00000000|00000000|00000000|
+0  6 |00000000|00000000|00000000|00000000|10000000|
+0  7 |00000000|00000000|00000000|00000000|10000000|
+0  8 |00000000|00000000|00000000|00000000|10000000|
+0  9 |00000000|00000000|00000000|00000000|00000000|
+0 10 |00000000|00000000|00000000|00000000|00000000|
+0 11 |00000000|00000000|00000000|00000000|00000000|
+
+1  0 |00000000|00000000|00000000|00000000|00000000|
+1  1 |00000000|00000000|00000000|00000000|01000000|
+1  2 |00000000|00000000|00000000|00000000|01000000|
+1  3 |00000000|00000000|00000000|00000000|01000000|
+1  4 |00000000|00000000|00000000|00000000|00000000|
+1  5 |00000000|00000000|00000000|00000000|00000000|
+1  6 |00000000|00000000|00000000|00000000|00000000|
+1  7 |00000000|00000000|00000000|00000000|00000000|
+1  8 |00000000|00000000|00000000|00000000|00000000|
+1  9 |00000000|00000000|00000000|00000000|00000000|
+1 10 |00000000|00000000|00000000|00000000|00000000|
+1 11 |00000000|00000000|00000000|00000000|00000000|
+
+2  0 |00000000|00000000|00000000|00000000|01000000|
+2  1 |00000000|00000000|00000000|00000000|01000000|
+2  2 |00000000|00000000|00000000|00000000|01000000|
+2  3 |00000000|00000000|00000000|00000000|00000000|
+2  4 |00000000|00000000|00000000|00000000|00000000|
+2  5 |00000000|00000000|00000000|00000000|00000000|
+2  6 |00000000|00000000|00000000|00000000|10000000|
+2  7 |00000000|00000000|00000000|00000000|10000000|
+2  8 |00000000|00000000|00000000|00000000|10000000|
+2  9 |00000000|00000000|00000000|00000000|00000000|
+2 10 |00000000|00000000|00000000|00000000|00000000|
+2 11 |00000000|00000000|00000000|00000000|00000000|
+
+3  0 |00000000|00000000|00000000|00000000|00000000|
+3  1 |00000000|00000000|00000000|00000000|00000000|
+3  2 |00000000|00000000|00000000|00000000|00100000|
+3  3 |00000000|00000000|00000000|00000000|00000000|
+3  4 |00000000|00000000|00000000|00000000|00000000|
+3  5 |00000000|00000000|00000000|00000000|00000000|
+3  6 |00000000|00000000|00000000|00000000|00000000|
+3  7 |00000000|00000000|00000000|00000000|01000000|
+3  8 |00000000|00000000|00000000|00000000|00000000|
+3  9 |00000000|00000000|00000000|00000000|00000000|
+3 10 |00000000|00000000|00000000|00000000|00000000|
+3 11 |00000000|00000000|00000000|00000000|00000000|
+
+4  0 |00000000|00000000|00000000|00000000|00000000|
+4  1 |00000000|00000000|00000000|00000000|00000000|
+4  2 |00000000|00000000|00000000|00000000|01000000|
+4  3 |00000000|00000000|00000000|00000000|01000000|
+4  4 |00000000|00000000|00000000|00000000|01000000|
+4  5 |00000000|00000000|00000000|00000000|00000000|
+4  6 |00000000|00000000|00000000|00000000|00000000|
+4  7 |00000000|00000000|00000000|00000000|10000000|
+4  8 |00000000|00000000|00000000|00000000|10000000|
+4  9 |00000000|00000000|00000000|00000000|00000000|
+4 10 |00000000|00000000|00000000|00000000|00000000|
+4 11 |00000000|00000000|00000000|00000000|00000000|
+
+5  0 |00000000|00000000|00000000|00000000|00000000|
+5  1 |00000000|00000000|00000000|00000000|00000000|
+5  2 |00000000|00000000|00000000|00000000|00100000|
+5  3 |00000000|00000000|00000000|00000000|00000000|
+5  4 |00000000|00000000|00000000|00000000|00000000|
+5  5 |00000000|00000000|00000000|00000000|00000000|
+5  6 |00000000|00000000|00000000|00000000|00000000|
+5  7 |00000000|00000000|00000000|00000000|00000000|
+5  8 |00000000|00000000|00000000|00000000|00000000|
+5  9 |00000000|00000000|00000000|00000000|10000000|
+5 10 |00000000|00000000|00000000|00000000|10000000|
+5 11 |00000000|00000000|00000000|00000000|00000000|
+
+Skipping scope readout because scope_exists=0
+Skipping miniscope readout because miniscope_exists=0
+
+Header format OK

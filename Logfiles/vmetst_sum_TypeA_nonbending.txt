@@ -1,0 +1,161 @@
+Started:    01/27/10 15:37:39
+CFEB0 Key=  0 OK clct0: vpf=1 nhit=6 pat=A key=  0 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  1 OK clct0: vpf=1 nhit=6 pat=A key=  1 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  2 OK clct0: vpf=1 nhit=6 pat=A key=  2 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  3 OK clct0: vpf=1 nhit=6 pat=A key=  3 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  4 OK clct0: vpf=1 nhit=6 pat=A key=  4 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  5 OK clct0: vpf=1 nhit=6 pat=A key=  5 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  6 OK clct0: vpf=1 nhit=6 pat=A key=  6 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  7 OK clct0: vpf=1 nhit=6 pat=A key=  7 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  8 OK clct0: vpf=1 nhit=6 pat=A key=  8 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key=  9 OK clct0: vpf=1 nhit=6 pat=A key=  9 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 10 OK clct0: vpf=1 nhit=6 pat=A key= 10 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 11 OK clct0: vpf=1 nhit=6 pat=A key= 11 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 12 OK clct0: vpf=1 nhit=6 pat=A key= 12 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 13 OK clct0: vpf=1 nhit=6 pat=A key= 13 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 14 OK clct0: vpf=1 nhit=6 pat=A key= 14 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 15 OK clct0: vpf=1 nhit=6 pat=A key= 15 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 16 OK clct0: vpf=1 nhit=6 pat=A key= 16 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 17 OK clct0: vpf=1 nhit=6 pat=A key= 17 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 18 OK clct0: vpf=1 nhit=6 pat=A key= 18 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 19 OK clct0: vpf=1 nhit=6 pat=A key= 19 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 20 OK clct0: vpf=1 nhit=6 pat=A key= 20 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 21 OK clct0: vpf=1 nhit=6 pat=A key= 21 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 22 OK clct0: vpf=1 nhit=6 pat=A key= 22 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 23 OK clct0: vpf=1 nhit=6 pat=A key= 23 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 24 OK clct0: vpf=1 nhit=6 pat=A key= 24 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 25 OK clct0: vpf=1 nhit=6 pat=A key= 25 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 26 OK clct0: vpf=1 nhit=6 pat=A key= 26 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 27 OK clct0: vpf=1 nhit=6 pat=A key= 27 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 28 OK clct0: vpf=1 nhit=6 pat=A key= 28 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 29 OK clct0: vpf=1 nhit=6 pat=A key= 29 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 30 OK clct0: vpf=1 nhit=6 pat=A key= 30 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB0 Key= 31 OK clct0: vpf=1 nhit=6 pat=A key= 31 cfeb=0 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 32 OK clct0: vpf=1 nhit=6 pat=A key= 32 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 33 OK clct0: vpf=1 nhit=6 pat=A key= 33 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 34 OK clct0: vpf=1 nhit=6 pat=A key= 34 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 35 OK clct0: vpf=1 nhit=6 pat=A key= 35 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 36 OK clct0: vpf=1 nhit=6 pat=A key= 36 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 37 OK clct0: vpf=1 nhit=6 pat=A key= 37 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 38 OK clct0: vpf=1 nhit=6 pat=A key= 38 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 39 OK clct0: vpf=1 nhit=6 pat=A key= 39 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 40 OK clct0: vpf=1 nhit=6 pat=A key= 40 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 41 OK clct0: vpf=1 nhit=6 pat=A key= 41 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 42 OK clct0: vpf=1 nhit=6 pat=A key= 42 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 43 OK clct0: vpf=1 nhit=6 pat=A key= 43 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 44 OK clct0: vpf=1 nhit=6 pat=A key= 44 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 45 OK clct0: vpf=1 nhit=6 pat=A key= 45 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 46 OK clct0: vpf=1 nhit=6 pat=A key= 46 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 47 OK clct0: vpf=1 nhit=6 pat=A key= 47 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 48 OK clct0: vpf=1 nhit=6 pat=A key= 48 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 49 OK clct0: vpf=1 nhit=6 pat=A key= 49 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 50 OK clct0: vpf=1 nhit=6 pat=A key= 50 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 51 OK clct0: vpf=1 nhit=6 pat=A key= 51 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 52 OK clct0: vpf=1 nhit=6 pat=A key= 52 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 53 OK clct0: vpf=1 nhit=6 pat=A key= 53 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 54 OK clct0: vpf=1 nhit=6 pat=A key= 54 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 55 OK clct0: vpf=1 nhit=6 pat=A key= 55 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 56 OK clct0: vpf=1 nhit=6 pat=A key= 56 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 57 OK clct0: vpf=1 nhit=6 pat=A key= 57 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 58 OK clct0: vpf=1 nhit=6 pat=A key= 58 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 59 OK clct0: vpf=1 nhit=6 pat=A key= 59 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 60 OK clct0: vpf=1 nhit=6 pat=A key= 60 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 61 OK clct0: vpf=1 nhit=6 pat=A key= 61 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 62 OK clct0: vpf=1 nhit=6 pat=A key= 62 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB1 Key= 63 OK clct0: vpf=1 nhit=6 pat=A key= 63 cfeb=1 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 64 OK clct0: vpf=1 nhit=6 pat=A key= 64 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 65 OK clct0: vpf=1 nhit=6 pat=A key= 65 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 66 OK clct0: vpf=1 nhit=6 pat=A key= 66 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 67 OK clct0: vpf=1 nhit=6 pat=A key= 67 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 68 OK clct0: vpf=1 nhit=6 pat=A key= 68 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 69 OK clct0: vpf=1 nhit=6 pat=A key= 69 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 70 OK clct0: vpf=1 nhit=6 pat=A key= 70 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 71 OK clct0: vpf=1 nhit=6 pat=A key= 71 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 72 OK clct0: vpf=1 nhit=6 pat=A key= 72 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 73 OK clct0: vpf=1 nhit=6 pat=A key= 73 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 74 OK clct0: vpf=1 nhit=6 pat=A key= 74 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 75 OK clct0: vpf=1 nhit=6 pat=A key= 75 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 76 OK clct0: vpf=1 nhit=6 pat=A key= 76 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 77 OK clct0: vpf=1 nhit=6 pat=A key= 77 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 78 OK clct0: vpf=1 nhit=6 pat=A key= 78 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 79 OK clct0: vpf=1 nhit=6 pat=A key= 79 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 80 OK clct0: vpf=1 nhit=6 pat=A key= 80 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 81 OK clct0: vpf=1 nhit=6 pat=A key= 81 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 82 OK clct0: vpf=1 nhit=6 pat=A key= 82 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 83 OK clct0: vpf=1 nhit=6 pat=A key= 83 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 84 OK clct0: vpf=1 nhit=6 pat=A key= 84 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 85 OK clct0: vpf=1 nhit=6 pat=A key= 85 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 86 OK clct0: vpf=1 nhit=6 pat=A key= 86 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 87 OK clct0: vpf=1 nhit=6 pat=A key= 87 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 88 OK clct0: vpf=1 nhit=6 pat=A key= 88 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 89 OK clct0: vpf=1 nhit=6 pat=A key= 89 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 90 OK clct0: vpf=1 nhit=6 pat=A key= 90 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 91 OK clct0: vpf=1 nhit=6 pat=A key= 91 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 92 OK clct0: vpf=1 nhit=6 pat=A key= 92 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 93 OK clct0: vpf=1 nhit=6 pat=A key= 93 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 94 OK clct0: vpf=1 nhit=6 pat=A key= 94 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB2 Key= 95 OK clct0: vpf=1 nhit=6 pat=A key= 95 cfeb=2 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key= 96 OK clct0: vpf=1 nhit=6 pat=A key= 96 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key= 97 OK clct0: vpf=1 nhit=6 pat=A key= 97 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key= 98 OK clct0: vpf=1 nhit=6 pat=A key= 98 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key= 99 OK clct0: vpf=1 nhit=6 pat=A key= 99 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=100 OK clct0: vpf=1 nhit=6 pat=A key=100 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=101 OK clct0: vpf=1 nhit=6 pat=A key=101 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=102 OK clct0: vpf=1 nhit=6 pat=A key=102 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=103 OK clct0: vpf=1 nhit=6 pat=A key=103 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=104 OK clct0: vpf=1 nhit=6 pat=A key=104 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=105 OK clct0: vpf=1 nhit=6 pat=A key=105 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=106 OK clct0: vpf=1 nhit=6 pat=A key=106 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=107 OK clct0: vpf=1 nhit=6 pat=A key=107 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=108 OK clct0: vpf=1 nhit=6 pat=A key=108 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=109 OK clct0: vpf=1 nhit=6 pat=A key=109 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=110 OK clct0: vpf=1 nhit=6 pat=A key=110 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=111 OK clct0: vpf=1 nhit=6 pat=A key=111 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=112 OK clct0: vpf=1 nhit=6 pat=A key=112 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=113 OK clct0: vpf=1 nhit=6 pat=A key=113 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=114 OK clct0: vpf=1 nhit=6 pat=A key=114 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=115 OK clct0: vpf=1 nhit=6 pat=A key=115 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=116 OK clct0: vpf=1 nhit=6 pat=A key=116 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=117 OK clct0: vpf=1 nhit=6 pat=A key=117 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=118 OK clct0: vpf=1 nhit=6 pat=A key=118 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=119 OK clct0: vpf=1 nhit=6 pat=A key=119 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=120 OK clct0: vpf=1 nhit=6 pat=A key=120 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=121 OK clct0: vpf=1 nhit=6 pat=A key=121 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=122 OK clct0: vpf=1 nhit=6 pat=A key=122 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=123 OK clct0: vpf=1 nhit=6 pat=A key=123 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=124 OK clct0: vpf=1 nhit=6 pat=A key=124 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=125 OK clct0: vpf=1 nhit=6 pat=A key=125 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=126 OK clct0: vpf=1 nhit=6 pat=A key=126 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB3 Key=127 OK clct0: vpf=1 nhit=6 pat=A key=127 cfeb=3 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=128 OK clct0: vpf=1 nhit=6 pat=A key=128 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=129 OK clct0: vpf=1 nhit=6 pat=A key=129 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=130 OK clct0: vpf=1 nhit=6 pat=A key=130 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=131 OK clct0: vpf=1 nhit=6 pat=A key=131 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=132 OK clct0: vpf=1 nhit=6 pat=A key=132 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=133 OK clct0: vpf=1 nhit=6 pat=A key=133 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=134 OK clct0: vpf=1 nhit=6 pat=A key=134 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=135 OK clct0: vpf=1 nhit=6 pat=A key=135 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=136 OK clct0: vpf=1 nhit=6 pat=A key=136 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=137 OK clct0: vpf=1 nhit=6 pat=A key=137 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=138 OK clct0: vpf=1 nhit=6 pat=A key=138 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=139 OK clct0: vpf=1 nhit=6 pat=A key=139 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=140 OK clct0: vpf=1 nhit=6 pat=A key=140 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=141 OK clct0: vpf=1 nhit=6 pat=A key=141 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=142 OK clct0: vpf=1 nhit=6 pat=A key=142 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=143 OK clct0: vpf=1 nhit=6 pat=A key=143 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=144 OK clct0: vpf=1 nhit=6 pat=A key=144 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=145 OK clct0: vpf=1 nhit=6 pat=A key=145 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=146 OK clct0: vpf=1 nhit=6 pat=A key=146 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=147 OK clct0: vpf=1 nhit=6 pat=A key=147 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=148 OK clct0: vpf=1 nhit=6 pat=A key=148 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=149 OK clct0: vpf=1 nhit=6 pat=A key=149 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=150 OK clct0: vpf=1 nhit=6 pat=A key=150 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=151 OK clct0: vpf=1 nhit=6 pat=A key=151 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=152 OK clct0: vpf=1 nhit=6 pat=A key=152 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=153 OK clct0: vpf=1 nhit=6 pat=A key=153 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=154 OK clct0: vpf=1 nhit=6 pat=A key=154 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=155 OK clct0: vpf=1 nhit=6 pat=A key=155 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=156 OK clct0: vpf=1 nhit=6 pat=A key=156 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=157 OK clct0: vpf=1 nhit=6 pat=A key=157 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=158 OK clct0: vpf=1 nhit=6 pat=A key=158 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3
+CFEB4 Key=159 OK clct0: vpf=1 nhit=3 pat=A key=159 cfeb=4 bxn=   3  clct1: vpf=0 nhit=0 pat=0 key=  0 cfeb=0 bxn=   3

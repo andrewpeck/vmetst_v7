@@ -1,0 +1,294 @@
+Started:    01/02/13 16:26:45
+Firmware    Normal        
+RevCode     5911=08/17/12 series 4
+ISE Version 08.2 SP3
+TMB Slot    [26] adr=D00000
+Determined  CSC Type=A flags_ok=OK
+C++ Compile Fri Dec 21 14:25:47 2012
+
+ALCT rxd clock delay scan: ALCT-to-TMB Teven|Todd
+
+Checking 80MHz Teven|Todd data TMB receives from ALCT
+Setting  alct_tof_delay  = 0
+Setting  alct_rxd_posneg = 0
+Using    dps_max         =25
+Using    dps_delta       =10
+
+Stepping alct_rxd_delay...
+
+Teven|Todd: rxd_delay= 0 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 1 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 2 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 3 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 4 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 5 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 6 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 7 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 8 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay= 9 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay=10 rxdata_1st=05555555 rxdata_2nd=08AAAAAA 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay=11 rxdata_1st=00000005 rxdata_2nd=04100000 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay=12 rxdata_1st=0AAAAAAA rxdata_2nd=05555550 1st_err=0/1 2nd_err=1/1
+Teven|Todd: rxd_delay=13 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=14 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=15 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=16 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=17 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=18 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=19 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=20 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=21 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=22 rxdata_1st=0AAAAAAA rxdata_2nd=05555555 1st_err=0/0 2nd_err=0/0
+Teven|Todd: rxd_delay=23 rxdata_1st=08AAAAAA rxdata_2nd=00445055 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay=24 rxdata_1st=04154000 rxdata_2nd=00000A01 1st_err=1/1 2nd_err=1/1
+Teven|Todd: rxd_delay=25 rxdata_1st=05555555 rxdata_2nd=0AAAAAAA 1st_err=1/1 2nd_err=1/1
+
+Accumulating statistics...
+
+alct_rxd_delay= 0 good_spot=0
+alct_rxd_delay= 1 good_spot=0
+alct_rxd_delay= 2 good_spot=0
+alct_rxd_delay= 3 good_spot=0
+alct_rxd_delay= 4 good_spot=0
+alct_rxd_delay= 5 good_spot=0
+alct_rxd_delay= 6 good_spot=0
+alct_rxd_delay= 7 good_spot=0
+alct_rxd_delay= 8 good_spot=0
+alct_rxd_delay= 9 good_spot=0
+alct_rxd_delay=10 good_spot=0
+alct_rxd_delay=11 good_spot=0
+alct_rxd_delay=12 good_spot=0
+alct_rxd_delay=13 good_spot=1
+alct_rxd_delay=14 good_spot=1
+alct_rxd_delay=15 good_spot=1
+alct_rxd_delay=16 good_spot=1
+alct_rxd_delay=17 good_spot=1
+alct_rxd_delay=18 good_spot=1
+alct_rxd_delay=19 good_spot=1
+alct_rxd_delay=20 good_spot=1
+alct_rxd_delay=21 good_spot=1
+alct_rxd_delay=22 good_spot=1
+alct_rxd_delay=23 good_spot=0
+alct_rxd_delay=24 good_spot=0
+alct_rxd_delay=25 good_spot=0
+Window width  = 10 at tof= 0 posneg=0
+Window center = 17 at tof= 0 posneg=0
+
+Rxd    
+Step   Berrs Average 12 01234567890123456789012345678   1000 samples
+ 0     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 1     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 2     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 3     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 4     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 5     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 6     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 7     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 8     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 9     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+10     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+11     26723 26.7230 FF |xxxxxxxxxxxxxxxxxxxxxxxxxx
+12      3008  3.0080 FF |xxx
+13         0  0.0000 PP |
+14         0  0.0000 PP |
+15         0  0.0000 PP |
+16         0  0.0000 PP |
+17         0  0.0000 PP |				<--Center
+18         0  0.0000 PP |
+19         0  0.0000 PP |
+20         0  0.0000 PP |
+21         0  0.0000 PP |
+22         0  0.0000 PP |
+23      3134  3.1340 FF |xxx
+24     25635 25.6350 FF |xxxxxxxxxxxxxxxxxxxxxxxxx
+25     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 0     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 1     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 2     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 3     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 4     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 5     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 6     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 7     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 8     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 9     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+10     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+11     26723 26.7230 FF |xxxxxxxxxxxxxxxxxxxxxxxxxx
+12      3008  3.0080 FF |xxx
+13         0  0.0000 PP |
+14         0  0.0000 PP |
+15         0  0.0000 PP |
+16         0  0.0000 PP |
+17         0  0.0000 PP |				<--Center
+18         0  0.0000 PP |
+19         0  0.0000 PP |
+20         0  0.0000 PP |
+21         0  0.0000 PP |
+22         0  0.0000 PP |
+23      3134  3.1340 FF |xxx
+24     25635 25.6350 FF |xxxxxxxxxxxxxxxxxxxxxxxxx
+25     28000 28.0000 FF |xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Cable Pair Errors vs alct_rxd_clock Delay Step
+ delay     0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25
+pair    ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+rx[ 0]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  451    0    0    0    0    0    0    0    0    0    0    0   39 1000
+rx[ 1]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  232    0    0    0    0    0    0    0    0    0    0    0  540 1000
+rx[ 2]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0   67 1000
+rx[ 3]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000   18    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[ 4]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  275    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[ 5]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000   94    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[ 6]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  188    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[ 7]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0  316 1000 1000
+rx[ 8]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  106    0    0    0    0    0    0    0    0    0    0   33 1000 1000
+rx[ 9]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    9 1000 1000
+rx[10]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0   76 1000 1000
+rx[11]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0  126 1000 1000
+rx[12]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[13]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000   13    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[14]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  998    0    0    0    0    0    0    0    0    0    0    0    2 1000 1000
+rx[15]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000   38    0    0    0    0    0    0    0    0    0    0    0  989 1000
+rx[16]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  998    0    0    0    0    0    0    0    0    0    0    0   56 1000 1000
+rx[17]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[18]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    4 1000 1000
+rx[19]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  999    0    0    0    0    0    0    0    0    0    0    0  182 1000 1000
+rx[20]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  371    0    0    0    0    0    0    0    0    0    0    0  479 1000 1000
+rx[21]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  368    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[22]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  214    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[23]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000   11    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+rx[24]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0  103 1000 1000
+rx[25]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  997    0    0    0    0    0    0    0    0    0    0    0  779 1000 1000
+rx[26]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  361    0    0    0    0    0    0    0    0    0    0    0  969 1000 1000
+rx[27]  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  999    0    0    0    0    0    0    0    0    0    0    0    0 1000 1000
+
+Tof= 0 Posneg=0 Window center=17  width=10
+
+ALCT txd clock delay scan: ALCT-to-TMB Teven|Todd Loopback
+
+Checking 80MHz Teven|Todd data ALCT looped back from TMB
+Holding  alct_rxd_delay  =17
+Setting  alct_tof_delay  = 0
+Setting  alct_txd_posneg = 0
+Using    dps_max         =25
+Using    dps_delta       =10
+
+Stepping alct_txd_delay...
+
+Teven|Todd: alct_txd_delay= 0 1st=0AAA8000 2nd=00001555 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 1 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 2 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 3 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 4 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 5 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 6 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 7 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 8 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay= 9 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay=10 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay=11 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay=12 1st=000FFC00 2nd=000FFC00 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay=13 1st=0AAAAAAA 2nd=05555555 1st_err=1/1 2nd_err=1/1
+Teven|Todd: alct_txd_delay=14 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=15 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=16 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=17 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=18 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=19 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=20 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=21 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=22 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=23 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=24 1st=000002AA 2nd=00000155 1st_err=0/0 2nd_err=0/0
+Teven|Todd: alct_txd_delay=25 1st=00000000 2nd=00000000 1st_err=1/1 2nd_err=1/1
+Window width  = 11 at tof= 0 posneg=0
+Window center = 19 at tof= 0 posneg=0
+
+Txd    
+Step   Berrs Average 12 01234567890123456789012345678   1000 samples
+ 0     15107 15.1070 FF |xxxxxxxxxxxxxxx
+ 1     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 2     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 3     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 4     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 5     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 6     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 7     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 8     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 9     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+10     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+11     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+12     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+13     18261 18.2610 FF |xxxxxxxxxxxxxxxxxx
+14         0  0.0000 PP |
+15         0  0.0000 PP |
+16         0  0.0000 PP |
+17         0  0.0000 PP |
+18         0  0.0000 PP |
+19         0  0.0000 PP |				<--Center
+20         0  0.0000 PP |
+21         0  0.0000 PP |
+22         0  0.0000 PP |
+23         0  0.0000 PP |
+24         0  0.0000 PP |
+25     10000 10.0000 FF |xxxxxxxxxx
+ 0     15107 15.1070 FF |xxxxxxxxxxxxxxx
+ 1     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 2     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 3     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 4     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 5     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 6     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 7     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 8     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+ 9     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+10     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+11     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+12     20000 20.0000 FF |xxxxxxxxxxxxxxxxxxxx
+13     18261 18.2610 FF |xxxxxxxxxxxxxxxxxx
+14         0  0.0000 PP |
+15         0  0.0000 PP |
+16         0  0.0000 PP |
+17         0  0.0000 PP |
+18         0  0.0000 PP |
+19         0  0.0000 PP |				<--Center
+20         0  0.0000 PP |
+21         0  0.0000 PP |
+22         0  0.0000 PP |
+23         0  0.0000 PP |
+24         0  0.0000 PP |
+25     10000 10.0000 FF |xxxxxxxxxx
+
+Cable Pair Errors vs alct_txd_clock Delay Step
+ delay     0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25
+pair    ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+tx[ 0]   279 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  127    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 1]   302 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  159    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 2]   278 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  127    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 3]   303 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  160    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 4]   283 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  128    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 5]   299 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  161    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 6]   278 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  124    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 7]   301 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  161    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 8]   279 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  125    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[ 9]   299 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000  162    0    0    0    0    0    0    0    0    0    0    0 1000
+tx[10]   720 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[11]   703 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[12]   722 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[13]   710 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[14]   685 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[15]   670 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[16]   688 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[17]   663 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[18]   687 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[19]   663 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000    0    0    0    0    0    0    0    0    0    0    0    0
+tx[20]   677    0    0    0    0    0    0    0    0    0    0    0    0  862    0    0    0    0    0    0    0    0    0    0    0    0
+tx[21]   640    0    0    0    0    0    0    0    0    0    0    0    0  838    0    0    0    0    0    0    0    0    0    0    0    0
+tx[22]   677    0    0    0    0    0    0    0    0    0    0    0    0  859    0    0    0    0    0    0    0    0    0    0    0    0
+tx[23]   642    0    0    0    0    0    0    0    0    0    0    0    0  841    0    0    0    0    0    0    0    0    0    0    0    0
+tx[24]   677    0    0    0    0    0    0    0    0    0    0    0    0  860    0    0    0    0    0    0    0    0    0    0    0    0
+tx[25]   645    0    0    0    0    0    0    0    0    0    0    0    0  847    0    0    0    0    0    0    0    0    0    0    0    0
+tx[26]   682    0    0    0    0    0    0    0    0    0    0    0    0  865    0    0    0    0    0    0    0    0    0    0    0    0
+tx[27]   655    0    0    0    0    0    0    0    0    0    0    0    0  855    0    0    0    0    0    0    0    0    0    0    0    0
+
+Tof= 0 Posneg=0 Window center=19  width=11
+
