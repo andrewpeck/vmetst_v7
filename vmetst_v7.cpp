@@ -172,13 +172,20 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #include <stdio.h>
 #include <time.h>
-#include <windows.h>
+
 #include <math.h>
+#include <stdlib.h>
+
+#ifndef __linux__
+#include <windows.h>
 #include <conio.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <iostream>
 #include <string>
+#include <cstring>
 //------------------------------------------------------------------------------
 //	Local Includes
 //------------------------------------------------------------------------------
@@ -213,6 +220,7 @@
 #include "vme_io_wxp.h"
 #include "vme_jtag_io_byte.h"
 #include "vme_jtag_io_ops.h"
+#include "wxp_compat.h"
 #include "xsvf_writer.h"
 #include "decode_readout.h"
 #include "scope160c.h"
@@ -2489,10 +2497,11 @@ int main()
     char			infoBuf[infoBuflen];
     unsigned long	bufCharCount;
 
-    bufCharCount = infoBuflen;								// Initial length
-    GetComputerName(infoBuf,&bufCharCount);					// Returns actual length
-    if (bufCharCount>=infoBuflen) infoBuf[infoBuflen-1]=0;	// Manually null terminate
-    scomputer_name = string(infoBuf);
+    // TODO: port this to linux
+    // bufCharCount = infoBuflen;								// Initial length
+    // GetComputerName(infoBuf,&bufCharCount);					// Returns actual length
+    // if (bufCharCount>=infoBuflen) infoBuf[infoBuflen-1]=0;	// Manually null terminate
+    // scomputer_name = string(infoBuf);
 
     //------------------------------------------------------------------------------
     //	Get firmware type code
@@ -2708,7 +2717,7 @@ main_menu:
     if (i==20) {void L2000();	L2000();	goto main_menu;}
     if (i==21) {void L2100();	L2100();	goto main_menu;}
     if (i==22) {void L2200();	L2200();	goto main_menu;}
-    if (i==23) {void L2300();	L2300();	goto main_menu;}
+    //if (i==23) {void L2300();	L2300();	goto main_menu;}
     if (i==24) {void L2400();	L2400();	goto main_menu;}
     if (i==25) {void L2500();	L2500();	goto main_menu;}
     if (i==26) {void L2600();	L2600();	goto main_menu;}
@@ -3549,10 +3558,10 @@ L700:
     wr_data = rd_data & ~0x0200;					// Turn off TMB hard reset
     status  = vme_write(boot_adr,wr_data);			// Restore boot reg
 
-    if      (fpga_series=="XC2V4000"  ) sleep(150);	// Wait for TMB to reload
-    else if (fpga_series=="XC6SLX150" ) sleep(250);
-    else if (fpga_series=="XC6VLX195T") sleep(4000);
-    else							    sleep(150);
+    if      (fpga_series=="XC2V4000"  ) sleep_ms(150);	// Wait for TMB to reload
+    else if (fpga_series=="XC6SLX150" ) sleep_ms(250);
+    else if (fpga_series=="XC6VLX195T") sleep_ms(4000);
+    else							    sleep_ms(150);
 
     if (ifunc <0 ) goto L700;						// Bang mode
     return;											// Get latest firmware type
@@ -3569,7 +3578,7 @@ L800:
 
     wr_data = rd_data & ~0x0100;					// Turn off ACLT hard reset
     status  = vme_write(boot_adr,wr_data);			// Restore boot reg
-    sleep(150);										// Wait for ALCT to reload
+    sleep_ms(150);										// Wait for ALCT to reload
     if (ifunc < 0) goto L800;						// Bang mode
     return;
 }
@@ -4385,13 +4394,13 @@ L11100:
     {
         adr     = (1<<i);										//  Walking 1 address
         status  = vme_read(adr,rd_data);						//  Read ww1 address
-        sleep(100);
+        sleep_ms(100);
         status	= vme_read(adr,rd_data);						//  Read ww1 address again
-        sleep(100);	
+        sleep_ms(100);	
         status	 = vme_read(adr=vme_adr0_adr+base_adr,rd_data);	//  Read adr lsbs
         vme_data = rd_data;
         status	 = vme_read(adr,rd_data);						//  Read ww1 address again
-        sleep(100);												//  Wait for bus-timeout
+        sleep_ms(100);												//  Wait for bus-timeout
         status	 = vme_read(adr=vme_adr1_adr+base_adr,rd_data);	//  Read adr msb
         vme_data = vme_data | ((rd_data&0xFF)<<16);
         adr_mode = (rd_data>>8) & 0xFF;
@@ -5094,7 +5103,7 @@ bang_dsn:
         for (itype=0; itype<=1; ++itype) {
             dsn_rd(adr,itype,dsn);
         }
-        sleep(100);
+        sleep_ms(100);
     }
 }
 //------------------------------------------------------------------------------
@@ -6055,7 +6064,7 @@ L16400:
 
     // Bang mode
     if (ifunc<0) {
-        sleep (150);
+        sleep_ms (150);
         goto L16400;
     }
 
@@ -8460,7 +8469,7 @@ L16708:
     // Bang mode
     if (ifunc < 0)
     {
-        sleep(1500);
+        sleep_ms(1500);
         goto L16705;
     }
     goto L1600;
@@ -8540,7 +8549,7 @@ L16800:
 
     // Loop mode
     if (ifunc<0) {
-        //	sleep (1500);
+        //	sleep_ms (1500);
         goto L16800;
     }
 
@@ -8622,7 +8631,7 @@ L16900:
 
     // Loop mode
     if (ifunc<0) {
-        //	sleep (1500);
+        //	sleep_ms (1500);
         goto L16900;
     }
     goto L1600;
@@ -8701,7 +8710,7 @@ L96000:
 
     // Loop mode
     if (ifunc<0) {
-        //	sleep(1500);
+        //	sleep_ms(1500);
         goto L96000;
     }
     goto L1600;
@@ -9444,7 +9453,7 @@ L96405:
     status  = vme_write(adr,wr_data);
 
     // Wait for DMB readout to complete
-    sleep(1);
+    sleep_ms(1);
 
     // Get DMB RAM word count and busy bit
     adr    = dmb_wdcnt_adr+base_adr;
@@ -9565,7 +9574,7 @@ L96708:
     // Bang mode
     if (ifunc >= 0) goto L1600;
 
-    sleep(1);
+    sleep_ms(1);
 
     // End of bang scan, look for nonzero triads
     //	if (l1a_lookback < 2048) goto L96405;	// Full range of lookbacks
@@ -9717,7 +9726,7 @@ L96500:
     status  = vme_write(adr,wr_data);
 
     // Wait for TMB to read out to DMB
-    sleep(1);
+    sleep_ms(1);
 
     // Get DMB RAM word count and busy bit
     adr       = dmb_wdcnt_adr+base_adr;
@@ -10360,7 +10369,8 @@ L1800:
 
     // Check for log file environment variable
     lenv = 81;
-    lenv = ExpandEnvironmentStrings("%TMB_LogFolder%",tmb_logfolder,lenv);
+    // TODO: port this to linux
+    //lenv = ExpandEnvironmentStrings("%TMB_LogFolder%",tmb_logfolder,lenv);
     logfolder = string(tmb_logfolder);
 
     if (lenv==0 || logfolder.compare("%TMB_LogFolder%")==0) {
@@ -10544,10 +10554,10 @@ L18012:
 
     wr_data = 0x0000;
     status  = vme_write(boot_adr_dut,wr_data);	// De-assert hard reset
-    if (id_rev_fpga==3) sleep(95);				// Spartan-6 takes longer than Virtex-2
+    if (id_rev_fpga==3) sleep_ms(95);				// Spartan-6 takes longer than Virtex-2
     status  = vme_write(boot_adr_ref,wr_data);	// De-assert hard reset
 
-    sleep(500);									//	Wait for TMBs to reload, mSecs
+    sleep_ms(500);									//	Wait for TMBs to reload, mSecs
 
     //------------------------------------------------------------------------------
     //	TMB Full Auto Test:
@@ -10718,7 +10728,7 @@ L18020:
     wr_data = 0x0000;
     status  = vme_write(boot_adr_dut,wr_data);		// De-assert hard reset
     status  = vme_write(boot_adr_ref,wr_data);		// De-assert hard reset
-    sleep(500);										// Wait for TMB to reload
+    sleep_ms(500);										// Wait for TMB to reload
 
     status  = vme_read(adr,rd_data);				// Check for fpga ready
     rd_data = rd_data & 0x7FFF;						// Remove tdo
@@ -10730,7 +10740,7 @@ L18020:
     status  = vme_read(adr,rd_data);				// Get current step word
     wr_data = rd_data & 0xEFFF;						// Assert self reset bit, 0=reset
     status  = vme_write(adr,wr_data);				// Send it
-    sleep(500);										// Wait for TMB to reload
+    sleep_ms(500);										// Wait for TMB to reload
 
     status  = vme_read(adr,rd_data);								// Read back step word
     rd_data = rd_data & 0x1000;										// Isolate tmb hard reset
@@ -10757,14 +10767,14 @@ L18020:
     for (i=1; i<=23; ++i) {
         adr     = (1 << i);						// Walking 1 address
         status  = vme_read(adr,rd_data);		// Read ww1 address
-        sleep(10);
+        sleep_ms(10);
         status	 = vme_read(adr,rd_data);		// Read ww1 address again
-        sleep(10);
+        sleep_ms(10);
         adr_ww1  = vme_adr0_adr+base_adr;
         status	 = vme_read(adr_ww1,rd_data);	// Read adr lsbs
         vme_data = rd_data;
         status	 = vme_read(adr,rd_data);		// Read ww1 address again
-        sleep(10);
+        sleep_ms(10);
         adr_ww1  = vme_adr1_adr+base_adr;
         status	 = vme_read(adr_ww1,rd_data);	// Read adr msb
         vme_data = vme_data | ((rd_data & 0xFF) << 16);
@@ -11029,8 +11039,8 @@ L18056:
         status  = vme_write(boot_adr_ref,wr_data);	// De-assert hard reset
         status  = vme_write(boot_adr_dut,wr_data);	// De-assert hard reset
 
-        //	sleep(300);									// Wait for TMBs to reload, mSecs (Virtex2 takes 100ms)
-        sleep(500);									// Wait for TMBs to reload, mSecs (Virtex6 takes 400ms)
+        //	sleep_ms(300);									// Wait for TMBs to reload, mSecs (Virtex2 takes 100ms)
+        sleep_ms(500);									// Wait for TMBs to reload, mSecs (Virtex6 takes 400ms)
 
         // Read back U76 after hard reset
         adr     = vme_gpio_adr+base_adr;
@@ -13313,7 +13323,7 @@ L18172:
                    // Hold this delay for scope persistence
                    msec = 100;
                    if (ddd_delay==0) msec = 600;					// Hold at 0 delay for a moment
-                   sleep(msec);
+                   sleep_ms(msec);
 
                    // Check for keyboard input
                    if (!_kbhit()) goto L91001;			// Check for keyboard hit
@@ -13586,7 +13596,7 @@ L19100:
             printf("\n\t3d3444 verify failed ich=%1i ddd_delay=%1i\n",ich,ddd_delay);
 
             // Let RAT DLL re-sync
-            sleep(200);
+            sleep_ms(200);
 
             // Check RAT 80MHz demux register
 L19105:
@@ -14422,7 +14432,7 @@ L19600:
             printf("\t3d3444 verify failed. ich=%i ddd_elay=%i\n",ich,ddd_delay);
 
             // Let RAT DLL re-sync
-            sleep(200);
+            sleep_ms(200);
 
             // Read RAT 80MHz demux registers
 L19605:
@@ -15539,5161 +15549,5161 @@ L2200:
 //------------------------------------------------------------------------------
 //	ALCT Tools Sub-Menu
 //------------------------------------------------------------------------------
-void L2300() {
-L2300:
-
-    // Display menu
-    printf("\n");
-    printf("\tALCT Test Submenu:\n");
-    printf("\t1:  Read ALCT JTAG Register:  NORMAL ALCT firmware\n");
-    printf("\t2:  Read ALCT JTAG Register:  DEBUG  ALCT firmware\n");
-    printf("\t3:  ALCT tx clock delay scan: NORMAL ALCT firmware\n");
-    printf("\t4:  ALCT tx clock delay scan: DEBUG  ALCT firmware\n");
-    printf("\t5:  ALCT rx clock delay scan: DEBUG  ALCT firmware\n");
-    printf("\t6:  Software ext_trig ALCT:   Check for CRC errors\n");
-    printf("\t7:  Hardware ext_trig ALCT:   Check for CRC errors\n");
-    printf("\t8:  JTAG tests\n");
-    printf("\t9:  Hardware ext_trig ALCT:   ALCT bits vs CRC\n");
-    printf("\t10: ALCT rxd clock delay scan:    ALCT-to-TMB Teven|Todd\n");
-    printf("\t11: ALCT txd clock delay scan:    TMB-to-ALCT Teven|Todd Loopback\n");
-    printf("\t12: ALCT txd+rxd default delays   TMB-to-ALCT Walking 1  Loopback\n");
-    printf("\t13: ALCT txd+rxd clock delay scan TMB-to-ALCT TMB Random Loopback\n");
-    printf("\t14: ALCT-TMB Quick Test\n");
-    printf("\t15: CFEB rx loopback using ALCT\n");
-    printf("\t16: ALCT effect of posneg and tof on bx0 arrival at TMB\n");
-    printf("\t17: ALCT txd+rxd clock delay scan, Random Loopback, posneg table\n");
-    printf("\t18: CFEB bad-bits register tests\n");
-    printf("\t19: ALCT effect of txd,rxd,tof,posnegs on bx0 arrival at TMB\n");
-    printf("\t20: CFEB Blocked CFEB distrips walking hcm test\n");
-    printf("\t<cr> Exit\n");
-    printf("       > ");
-
-    gets(line);
-    if (line[0]==NULL) return;
-    sscanf(line,"%i",&ifunc);
-
-    i=abs(ifunc);
-    if (i== 1) goto L23100;
-    if (i== 2) goto L23200;
-    if (i== 3) goto L23300;
-    if (i== 4) goto L23400;
-    if (i== 5) goto L23500;
-    if (i== 6) goto L23600;
-    if (i== 7) goto L23700;
-    if (i== 8) goto L23800;
-    if (i== 9) goto L23900;
-    if (i==10) goto L231000;
-    if (i==11) goto L231100;
-    if (i==12) goto L231200;
-    if (i==13) goto L231300;
-    if (i==14) goto L231400;
-    if (i==15) goto L231500;
-    if (i==16) goto L231600;
-    if (i==17) goto L231700;
-    if (i==18) goto L231800;
-    if (i==19) goto L231900;
-    if (i==20) goto L232000;
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT: Read JTAG chain: Normal Firmware
-    //------------------------------------------------------------------------------
-L23100:
-    printf("\tMake sure you removed the JTAG cable\n");
-
-    //	Chain ID	Section		 Control or Program
-    //	--------	------------ ------------------
-    //	  0			Slow Control control registers
-    //	  1			Slow Control PROM
-    //	  2			Mezzanine    control registers
-    //	  3			Mezzanine    FPGA+PROM
-    //
-    //
-    //	Mezzanie Virtex Control Registers (5-bit opcode)
-    //
-    //	Name			OpCd		Len	Dir		Function
-    //	------------	---			---	-----	------------------
-    IDRead        = 0x0;  // 	40	read	Virtex ID register
-    HCMaskRead    = 0x1;  // 	384	read	hot mask
-    HCMaskWrite   = 0x2;  // 	384	write	hot mask
-    RdTrig        = 0x3;  // 	5	read	trigger register
-    WrTrig        = 0x4;  // 	5	write	trigger register
-    RdCfg         = 0x6;  // 	69	read	control register
-    WrCfg         = 0x7;  // 	69	write	control register
-    Wdly          = 0xd;  // 	120	write	delay lines. cs_dly bits in Par
-    Rdly          = 0xe;  // 	121?read	delay lines. cs_dly bits in Par
-    CollMaskRead  = 0x13; // 	224	read	collision pattern mask
-    CollMaskWrite = 0x14; // 	224	write	collision pattern mask
-    ParamRegRead  = 0x15; // 	6	read	delay line control register actually
-    ParamRegWrite = 0x16; // 	6	read	delay line control register actually
-    InputEnable   = 0x17; // 	0	write?	commands to disable and enable input
-    InputDisable  = 0x18; // 	0	write?	commands to disable and enable input
-    YRwrite       = 0x19; // 	31	write	output register (for debugging with UCLA test board)
-    OSread        = 0x1a; // 	49	read	output storage
-    SNread        = 0x1b; //	1	read	one bit of serial number
-    SNwrite0      = 0x1c; //	0	write	0 bit into serial number chip
-    SNwrite1      = 0x1d; //	0	write	1 bit into serial number chip
-    SNreset       = 0x1e; //	0	write	reset serial number chip
-    Bypass        = 0x1f; // 	1	bypass
-    //
-    //	Configuration Register
-    //	Register Bits	Signal				Default	BeamTest
-    //	-------------	--------------		-------	--------
-    //	ConfgReg[1:0]	trig_mode[1:0]		0		2
-    //	ConfgReg[2]		ext_trig_en			0		0
-    //	ConfgReg[3]		pretrig_halt		0		0
-    //	ConfgReg[4]		inject				0		?
-    //	ConfgReg[5]		inject_mode			0		?
-    //	ConfgReg[12:6]	inject_mask[6:0]	7Fh		?
-    //	ConfgReg[15:13]	nph_thresh[2:0]		2		2
-    //	ConfgReg[18:16]	nph_pattern[2:0]	4		4
-    //	ConfgReg[20:19]	drift_delay[1:0]	3		?
-    //	ConfgReg[25:21]	fifo_tbins[4:0]		7		8
-    //	ConfgReg[30:26]	fifo_pretrig[4:0]	1		12d
-    //	ConfgReg[32:31]	fifo_mode[1:0]		1		?
-    //	ConfgReg[35:33]	fifo_lastlct[2:0]	3		?
-    //	ConfgReg[43:36]	l1a_delay[7:0]		78h		128d, 78h=120d
-    //	ConfgReg[47:44]	l1a_window[3:0]		3		3
-    //	ConfgReg[51:48]	l1a_offset[3:0]		0		1
-    //	ConfgReg[52]	l1a_internal		0		0
-    //	ConfgReg[55:53]	BoardID[2:0]		5		?
-    //	ConfgReg[59:56]	bxn_offset[3:0]		0		?
-    //	ConfgReg[60]	ccb_enable			0		-
-    //	ConfgReg[61]	alct_jtag_ds		1		-
-    //	ConfgReg[63:62]	alct_tmode[1:0]		0		-
-    //	ConfgReg[65:64]	alct_amode[1:0]		0		?		
-    //	ConfgReg[66]	alct_mask_all		0		-
-    //	ConfgReg[67]	trig_info_en		1		?
-    //	ConfgReg[68]	sn_select			0		0
-    //
-    //
-    //	Virtex-E ID register
-    //	Field		Len	Typical	Description
-    //	-------		---	-------	--------------------------
-    //	[3:0]		4	7		Chip ID number, fixed at 7
-    //	[7:4]		4	C		Software Version ID [0-F]
-    //	[23:8]		16	2001	Year: 4 BCD digits
-    //	[31:24]		8	17		Day:  2 BCD digits
-    //	[39:32]		8	09		Month: 2 BCD digits
-    //
-    //	Virtex-E / Spartan-6 ID register
-    //	Field		Len	Name	Description
-    //	-------		---	----	--------------------------
-    //	[5:0]		6	ver		Firmware version
-    //	[8:6]		3	wgn		(see Table 9)
-    //	[9]			1	bf		(see Table 9)
-    //	[10]		1	np		(see Table 9)
-    //	[11]		1	mr		(see Table 9)
-    //	[12]		1	ke		(see Table 9)
-    //	[13]		1	rl		(see Table 9)
-    //	[14]		1	pb		(see Table 9)
-    //	[15]		1	sp6		(see Table 9)
-    //	[16]		1	seu		(see Table 9)
-    //	[18:17]		2	resvd	Reserved
-    //	[30:19]		12	yea		binary code
-    //	[35:31]		5	day		binary code
-    //	[39:36]		4	month	binary code
-
-    // IDCODEs
-    //	Device		IR Length	IDCODEinstruction	DR Length	IDCODE			USERCODEinstruction	DR Length
-    //	XCV600E		5 bits		0x09				32 bits		0xv0A30093		0x08				32 bits
-    //	XC6SLX150	6 bits		0x09				32 bits		0xX401D093		0x08				32 bits
-    //	XCS40XL		3 bits		0x6					32 bits		0x0041C093		None				None
-    //	XC18V01		8 bits		0xFE				32 bits		0xv50X4093		0xFD				32 bits
-    //	XC18V04		8 bits		0xFE				32 bits		0xv50X6093		0xFD				32 bits
-    //	XCF08P		16 bits		0x00FE				32 bits		0xv5057093		0x00FD				32 bits
-    //	XCF32P		16 bits		0x00FE				32 bits		0xv5059093		0x00FD				32 bits
-    //
-    //------------------------------------------------------------------------------
-    // Read ALCT mez FPGA IDcode
-    //!	ichain = 0x03;									// ALCT Virtex-E  Mezzanine pgm jtag chain
-    ichain = 0x13;									// ALCT Spartan-6 Mezzanine pgm jtag chain
-
-    adr    = boot_adr;								// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
-
-    chip_id = 0;
-    opcode  = 0x09;									// FPGA IDcode opcode
-    reg_len = 32;
-
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    tdi_to_i4(tdo,idcode,32,0);								// Deserialize
-
-    idcode_decode (idcode, sdevice_type, sdevice_name, sdevice_version, sdevice_size);
-
-    fprintf(stdout,"\tALCT Mez  Device=%1i IDcode=%8.8X %s Name=%s\tVer=%s\tSize=%s \n",
-            chip_id, idcode, sdevice_type.c_str(), sdevice_name.c_str(), sdevice_version.c_str(), sdevice_size.c_str());
-
-    // Read FPGA and PROM IDcodes
-    for (chip_id=0; chip_id<=2; ++chip_id) {
-
-        if (chip_id==0) opcode=0x09;					// FPGA IDcode opcode, expect v0A30093
-        if (chip_id==1) opcode=0xFE;					// PROM IDcode opcode
-        reg_len=32;										// IDcode length
-        // FPGA,PROM chip
-        vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-        tdi_to_i4(&tdo[0],idcode,32,0);
-        idcode_decode (idcode, sdevice_type, sdevice_name, sdevice_version, sdevice_size);
-
-        fprintf(stdout,"\tALCT Mez  Device=%1i IDcode=%8.8X %s Name=%s\tVer=%s\tSize=%s \n",
-                chip_id, idcode, sdevice_type.c_str(), sdevice_name.c_str(), sdevice_version.c_str(), sdevice_size.c_str());
-
-    }	// close for chip_id
-
-    // Read FPGA/PROM USERCodes
-    for (chip_id=0; chip_id<=2; ++chip_id) {
-        if (chip_id==0) opcode = 0x08;					// FPGA USERcode opcode
-        if (chip_id==1) opcode = 0xFD;					// PROM USERcode opcode
-        reg_len=32;										// IDcode length
-        // FPGA,PROM chip
-        vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-        tdi_to_i4(&tdo[0],idcode,32,0);
-        printf("\tALCT %s device %1i USERcode = %8.8X\n",alct_chip_type[chip_id].c_str(),chip_id,idcode);
-    }	// close for chip_id
-
-    // Create fat 0 for writing to data registers
-    for (i=0; i<mxbitstream; ++i) {
-        tdi[i]=0;
-    }
-
-    // Select ALCT Mezzanine FPGA control JTAG chain from TMB boot register
-    ichain = 0x0002;								// ALCT Mezzanine control jtag chain
-    adr    = boot_adr;								// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
-
-    // Read ALCT ID register (5 bit opcode)
-    chip_id = 0;
-    opcode  = IDRead;								// ALCT ID register opcode
-    reg_len = 40;									// Register length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-
-    // Decode ALCT ID register
-    for (i=0; i<=39; ++i) {
-        rsa[i]=tdo[i];
-    }
-
-    tdi_to_i4(&tdo[ 0], alct_idreg[0], 32,0);
-    tdi_to_i4(&tdo[32], alct_idreg[1],  8,0);
-    printf("\n\tALCT ID =%8.8X%8.8X\n",alct_idreg[1],alct_idreg[0]);
-
-    bool alct_virtexe=false;
-    if (alct_virtexe)
-    {
-        tdi_to_i4(&rsa[ 0], rsa_chip_id,  4,0);
-        tdi_to_i4(&rsa[ 4], rsa_version,  4,0);
-        tdi_to_i4(&rsa[ 8], rsa_year,    16,0);
-        tdi_to_i4(&rsa[24], rsa_day,      8,0);
-        tdi_to_i4(&rsa[32], rsa_month,    8,0);
-
-        printf("\trsa_chip_id %4.1X\n",rsa_chip_id);
-        printf("\trsa_version %4.1X\n",rsa_version);
-        printf("\trsa_year    %4.4X\n",rsa_year);
-        printf("\trsa_day     %4.2X\n",rsa_day);
-        printf("\trsa_month   %4.2X\n",rsa_month);
-    }
-    else
-    {
-        tdi_to_i4(&rsa[ 0], rsa_ver,      6,0);
-        tdi_to_i4(&rsa[ 6], rsa_wgn,      3,0);
-        tdi_to_i4(&rsa[ 9], rsa_bf,       1,0);
-        tdi_to_i4(&rsa[10], rsa_np,       1,0);
-        tdi_to_i4(&rsa[11], rsa_mr,       1,0);
-        tdi_to_i4(&rsa[12], rsa_ke,       1,0);
-        tdi_to_i4(&rsa[13], rsa_rl,       1,0);
-        tdi_to_i4(&rsa[14], rsa_pb,       1,0);
-        tdi_to_i4(&rsa[15], rsa_sp6,      1,0);
-        tdi_to_i4(&rsa[16], rsa_seu,      1,0);
-        tdi_to_i4(&rsa[17], rsa_res1,     2,0);
-        tdi_to_i4(&rsa[19], rsa_year,    12,0);
-        tdi_to_i4(&rsa[31], rsa_day,      5,0);
-        tdi_to_i4(&rsa[36], rsa_month,    4,0);
-
-        printf("\trsa_ver     %4.2X\n",rsa_ver);
-        printf("\trsa_wgn     %4.1X\n",rsa_wgn);
-        printf("\trsa_bf      %4.1X\n",rsa_bf);
-        printf("\trsa_np      %4.1X\n",rsa_np);
-        printf("\trsa_mr      %4.1X\n",rsa_mr);
-        printf("\trsa_ke      %4.1X\n",rsa_ke);
-        printf("\trsa_rl      %4.1X\n",rsa_rl);
-        printf("\trsa_pb      %4.1X\n",rsa_pb);
-        printf("\trsa_sp6     %4.1X\n",rsa_sp6);
-        printf("\trsa_seu     %4.1X\n",rsa_seu);
-        printf("\trsa_res1    %4.1X\n",rsa_res1);
-        printf("\trsa_year    %4.3X %4.4i\n",rsa_year,rsa_year);
-        printf("\trsa_day     %4.2X %4.2i\n",rsa_day,rsa_day);
-        printf("\trsa_month   %4.1X %4.2i\n",rsa_month,rsa_month);
-    }
-
-    // Read ALCT digital serial numbers
-    // Reset DS2401
-    vme_jtag_write_ir(adr,ichain,chip_id,SNreset );
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
-
-    // Send read command 33h to ibutton chip
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
-
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
-    vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
-
-    // Read 64 bits of DSN bit by bit
-    reg_len    = 1;											// Register length
-    alct_sn[0] = 0;
-    alct_sn[1] = 0;
-
-    for (i=0; i<=63; ++i) {
-        vme_jtag_write_ir(adr,ichain,chip_id,SNread);
-        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-        ibit=tdo[0];
-        if (i>= 0 && i < 31) alct_sn[0] = alct_sn[0] | (ibit<<i);
-        if (i>=32 && i < 63) alct_sn[1] = alct_sn[1] | (ibit<<i);
-    }
-
-    printf("\n\tALCT DSN =%8.8X%8.8X\n",alct_sn[1],alct_sn[0]);
-
-    alct_dsn_mfg = (alct_sn[0] >>  0) & 0x00FF;
-    alct_dsn     = (alct_sn[0] >>  8) & 0xFFFFFF;
-    alct_dsn_crc = (alct_sn[0] >> 28) & 0x00FF;
-
-    printf("\n\tDigital Serial for ALCT");
-    printf(" CRC=%2.2X",alct_dsn_crc);
-    printf(" DSN=%6.6X",alct_dsn);
-    printf(" MFG=%2.2X",alct_dsn_mfg);
-    printf("\n");
-
-    // Select ALCT Mezzanine FPGA control JTAG chain from TMB boot register
-    ichain = 0x0002;							// ALCT Mezzanine control jtag chain
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    // Read ALCT Configuration register (5 bit opcode)
-    chip_id = 0;
-    opcode  = RdCfg;							// ALCT cfg register opcode
-    //	opcode  = 0x06;								// ALCT cfg register opcode
-    reg_len = 69;								// Register length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-
-    // Decode ALCT configuration register
-    for (i=0; i<69; ++i) {
-        rsa[i]=tdo[i];
-    }
-
-    tdi_to_i4(&tdo[ 0], alct_cfgreg[0], 32,0);
-    tdi_to_i4(&tdo[32], alct_cfgreg[1], 32,0);
-    tdi_to_i4(&tdo[64], alct_cfgreg[2],  5,0);
-
-    printf("\n\tALCT Cfg=%2.2X%8.8X%8.8X\n",alct_cfgreg[2],alct_cfgreg[1],alct_cfgreg[0]);
-
-    tdi_to_i4(&rsa[ 0], rsa_trig_mode,    2,0);
-    tdi_to_i4(&rsa[ 2], rsa_ext_trig_en,  1,0);
-    tdi_to_i4(&rsa[ 3], rsa_pretrig_halt, 1,0);
-    tdi_to_i4(&rsa[ 4], rsa_inject,       1,0);
-    tdi_to_i4(&rsa[ 5], rsa_inject_mode,  1,0);
-    tdi_to_i4(&rsa[ 6], rsa_inject_mask,  7,0);
-    tdi_to_i4(&rsa[13], rsa_nph_thresh,   3,0);
-    tdi_to_i4(&rsa[16], rsa_nph_pattern,  3,0);
-    tdi_to_i4(&rsa[19], rsa_drift_delay,  2,0);
-    tdi_to_i4(&rsa[21], rsa_fifo_tbins,   5,0);
-    tdi_to_i4(&rsa[26], rsa_fifo_pretrig, 5,0);
-    tdi_to_i4(&rsa[31], rsa_fifo_mode,    2,0);
-    tdi_to_i4(&rsa[33], rsa_fifo_lastlct, 3,0);
-    tdi_to_i4(&rsa[36], rsa_l1a_delay,    8,0);
-    tdi_to_i4(&rsa[44], rsa_l1a_window,   4,0);
-    tdi_to_i4(&rsa[48], rsa_l1a_offset,   4,0);	
-    tdi_to_i4(&rsa[52], rsa_l1a_internal, 1,0);
-    tdi_to_i4(&rsa[53], rsa_board_id,     3,0);
-    tdi_to_i4(&rsa[56], rsa_bxn_offset,   4,0);
-    tdi_to_i4(&rsa[60], rsa_ccb_enable,   1,0);
-    tdi_to_i4(&rsa[61], rsa_alct_jtag_ds, 1,0);
-    tdi_to_i4(&rsa[62], rsa_alct_tmode,   2,0);
-    tdi_to_i4(&rsa[64], rsa_alct_amode,   2,0);
-    tdi_to_i4(&rsa[66], rsa_alct_maskall, 1,0);
-    tdi_to_i4(&rsa[67], rsa_trig_info_en, 1,0);
-    tdi_to_i4(&rsa[68], rsa_sn_select,    1,0);
-
-    printf("\t 0 rsa_trig_mode    %3i\n",rsa_trig_mode);
-    printf("\t 2 rsa_ext_trig_en  %3i\n",rsa_ext_trig_en);
-    printf("\t 3 rsa_pretrig_halt %3i\n",rsa_pretrig_halt);
-    printf("\t 4 rsa_inject       %3i\n",rsa_inject);
-    printf("\t 5 rsa_inject_mode  %3i\n",rsa_inject_mode);
-    printf("\t 6 rsa_inject_mask  %3i\n",rsa_inject_mask);
-    printf("\t13 rsa_nph_thresh   %3i\n",rsa_nph_thresh);
-    printf("\t16 rsa_nph_pattern  %3i\n",rsa_nph_pattern);
-    printf("\t19 rsa_drift_delay  %3i\n",rsa_drift_delay);
-    printf("\t21 rsa_fifo_tbins   %3i\n",rsa_fifo_tbins);
-    printf("\t26 rsa_fifo_pretrig %3i\n",rsa_fifo_pretrig);
-    printf("\t31 rsa_fifo_mode    %3i\n",rsa_fifo_mode);
-    printf("\t33 rsa_fifo_lastlct %3i\n",rsa_fifo_lastlct);
-    printf("\t36 rsa_l1a_delay    %3i\n",rsa_l1a_delay);
-    printf("\t44 rsa_l1a_window   %3i\n",rsa_l1a_window);
-    printf("\t48 rsa_l1a_offset   %3i\n",rsa_l1a_offset);
-    printf("\t52 rsa_l1a_internal %3i\n",rsa_l1a_internal);
-    printf("\t53 rsa_board_id     %3i\n",rsa_board_id);
-    printf("\t56 rsa_bxn_offset   %3i\n",rsa_bxn_offset);
-    printf("\t60 rsa_ccb_enable   %3i\n",rsa_ccb_enable);
-    printf("\t61 rsa_alct_jtag_ds %3i\n",rsa_alct_jtag_ds);
-    printf("\t62 rsa_alct_tmode   %3i\n",rsa_alct_tmode);
-    printf("\t64 rsa_alct_amode   %3i\n",rsa_alct_amode);
-    printf("\t66 rsa_alct_maskall %3i\n",rsa_alct_maskall);
-    printf("\t67 rsa_trig_info_en %3i\n",rsa_trig_info_en);
-    printf("\t68 rsa_sn_select    %3i\n",rsa_sn_select);
-    printf("\n");
-
-    printf("\n\tWrite new data? bit,len,val <cr=no> ");
-    gets(line);
-    if (line[0]==NULL) goto L2300;
-    sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
-
-    // Set new ALCT cfg bits
-    bit_to_array(ival,ivalarray,ilen);
-
-    for (i=0; i<=68; ++i) {
-        rsa[i]=tdo[i+1];
-        if (i>=ibit && i<=(ibit+ilen-1)) rsa[i]=ivalarray[i-ibit];
-    }
-
-    // Write ALCT Configuration register (5 bit opcode)
-    chip_id = 0;
-    opcode  = WrCfg;										// ALCT cfg register opcode
-    reg_len = 69;											// Register length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,rsa,tdo,reg_len);	// Write data
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT JTAG read/write: Debug firmware
-    //------------------------------------------------------------------------------
-L23200:
-
-    printf("\tMake sure you removed the JTAG cable!\n");
-
-    //	Chain ID	Section		 Control or Program
-    //	--------	------------ ------------------
-    //	  0			Slow Control control registers
-    //	  1			Slow Control PROM
-    //	  2			Mezzanine    control registers (alct normal firmware)
-    //	  3			Mezzanine    FPGA+PROM
-    //
-    //
-    //	ALCT Debug Firmware BSCAN Register USER1 readonly:
-    //	Field		Len	Typical	Description
-    //	-------		---	-------	--------------------------
-    //	[ 3: 0]		4	B		Begin marker
-    //	[ 7: 4]		4	A		Version ID
-    //	[23: 8]		16	0823	Version date
-    //	[39:24]		16	2004	Version date
-    //	[40]		1	1		Mez FPGA reports done
-    //	[41]		1	1		Slow control FPGA reports done
-    //	[42]		1	1		DLL locked
-    //	[43]		1	1		Clock enable
-    //	[47:44]		4	C		USER2 alignment marker
-    //	[48]		1	0		Cmd_sync_mode 1=sync mode	
-    //	[49]		1	-		1=80MHz synch mode
-    //	[50]		1	-		First  80MHz phase data ok
-    //	[51]		1	-		Second 80MHz phase data ok
-    //	[63:52]		12	-		First  80MHz phase data alct_rx_1st[16:5]
-    //	[75:64]		12			Second 80MHz phase data alct_rx_2nd[16:5]
-    //	[76]		1	1		cmd_l1a_en, enable l1a readout on ext_trig
-    //	[77]		1	1		cmd_trig_en,enable trigger word on ext_trig
-    //	[78]		1	0		cmd_dummy
-    //	[79:76]		4	00		Free
-    //	[83:80]		4=	E		End marker
-    //
-    //
-    //  ALCT Debug Firmware BSCAN Register USER2 write/read:
-    //	Field		Len	Typical	Description
-    //	-------		---	-------	--------------------------
-    //	[ 3: 0]		4	C		Alignment marker
-    //	[4]			1	0		1=sync_mode
-    //	[5]			1	1		cmd_l1a_en, enable l1a readout on ext_trig
-    //	[6]			1	1		cmd_trig_en,enable trigger word on ext_trig
-    //	[7]			1	0		cmd_dummy
-    //	[23:8]		16	FFFF	tx_en0, enable alct0 trigger bits
-    //	[39:24]		16	FFFF	tx_en1, enable alct1 trigger bits
-    //
-    //------------------------------------------------------------------------------
-    // Select ALCT Mezzanine FPGA programming JTAG chain from TMB boot register
-    ichain = 0x0003;							// ALCT Mezzanine pgm jtag chain
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    // Read Virtex-E FPGA (5-bit opcode) and XC18V04 PROM IDcodes (8-bit opcode)
-    for (chip_id=0; chip_id<=1; ++chip_id) {
-        if (chip_id==0) opcode = 0x09;				// FPGA IDcode opcode, expect v0A30093
-        if (chip_id==1) opcode = 0xFE;				// PROM IDcode opcode
-        reg_len=32;									// IDcode length
-        // FPGA,PROM chip
-        vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-        tdi_to_i4(&tdo[0],idcode,32,0);
-        printf("\tALCT %s device %1i IDcode   = %8.8X\n",alct_chip_type[chip_id].c_str(),chip_id,idcode);
-    }
-
-    // Read FPGA/PROM USERCodes (8 bit opcode)
-    for (chip_id=0; chip_id<=1; ++chip_id) {
-        if (chip_id==0) opcode = 0x08;				// FPGA USERcode opcode
-        if (chip_id==1) opcode = 0xFD;				// PROM USERcode opcode
-        reg_len=32;									// IDcode length
-        // FPGA,PROM chip
-        vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-        tdi_to_i4(&tdo[0],idcode,32,0);
-        printf("\tALCT %s device %1i USERcode = %8.8X\n",alct_chip_type[chip_id].c_str(),chip_id,idcode);
-    }
-
-    // Create fat 0 for writing to data registers
-    for (i=0; i<mxbitstream; ++i) {
-        tdi[i]=0;
-    }
-
-    // Select ALCT Mezzanine FPGA VirtexE JTAG chain from TMB boot register
-    ichain = 0x0003;							// ALCT VirtexE
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    // Read ALCT VirtexE USER1 register (5 bit opcode)
-    chip_id = 0;
-    opcode  = 0x02;								// VirtexE USER1 opcode
-    reg_len = 84;								// Register length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-    if (ifunc<0) goto L23200;
-
-    // Decode ALCT USER1 register
-    for (i=0; i<reg_len; ++i) {
-        rsd[i]=tdo[i];
-    }
-
-    tdi_to_i4(&tdo[ 0], alct_user1[0], 32,0);
-    tdi_to_i4(&tdo[32], alct_user1[1], 32,0);
-    tdi_to_i4(&tdo[64], alct_user1[2], 16,0);
-
-    printf("\n\tALCT USER1 = %8.8X%8.8X%8.8X\n",alct_user1[2],alct_user1[1],alct_user1[0]);
-
-    tdi_to_i4(&rsd[ 0], rsd_begin,          4,0);
-    tdi_to_i4(&rsd[ 4], rsd_version,        4,0);
-    tdi_to_i4(&rsd[ 8], rsd_monthday,      16,0);
-    tdi_to_i4(&rsd[24], rsd_year,          16,0);
-    tdi_to_i4(&rsd[40], rsd_mc_done,        1,0);
-    tdi_to_i4(&rsd[41], rsd_sc_done,        1,0);
-    tdi_to_i4(&rsd[42], rsd_clock_lock,     1,0);
-    tdi_to_i4(&rsd[43], rsd_clock_en,       1,0);
-    tdi_to_i4(&rsd[44], rsd_cmd_align,      4,0);
-    tdi_to_i4(&rsd[48], rsd_cmd_sync_mode,  1,0);
-    tdi_to_i4(&rsd[49], rsd_sync_mode,      1,0);
-    tdi_to_i4(&rsd[50], rsd_sync_rx_1st_ok, 1,0);
-    tdi_to_i4(&rsd[51], rsd_sync_rx_2nd_ok, 1,0);
-    tdi_to_i4(&rsd[52], rsd_alct_rx_1st,   12,0);
-    tdi_to_i4(&rsd[64], rsd_alct_rx_2nd,   12,0);
-    tdi_to_i4(&rsd[76], rsd_cmd_l1a_en,     1,0);
-    tdi_to_i4(&rsd[77], rsd_cmd_trig_en,    1,0);
-    tdi_to_i4(&rsd[78], rsd_cmd_dummy,      1,0);
-    tdi_to_i4(&rsd[79], rsd_free0,          1,0);
-    tdi_to_i4(&rsd[80], rsd_end,            4,0);
-
-    printf("\trsd_begin          %4.1X\n",rsd_begin);
-    printf("\trsd_version        %4.1X\n",rsd_version);
-    printf("\trsd_monthday       %4.4X\n",rsd_monthday);
-    printf("\trsd_year           %4.4X\n",rsd_year);
-    printf("\trsd_mc_done        %4.1X\n",rsd_mc_done);
-    printf("\trsd_sc_done        %4.1X\n",rsd_sc_done);
-    printf("\trsd_clock_lock     %4.1X\n",rsd_clock_lock);
-    printf("\trsd_clock_en       %4.1X\n",rsd_clock_en);
-    printf("\trsd_cmd_align      %4.1X\n",rsd_cmd_align);
-    printf("\trsd_cmd_sync_mode  %4.1X\n",rsd_cmd_sync_mode);
-    printf("\trsd_sync_mode      %4.1X\n",rsd_sync_mode);
-    printf("\trsd_sync_rx_1st_ok %4.1X\n",rsd_sync_rx_1st_ok);
-    printf("\trsd_sync_rx_2nd_ok %4.1X\n",rsd_sync_rx_2nd_ok);
-    printf("\trsd_alct_rx_1st    %4.3X\n",rsd_alct_rx_1st);
-    printf("\trsd_alct_rx_2nd    %4.3X\n",rsd_alct_rx_2nd);
-    printf("\trsd_cmd_l1a_en     %4.3X\n",rsd_cmd_l1a_en);
-    printf("\trsd_cmd_trig_en    %4.3X\n",rsd_cmd_trig_en);
-    printf("\trsd_cmd_dummy      %4.3X\n",rsd_cmd_dummy);
-    printf("\trsd_free0          %4.1X\n",rsd_free0);
-    printf("\trsd_end            %4.1X\n",rsd_end);
-
-    // Read ALCT VirtexE USER2 register (5 bit opcode)
-    chip_id = 0;
-    opcode  = 0x03;								// VirtexE USER2 opcode
-    reg_len = 40;								// Register length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-
-    // Decode ALCT USER2 register
-    for (i=0; i<reg_len; ++i) {
-        rsd[i]=tdo[i];
-    }
-
-    tdi_to_i4(&tdo[ 0],alct_user2[0],32,0);
-    tdi_to_i4(&tdo[32],alct_user2[1], 8,0);
-
-    printf("\tALCT USER2 = %8.8X%8.8X\n",alct_user2[1],alct_user2[0]);
-
-    tdi_to_i4(&rsd[ 0], rsd_cmd_align,     4,0);
-    tdi_to_i4(&rsd[ 4], rsd_cmd_sync_mode, 1,0);
-    tdi_to_i4(&rsd[ 5], rsd_cmd_l1a_en,    1,0);
-    tdi_to_i4(&rsd[ 6], rsd_cmd_trig_en,   1,0);
-    tdi_to_i4(&rsd[ 7], rsd_cmd_dummy,     1,0);
-    tdi_to_i4(&rsd[ 8], rsd_tx_en0,       16,0);
-    tdi_to_i4(&rsd[24], rsd_tx_en1,       16,0);
-
-    printf("\trsd[3:0]   rsd_cmd_align     %4.1X\n",rsd_cmd_align);
-    printf("\trsd[4]     rsd_cmd_sync_mode %4.1X\n",rsd_cmd_sync_mode);
-    printf("\trsd[5]     rsd_cmd_l1a_en    %4.1X\n",rsd_cmd_l1a_en);
-    printf("\trsd[6]     rsd_cmd_trig_en   %4.1X\n",rsd_cmd_trig_en);
-    printf("\trsd[7]     rsd_cmd_dummy     %4.1X\n",rsd_cmd_dummy);
-    printf("\trsd[23:8]  rsd_tx_en0        %4.4X\n",rsd_tx_en0);
-    printf("\trsd[39:24] rsd_tx_en1        %4.4X\n",rsd_tx_en1);
-
-    // Restore USER2 because readout was destructive, alas
-    for (i=0; i<reg_len; ++i) {
-        tdi[i]=tdo[i];
-    }
-
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    // Write new data to USER2
-    printf("\n\tWrite new data? bit,len,val <cr=no> ");
-    gets(line);
-    if (line[0]==NULL) goto L23299;
-    sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
-
-    // Set new ALCT USER2 bits
-    bit_to_array(ival,ivalarray,ilen);
-
-    for (i=0; i<reg_len; ++i) {
-        if (i>=ibit && i<=(ibit+ilen-1)) {
-            rsd[i]=ivalarray[i-ibit];
-        }
-    }
-
-    // Write ALCT USER2 register (5 bit opcode)
-    chip_id = 0;
-    opcode  = 0x03;								// VirtexE USER2 opcode
-    reg_len = 40;								// Register length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);	// Write data
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-
-L23299:
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT Delay Scan:Time in ALCT transmit clock, ALCT Normal Firmware 
-    //------------------------------------------------------------------------------
-L23300:
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-    wr_data = wr_data | 0x1;					// Turn off CCB backplane
-    status  = vme_write(adr,wr_data);
-
-    // Select ALCT cable port
-    adr     = vme_loopbk_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data | 0x000C;
-    status  = vme_write(adr,wr_data);
-
-    // Take TMB out of sync_mode
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// get current state
-    wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
-    status  = vme_write(adr,wr_data);
-
-    // Take ALCT debug firmware out of sync_mode
-    //	ichain  = 0x0003;							// ALCT VirtexE
-    //	adr     = boot_adr;							// Boot register address
-    //	vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-    //	chip_id = 0;
-    //	opcode  = 0x03;								// VirtexE USER2 opcode
-    //	reg_len = 40;								// Register length
-    //	i4_to_tdi(i4=0x6C,      &tdi[0], 8,0);		// not sync mode + marker
-    //	i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0)		// tx enables
-    //	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    //	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    // Get current 3D3444 delay
-    adr	   = base_adr+vme_ddd0_adr;
-    status = vme_read(adr,rd_data);
-    alct_tx_default = rd_data & 0x000F;
-    ddd0_delay      = rd_data & 0xFFF0;			 // zero out alct_tx delay
-
-    // Clear error accumulator
-    for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
-        alct_tx_bad[ddd_delay]=0;
-    }
-
-    // Step alct clock delay
-    npasses=1000;
-
-    for (ipass     = 1; ipass     <= npasses; ++ipass    ) { // 23315
-        for (ddd_delay = 0; ddd_delay <= 15;      ++ddd_delay) { // 23310
-
-            wr_data = ddd0_delay | (ddd_delay<<0);
-            adr	    = base_adr+vme_ddd0_adr;
-            status  = vme_write(adr,wr_data);
-
-            // Start DDD state machine
-            adr	    = base_adr+vme_dddsm_adr;
-            status  = vme_read(adr,rd_data);
-            autostart = rd_data & 0x0020;	// get current autostart state
-            wr_data	= 0x0000 | autostart;	// stop machine
-            status	= vme_write(adr,wr_data);
-            wr_data = 0x0001 | autostart;	// start machine
-            status	= vme_write(adr,wr_data);
-            wr_data = 0x0000 | autostart;	// unstart machine
-            status	= vme_write(adr,wr_data);
-
-            // Wait for it to finish
-            for (i=1; i<=1000; ++i) {
-                status   = vme_read(adr,rd_data);
-                ddd_busy = (rd_data >> 6) & 0x1;
-                ddd_verify_ok = (rd_data >> 7) & 0x1;
-                if (ddd_busy==0) goto L23305;
-            }
-            printf("\n\t3d3444 verify failed %2i\n",ddd_delay);
-
-            // Get alct raw hits busy bit
-L23305:
-            adr    = alct_fifo_adr+base_adr;
-            status = vme_read(adr,rd_data);
-            alct_raw_busy = rd_data & 0x0001;
-
-            // Check for correct data received
-            alct_tx_bad[ddd_delay] = alct_tx_bad[ddd_delay] + alct_raw_busy;
-
-            // Close loops
-        }	// close for ddd_delay 23310
-
-        if (ipass    == 1) printf("\tAccumulating statistics...\n\n");
-        if (ipass%10 == 0) printf("\t%4i\r",npasses-ipass);
-
-    }	// close for ipass 23315
-
-    // Display timing results
-    printf(" 2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
-
-    for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
-        pctbad = 100.*float(alct_tx_bad[ddd_delay])/float(npasses);
-        nbad   = int(pctbad/10.);
-        if (pctbad!=0.0 && nbad==0) nbad=1;
-        printf("   %2i  %7i%7.0f ",ddd_delay,alct_tx_bad[ddd_delay],pctbad);
-        for (i=1;i<=nbad;++i) printf("x"); printf("\n");
-    }
-
-    // Put back default delay
-    wr_data = ddd0_delay | (alct_tx_default<<0);
-    adr	    = base_adr+vme_ddd0_adr;
-    status  = vme_write(adr,wr_data);
-    adr	    = base_adr+vme_dddsm_adr;
-    status  = vme_read(adr,rd_data);
-    autostart = rd_data & 0x0020;	// get current autostart state
-    wr_data	= 0x0000 | autostart;	// stop machine
-    status	= vme_write(adr,wr_data);
-    wr_data = 0x0001 | autostart;	// start machine
-    status	= vme_write(adr,wr_data);
-    wr_data = 0x0000 | autostart;	// unstart machine
-    status	= vme_write(adr,wr_data);
-
-    for (i=1; i<=1000; ++i) {
-        status   = vme_read(adr,rd_data);
-        ddd_busy = (rd_data >> 6) & 0x1;
-        ddd_verify_ok = (rd_data >> 7) & 0x1;
-        if (ddd_busy==0) goto L23320;
-    }
-
-    printf("\n\tVerify failed writing back default ddd_delay=%2i\n",ddd_delay);
-
-L23320:
-    pause("\tALCT txclock delay scan complete");
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT Delay Scan:Time in ALCT transmit clock,ALCT Debug Firmware 
-    //------------------------------------------------------------------------------
-L23400:
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBF;		// Clear previous l1a
-    wr_data = wr_data | 0x1;		// Turn off CCB backplane
-    status  = vme_write(adr,wr_data);
-
-    // Select ALCT cable port
-    adr     = vme_loopbk_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data | 0x000C;
-    status  = vme_write(adr,wr_data);
-
-    // Put TMB into sync_mode
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// get current state
-    wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
-    wr_data = wr_data | (0x5<<4);				// alct_seq_cmd=5 for alct_sync_mode
-    status  = vme_write(adr,wr_data);
-
-    // Put ALCT debug firmware into sync_mode
-    ichain = 0x0003;							// ALCT VirtexE
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    chip_id = 0;
-    opcode  = 0x03;								// VirtexE USER2 opcode
-    reg_len = 40;								// Register length
-    i4_to_tdi(i4=0x7C,      &tdi[0], 8,0);		// sync mode + marker
-    i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    // Get current 3D3444 delay
-    adr	   = base_adr+vme_ddd0_adr;
-    status = vme_read(adr,rd_data);
-    alct_tx_default = rd_data & 0x000F;
-    ddd0_delay      = rd_data & 0xFFF0;			 // zero out alct_tx delay
-
-    // Clear error accumulator
-    for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
-        alct_tx_bad[ddd_delay]=0;
-    }
-
-    // Step alct tx clock delay
-    printf("\tStepping alct_tx clock delay, checking 80MHz data TMB gets from ALCT\n");
-
-    npasses=1000;
-
-    for (ipass     = 1; ipass     <= npasses; ++ipass    ) {	// 23415
-        for (ddd_delay = 0; ddd_delay <= 15;      ++ddd_delay) {	// 23410
-
-            adr	    = base_adr+vme_ddd0_adr;
-            wr_data = ddd0_delay | (ddd_delay<<0);
-            status  = vme_write(adr,wr_data);
-
-            // Start DDD state machine
-            adr	    = base_adr+vme_dddsm_adr;
-            status  = vme_read(adr,rd_data);
-            autostart = rd_data & 0x0020;	// get current autostart state
-            wr_data	= 0x0000 | autostart;	// stop machine
-            status	= vme_write(adr,wr_data);
-            wr_data = 0x0001 | autostart;	// start machine
-            status	= vme_write(adr,wr_data);
-            wr_data = 0x0000 | autostart;	// unstart machine
-            status	= vme_write(adr,wr_data);
-
-            // Wait for it to finish
-            for (i=1; i<=1000; ++i) {
-                status   = vme_read(adr,rd_data);
-                ddd_busy = (rd_data>>6) | 0x1;
-                ddd_verify_ok = (rd_data>>7) & 0x1;
-                if (ddd_busy==0) goto L23405;
-            }
-            printf("\n\t3d3444 verify failed, ddd_delay=%2i\n",ddd_delay);
-
-            // Read demux data
-L23405:
-            for (i=0; i<=3; ++i) 		// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
-            {
-                adr     = alctfifo1_adr+base_adr;
-                wr_data = 0x2000;			// select sync_mode addressing
-                wr_data = wr_data | (i<<1);
-                status	= vme_write(adr,wr_data);
-
-                adr    = alctfifo2_adr+base_adr;
-                status = vme_read(adr,rd_data);
-                alct_demux_rd[i]=rd_data;
-            }
-
-            alct_1st_demux = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
-            alct_2nd_demux = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
-            alct_demux_err = 0;
-
-            if (alct_1st_demux!=0xAAAAAAA) alct_demux_err=1;
-            if (alct_2nd_demux!=0x5555555) alct_demux_err=1;
-
-            if (ipass==1) printf("%2i %8.8X %8.8X\n",ddd_delay,alct_1st_demux,alct_2nd_demux);
-
-            // Check for correct data received
-            alct_tx_bad[ddd_delay] = alct_tx_bad[ddd_delay] + alct_demux_err;
-
-            // Close loops
-        }	// close for ddd_delay 23410
-
-        if (ipass    == 1) printf("\tAccumulating statistics...\n\n");
-        if (ipass%10 == 0) printf("\t%4i\r",npasses-ipass);
-
-    }	// close for ipass 23415
-
-    // Display timing results
-    printf(" 2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
-
-    for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
-        pctbad = 100.*float(alct_tx_bad[ddd_delay])/float(npasses);
-        nbad   = int(pctbad/10.);
-        if (pctbad!=0.0 && nbad==0) nbad=1;
-        printf("   %2i  %7i%7.0f ",ddd_delay,alct_tx_bad[ddd_delay],pctbad);
-        for (i=1;i<=nbad;++i) printf("x"); printf("\n");
-    }
-
-    // Set alct tx delay
-    inquire("\tSet default alct_txd_delay delay? cr=%2i", minv=0, maxv=15, radix=10, alct_tx_default);
-
-    wr_data = ddd0_delay | (alct_tx_default<<0);
-    adr	    = base_adr+vme_ddd0_adr;
-    status  = vme_write(adr,wr_data);
-    adr	    = base_adr+vme_dddsm_adr;
-    status  = vme_read(adr,rd_data);
-    autostart = rd_data & 0x0020;	// get current autostart state
-    wr_data	= 0x0000 | autostart;	// stop machine
-    status	= vme_write(adr,wr_data);
-    wr_data = 0x0001 | autostart;	// start machine
-    status	= vme_write(adr,wr_data);
-    wr_data = 0x0000 | autostart;	// unstart machine
-    status	= vme_write(adr,wr_data);
-
-    for (i=1; i<=1000; ++i) {
-        status   = vme_read(adr,rd_data);
-        ddd_busy = (rd_data>>6) & 0x1;
-        ddd_verify_ok = (rd_data>>7) & 0x1;
-        if (ddd_busy==0) goto L23440;
-    }
-    printf("\n\tVerify failed writing back default ddd_delay=%2i\n",ddd_delay);
-
-    // Take ALCT debug firmware out of sync_mode
-L23440:
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// get current state
-    wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
-    status  = vme_write(adr,wr_data);
-
-    // Take ALCT debug firmware out of sync_mode
-    ichain = 0x0003;							// ALCT VirtexE
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    chip_id = 0;
-    opcode  = 0x03;								// VirtexE USER2 opcode
-    reg_len = 40;								// Register length
-    i4_to_tdi(i4=0x6C,      &tdi[0], 8,0);		// not sync mode + marker
-    i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT Delay Scan:Time in ALCT receive clock,ALCT Debug Firmware 
-    //------------------------------------------------------------------------------
-L23500:
-    printf("\tMake sure you removed the JTAG cable\n");
-
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBF;		// Clear previous l1a
-    wr_data = wr_data | 0x1;		// Turn off CCB backplane
-    status  = vme_write(adr,wr_data);
-
-    // Select ALCT cable port:
-    adr     = vme_loopbk_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x000C;
-    status  = vme_write(adr,wr_data);
-
-    // Put TMB firmware into sync_mode
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// get current state
-    wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
-    wr_data = wr_data | (0x5<<4);				// alct_seq_cmd=5 for alct_sync_mode
-    status  = vme_write(adr,wr_data);
-
-    // Put ALCT debug firmware into sync_mode
-    ichain = 0x0003;							// ALCT VirtexE
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    chip_id = 0;
-    opcode  = 0x03;								// VirtexE USER2 opcode
-    reg_len = 40;								// Register length
-    i4_to_tdi(i4=0x7C,      &tdi[0], 8,0);		// sync mode + marker
-    i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    // Get current 3D3444 delay
-    adr	   = base_adr+vme_ddd0_adr;
-    status = vme_read(adr,rd_data);
-    alct_rx_default =(rd_data>>4) & 0x000F;		// alct rx clock
-    ddd0_delay      = rd_data     & 0xFF0F;		// zero out alct_rx delay
-
-    // Clear error accumulator
-    for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
-        alct_rx_bad[ddd_delay]=0;
-    }
-
-    // Step alct rx clock delay
-    printf("\tStepping alct_rx clock delay checking 80MHz data ALCT gets from TMB\n");
-    printf("\tYou should set alct_txd_delay first\n");
-
-    npasses=100;
-
-    for (ipass=1;    ipass      <=npasses; ++ipass    ) { // 23515
-        for (ddd_delay=0; ddd_delay <=15;      ++ddd_delay) { // 23510
-
-            adr	    = base_adr+vme_ddd0_adr;
-            wr_data = ddd0_delay | (ddd_delay<<4);
-            status  = vme_write(adr,wr_data);
-
-            // Start DDD state machine
-            adr	    = base_adr+vme_dddsm_adr;
-            status  = vme_read(adr,rd_data);
-            autostart = rd_data & 0x0020;	// get current autostart state
-            wr_data	= 0x0000 | autostart;	// stop machine
-            status	= vme_write(adr,wr_data);
-            wr_data = 0x0001 | autostart;	// start machine
-            status	= vme_write(adr,wr_data);
-            wr_data = 0x0000 | autostart;	// unstart machine
-            status	= vme_write(adr,wr_data);
-
-            // Wait for it to finish
-            for (i=1; i<=1000; ++i) {
-                status   = vme_read(adr,rd_data);
-                ddd_busy      = (rd_data>>6) & 0x1;
-                ddd_verify_ok = (rd_data>>7) & 0x1;
-                if (ddd_busy==0) goto L23505;
-            }
-            printf("\n\t3d3444 verify failed ddd_delay=%2i\n",ddd_delay);
-
-            // Read demux data on ALCT side
-L23505:
-
-            // Select ALCT Mezzanine FPGA VirtexE JTAG chain from TMB boot register
-            ichain = 0x0003;							// ALCT VirtexE
-            adr    = boot_adr;							// Boot register address
-            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-            // Read ALCT VirtexE USER1 register (5 bit opcode)
-            chip_id = 0;
-            opcode  = 0x02;								// VirtexE USER1 opcode
-            reg_len = 84;								// Register length
-            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-
-            // Decode ALCT USER1 register
-            for (i=0; i<reg_len; ++i) {
-                rsd[i]=tdo[i];
-            }
-
-            tdi_to_i4(&rsd[ 0], rsd_begin,           4,0);
-            tdi_to_i4(&rsd[ 4], rsd_version,         4,0);
-            tdi_to_i4(&rsd[ 8], rsd_monthday,       16,0);
-            tdi_to_i4(&rsd[24], rsd_year,           16,0);
-            tdi_to_i4(&rsd[40], rsd_mc_done,         1,0);
-            tdi_to_i4(&rsd[41], rsd_sc_done,         1,0);
-            tdi_to_i4(&rsd[42], rsd_clock_lock,      1,0);
-            tdi_to_i4(&rsd[43], rsd_clock_en,        1,0);
-            tdi_to_i4(&rsd[44], rsd_cmd_align,       4,0);
-            tdi_to_i4(&rsd[48], rsd_cmd_sync_mode,   1,0);
-            tdi_to_i4(&rsd[49], rsd_sync_mode,       1,0);
-            tdi_to_i4(&rsd[50], rsd_sync_rx_1st_ok,  1,0);
-            tdi_to_i4(&rsd[51], rsd_sync_rx_2nd_ok,  1,0);
-            tdi_to_i4(&rsd[52], rsd_alct_rx_1st,    12,0);
-            tdi_to_i4(&rsd[64], rsd_alct_rx_2nd,    12,0);
-            tdi_to_i4(&rsd[76], rsd_free0,           4,0);
-            tdi_to_i4(&rsd[80], rsd_end,             4,0);
-
-            dprintf(stdout,"\trsd_sync_rx_1st_ok %4.1X\n",rsd_sync_rx_1st_ok);
-            dprintf(stdout,"\trsd_sync_rx_2nd_ok %4.1X\n",rsd_sync_rx_2nd_ok);
-            dprintf(stdout,"\trsd_alct_rx_1st    %4.3X\n",rsd_alct_rx_1st);
-            dprintf(stdout,"\trsd_alct_rx_2nd    %4.3X\n",rsd_alct_rx_2nd);
-
-            alct_demux_err=0;
-
-            if (rsd_alct_rx_1st!=0x0AAA) alct_demux_err=1;
-            if (rsd_alct_rx_2nd!=0x0555) alct_demux_err=1;
-
-            adr	   = base_adr+alct_stat_adr;
-            status = vme_read(adr,rd_data);
-
-            rsd_alct_rx_1st = (rd_data>>1) & 0x0001;	// get seq status[0]
-            rsd_alct_rx_2nd = (rd_data>>2) & 0x0001;	// get seq status[1]
-
-            //	if (rsd_alct_rx_1st!=1) alct_demux_err=1;
-            //	if (rsd_alct_rx_2nd!=1) alct_demux_err=1;
-
-            if (ipass==1) printf(" %2i 8.8X %8.8X\n",ddd_delay,rsd_alct_rx_1st,rsd_alct_rx_2nd);
-
-            // Check for correct data received
-            alct_rx_bad[ddd_delay] = alct_rx_bad[ddd_delay] + alct_demux_err;
-
-            // Cose loops
-        }	// close for ddd_delay 23510
-
-        if (ipass    == 1) printf("\tAccumulating statistics...\n\n");
-        if (ipass%10 == 0) printf("\t%4i\r",npasses-ipass);
-
-    }	// close for ipass 23515
-
-    // Display timing results
-    printf(" 2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
-
-    for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
-        pctbad = 100.*float(alct_tx_bad[ddd_delay])/float(npasses);
-        nbad   = int(pctbad/10.);
-        if (pctbad!=0.0 && nbad==0) nbad=1;
-        printf("   %2i  %7i%7.0f ",ddd_delay,alct_tx_bad[ddd_delay],pctbad);
-        for (i=1;i<=nbad;++i) printf("x"); printf("\n");
-    }
-
-    // Set alct tx delay
-    inquire("\tSet default alct_rxd_delay delay? cr=%2i", minv=0, maxv=15, radix=10, alct_rx_default);
-
-    wr_data = ddd0_delay | (alct_rx_default<<4);
-    adr	    = base_adr+vme_ddd0_adr;
-    status  = vme_write(adr,wr_data);
-    adr   	= base_adr+vme_dddsm_adr;
-    status  = vme_read(adr,rd_data);
-    autostart = rd_data & 0x0020;	// get current autostart state
-    wr_data	= 0x0000 | autostart;	// stop machine
-    status	= vme_write(adr,wr_data);
-    wr_data = 0x0001 | autostart;	// start machine
-    status	= vme_write(adr,wr_data);
-    wr_data = 0x0000 | autostart;	// unstart machine
-    status	= vme_write(adr,wr_data);
-
-    for (i=1; i<=1000; ++i ) {
-        status  = vme_read(adr,rd_data);
-        ddd_busy      = (rd_data>>6) & 0x1;
-        ddd_verify_ok = (rd_data>>7) & 0x1;
-        if (ddd_busy==0) goto L23540;
-    }
-    printf("\n\tVerify failed writing back default ddd_delay=%2i\n",ddd_delay);
-
-    // Take TMB firmware out of sync_mode
-L23540:
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// get current state
-    wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
-    status  = vme_write(adr,wr_data);
-
-    // Take ALCT debug firmware out of sync_mode
-    ichain = 0x0003;							// ALCT VirtexE
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    chip_id = 0;
-    opcode  = 0x03;								// VirtexE USER2 opcode
-    reg_len = 40;								// Register length
-    i4_to_tdi(i4=0x6C,      &tdi[0], 8,0);		// not sync mode + marker
-    i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT Software ext_trig ALCT, check for CRC errors, ALCT Debug Firmware 
-    //------------------------------------------------------------------------------
-L23600:
-    printf("\tMake sure you set alct_txd_delay and alct_rxd_delay");
-
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig
-    //	adr     = ccb_cfg_adr+base_adr;
-    //	status  = vme_read(adr,rd_data);
-    //	wr_data = rd_data & 0xFFBF;		// Clear previous l1a
-    //	wr_data = wr_data | 0x1;		// Turn off CCB backplane
-    //	status  = vme_write(adr,wr_data);
-
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig, enable l1a emulator
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBA;		// Clear previous l1a
-    wr_data = wr_data | 0x0001;		// Turn off CCB backplane
-    wr_data = wr_data | 0x0004;		// Enable L1A emulator
-    status  = vme_write(adr,wr_data);
-
-    // Disable GTL ccb_clct_ext_trig
-    adr     = ccb_trig_adr+base_adr;
-    wr_data = 0;
-    wr_data = wr_data | 0x0001;		// request ccb l1a on alct_ext_trig
-    //	if (itrig_src==0) wr_data = wr_data | 0x0040;	// ccb_allow_ext_bypass to input GTL pulser
-    wr_data = wr_data | (132<<8);	// set emulator delay for alct ext_trig timing
-    status  = vme_write(adr,wr_data);
-
-    // Select ALCT cable port
-    adr     = vme_loopbk_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x000C;
-    status  = vme_write(adr,wr_data);
-
-    // Take TMB firmware out of sync_mode
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// get current state
-    wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
-    status  = vme_write(adr,wr_data);
-
-    // Take ALCT debug firmware out of sync_mode
-    //	ichain = 0x0003;							// ALCT VirtexE
-    //	adr    = boot_adr;							// Boot register address
-    //	vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-    //	chip_id = 0;
-    //	opcode  = 0x03;								// VirtexE USER2 opcode
-    //	reg_len = 8;								// Register length
-    //	i4_to_tdi(i4=6C,tdi,reg_len,0);				// sync mode + marker
-    //	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    //	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    // Set start_trigger state for FMM
-    ttc_cmd = 6;
-    adr     = base_adr+ccb_cmd_adr;
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0003 | (ttc_cmd<<8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    ttc_cmd = 1;
-    wr_data = 0x0003 | (ttc_cmd<<8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status = vme_write(adr,wr_data);
-
-    // Clear error counters
-    ievent              = 0;
-    err_alct_fifo_clr	= 0;	// ALCT fifo failed to clear
-    err_alct_lct0		= 0;	// ALCT LCT0 unchanged
-    err_alct_lct1		= 0;	// ALCT LCT1 unchanged
-    err_alct_fifo_busy	= 0;	// ALCT fifo stuck busy
-    err_alct_fifo_ndone	= 0;	// ALCT fifo not done
-    err_alct_raw_nwords	= 0;	// ALCT wrong word count
-    err_firmware_crc	= 0;	// TMB firmware CRC
-    err_alct_crc		= 0;	// ALCT crc error, WTF// 
-
-    // Clear TMB firmware counters
-    adr     = base_adr+cnt_ctrl_adr;
-    wr_data = 0x0021;						// clear + enable alct err
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0020;						// unclear +  + enable alct err
-    status  = vme_write(adr,wr_data);
-
-    // Event loop
-L23610:
-    ievent++;
-    if (ievent%100==0 || ievent==1) printf("\tEvent %9i\n",ievent);
-
-    // Clear last event
-    adr     = alctfifo1_adr+base_adr;
-    wr_data = 1;							// reset word counter
-    status  = vme_write(adr,wr_data);
-    wr_data = 0	;							// enable word counter
-    status  = vme_write(adr,wr_data);
-
-    // Make sure alct fifo went unbusy
-    adr    = alct_fifo_adr+base_adr;
-    status = vme_read(adr,rd_data);
-    alct_raw_busy = (rd_data>>0) & 0x0001;
-    alct_raw_done = (rd_data>>1) & 0x0001;
-    if (alct_raw_busy==1) err_alct_fifo_clr++;	// ALCT FIFO failed to clear
-
-    // Fire ext_trig to ALCT board
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);		// get current state
-    wr_data = rd_data & 0xFFF0;				// clear bits[3:0] alct ext trig
-    wr_data = wr_data | 0x0004;				// fire alct ext trig
-    //	wr_data = wr_data | 0x0008;				// or fire alct ext inject
-    status  = vme_write(adr,wr_data);
-    wr_data = rd_data & 0xFFF0;				// clear bits[3:0] alct ext trig
-    status  = vme_write(adr,wr_data);
-
-    // Read ALCT trigger words
-    adr      = alct_alct0_adr+base_adr;
-    status   = vme_read(adr,rd_data);		// get current state
-    alct0_rd = rd_data;
-
-    adr      = alct_alct1_adr+base_adr;
-    status   = vme_read(adr,rd_data);		// get current state
-    alct1_rd = rd_data;
-
-    if (alct0_rd==alct0_prev) err_alct_lct0++;	// ALCT LCT0 unchanged
-    if (alct1_rd==alct1_prev) err_alct_lct1++;	// ALCT LCT1 unchanged
-
-    alct0_prev = alct0_rd;
-    alct1_prev = alct1_rd;
-
-    // Fire CCB L1A oneshot to ALCT
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBF;			// Clear previous l1a
-    wr_data = wr_data | 0x1;			// Turn off CCB backplane
-    wr_data = wr_data | 0x0040;			// Fire ccb L1A oneshot
-    status  = vme_write(adr,wr_data);
-    wr_data = wr_data & 0xFFBF;			// Clear previous l1a	
-    status  = vme_write(adr,wr_data);
-
-    // Check alct fifo status
-    for (i=1; i<=100; ++i) {			// cheap readout delay 
-        adr    = alct_fifo_adr+base_adr;
-        status = vme_read(adr,rd_data);
-        alct_raw_busy = (rd_data>>0) & 0x0001;
-        alct_raw_done = (rd_data>>1) & 0x0001;
-        if (alct_raw_busy==0) goto L23620;
-    }
-    err_alct_fifo_busy++;				// alct fifo stuck busy
-
-L23620:
-    dprintf(stdout,"\tALCT L1A alct_raw_done waits=%5i\n",i);
-    if (alct_raw_done!=1) err_alct_fifo_ndone++;	 // alct fifo not done
-
-    // Check TMBs firmware CRC result
-    adr     = base_adr+cnt_ctrl_adr;
-    wr_data = 0x0022;					// snap
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0020;					// unsnap
-    status  = vme_write(adr,wr_data);
-    wr_data = (0<<8) | 0x0020;			// crc is counter adr 0
-    status  = vme_write(adr,wr_data);
-    adr     = base_adr+cnt_rdata_adr;
-    status  = vme_read(adr,rd_data);	// counter LSB is sufficient
-    if (rd_data!=0) err_firmware_crc++;
-
-    // Check TMBs firmware ALCT LCT error counter
-    adr     = base_adr+cnt_ctrl_adr;
-    wr_data = 0x0022;					// snap
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0020;					// unsnap
-    status  = vme_write(adr,wr_data);
-    wr_data = (4<<8) | 0x0020;			// alct lct is counter adr 4
-    status  = vme_write(adr,wr_data);
-    adr     = base_adr+cnt_rdata_adr;
-    status  = vme_read(adr,rd_data);	// counter LSB is sufficient
-    if (rd_data!=0) printf("\talct_lct_err=%10i\n",rd_data);
-
-    // Get alct word count
-    adr    = alct_fifo_adr+base_adr;	// alct word count
-    status = vme_read(adr,rd_data);
-    alct_raw_nwords = (rd_data>>2) & 0x07FF;
-
-    if (alct_raw_nwords!=0x018C) {
-        err_alct_raw_nwords++;
-        goto L23630;						// skip readout analysis if word count wrong
-    }
-
-    // Read alct fifo data
-    for (i=0; i<=max(alct_raw_nwords-1,0); ++i) {
-        adr     = alctfifo1_adr+base_adr;
-        wr_data = (i<<1);					// ram read address
-        status  = vme_write(adr,wr_data);
-
-        adr=alctfifo2_adr+base_adr;			// alct raw data lsbs
-        status = vme_read(adr,rd_data);
-        dprintf(log_file,"adr=%4i alct raw lsbs=%4.4X\n",rd_data);
-        alct_raw_data = rd_data;
-
-        adr     = alct_fifo_adr+base_adr;	// alct raw data msbs
-        status  = vme_read(adr,rd_data);
-        dprintf(log_file,"adr=%4i alct raw msbs=%4.4X\n",rd_data);
-        rd_data = (rd_data>>13) & 0x0003;
-        alct_raw_data = alct_raw_data | (rd_data<<16);
-        if (i<mxframe)vf_data[i]=alct_raw_data;
-    }
-
-    // Calculate CRC for data stream
-    dmb_wdcnt=alct_raw_nwords;
-
-    for (iframe=0; iframe<=dmb_wdcnt-1-4; ++iframe) {	// dont include last 4 frames
-        din = vf_data[iframe];
-        if (iframe==0) crc22a(din,crc,1);					// reset crc
-        crc22a(din,crc,0);
-    }
-
-    // Compare our computed CRC to what TMB computed
-    tmb_crc_lsb = vf_data[dmb_wdcnt-1-3] & 0x07FF;		// 11 crc bits per frame
-    tmb_crc_msb = vf_data[dmb_wdcnt-1-2] & 0x07FF;		// 11 crc bits per frame
-    tmb_crc     = tmb_crc_lsb | (tmb_crc_msb<<11);		// full 22 bit crc
-    crc_match   = crc==tmb_crc;
-    if (!crc_match) err_alct_crc++; // ALCT crc error, WTF!
-
-    // Compare data stream ALCTs to trigger path ALCTs
-    alct0_raw_lsb = vf_data[5] & 0x00FF;	// alct0[7:0]
-    alct0_raw_msb = vf_data[6] & 0x00FF;	// alct0[15:8]
-    alct0_raw     = alct0_raw_lsb | (alct0_raw_msb<<8);
-
-    alct1_raw_lsb = vf_data[7] & 0x00FF;	// alct1[7:0]
-    alct1_raw_msb = vf_data[8] & 0x00FF;	// alct1[15:8]
-    alct1_raw     = alct1_raw_lsb | (alct1_raw_msb<<8);
-
-    if (alct0_rd!=alct0_raw) err_lct++;
-    if (alct1_rd!=alct1_raw) err_lct++;
-
-    // Decompose trigger path ALCTs
-    alct0_vpf	= (alct0_rd >> 0) & 0x0001;	//  Valid pattern flag
-    alct0_qual	= (alct0_rd >> 1) & 0x0003;	//  Pattern quality
-    alct0_amu	= (alct0_rd >> 3) & 0x0001;	//  Accelerator muon
-    alct0_key	= (alct0_rd >> 4) & 0x007F;	//  Wire group ID number
-    alct0_bxn	= (alct0_rd >>11) & 0x0003;	//  Bunch crossing number
-
-    alct1_vpf	= (alct1_rd >> 0) & 0x0001;	//  Valid pattern flag
-    alct1_qual	= (alct1_rd >> 1) & 0x0003;	//  Pattern quality
-    alct1_amu	= (alct1_rd >> 3) & 0x0001;	//  Accelerator muon
-    alct1_key	= (alct1_rd >> 4) & 0x007F;	//  Wire group ID number
-    alct1_bxn	= (alct1_rd >>11) & 0x0003;	//  Bunch crossing number
-
-    alct0_keya  = alct0_key & 0x000F;
-    alct1_keya  = alct1_key & 0x000F;
-
-    alct0_keyb  = alct0_key & 0x0070;
-    alct1_keyb  = alct1_key & 0x0070;
-
-    alct1_amu	= ~alct1_amu  & 0x0001;
-    alct1_qual	= ~alct1_qual & 0x0003;
-    alct1_keyb	= ~alct1_keyb & 0x0070;
-
-    // Compare trigger path ALCTs to each other, alct debug firmware inverts some alct1 bits
-    err_lct_cmp = 0;
-
-    if (alct0_vpf  != alct1_vpf ) err_lct_cmp++;	
-    if (alct0_qual != alct1_qual) err_lct_cmp++;
-    if (alct0_amu  != alct1_amu ) err_lct_cmp++;
-    if (alct0_keya != alct1_keya) err_lct_cmp++;
-    if (alct0_keyb != alct1_keyb) err_lct_cmp++;
-    if (alct0_bxn  != alct1_bxn ) err_lct_cmp++;
-
-    // Next event
-L23630:
-    err_sum=
-        err_alct_fifo_clr
-        + err_alct_lct0
-        + err_alct_lct1
-        + err_alct_fifo_busy
-        + err_alct_fifo_ndone
-        + err_alct_raw_nwords
-        + err_firmware_crc
-        + err_alct_crc
-        + err_lct
-        + err_lct_cmp;
-
-    if (err_sum!=0) {
-        printf("\terr_alct_fifo_clr   %9i\n",err_alct_fifo_clr);
-        printf("\terr_alct_lct0       %9i\n",err_alct_lct0);
-        printf("\terr_alct_lct1       %9i\n",err_alct_lct1);
-        printf("\terr_alct_fifo_busy  %9i\n",err_alct_fifo_busy);
-        printf("\terr_alct_fifo_ndone %9i\n",err_alct_fifo_ndone);
-        printf("\terr_alct_raw_nwords %9i\n",err_alct_raw_nwords);
-        printf("\terr_firmware_crc    %9i\n",err_firmware_crc);
-        printf("\terr_alct_crc        %9i\n",err_alct_crc);
-        printf("\terr_lct             %9i\n",err_lct);
-        printf("\terr_lct_cmp         %9i\n",err_lct_cmp);
-        pause("<cr> to continue");
-    }
-
-    goto L23610;	// endless loop, stops on error
-
-    //------------------------------------------------------------------------------
-    //	ALCT Hardware ext_trig ALCT, check for CRC errors',ALCT Debug Firmware 
-    //------------------------------------------------------------------------------
-L23700:
-    printf("\tMake sure you set alct_txd_delay and alct_rxd_delay");
-
-    inquire("\tUse alct_ext_trig from GTLPulser[0] or Firmware[1] cr=%2i", minv=-1, maxv= 1, radix=10, itrig_src );
-    inquire("\tALCT PipelineDelay wrtCLCT?                        cr=%2i", minv=-1, maxv=15, radix=10, alct_delay);
-
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig, enable l1a emulator
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    //  wr_data = rd_data & 0xFFB6;		// Clear previous l1a
-    wr_data = rd_data & 0xFFBA;		// Clear previous l1a
-    wr_data = wr_data | 0x0001;		// Turn off CCB backplane
-    wr_data = wr_data | 0x0004;		// Enable L1A emulator
-    status  = vme_write(adr,wr_data);
-
-    // Enable GTL ccb_clct_ext_trig
-    adr = ccb_trig_adr+base_adr;
-    wr_data = 0;
-    wr_data = wr_data | 0x0001;		// request ccb l1a on alct_ext_trig
-    if (itrig_src==0) wr_data = wr_data | 0x0040;	// ccb_allow_ext_bypass to input GTL pulser
-    wr_data = wr_data | (132<<8);	// set emulator delay for alct ext_trig timing
-    status = vme_write(adr,wr_data);
-
-    // Select ALCT cable port:
-    adr     = vme_loopbk_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x000C;
-    status  = vme_write(adr,wr_data);
-
-    // Take TMB firmware out of sync_mode, enable alct ext_trig from ccb
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);		// get current state
-    wr_data = rd_data & 0xFF8F;				// clear bits[6:4] alct_seq_cmd[2:0]
-    wr_data = wr_data | 0x0001;				// set bit[0] to enable alct_ext_trig from ccb
-    status  = vme_write(adr,wr_data);
-
-    // Take ALCT debug firmware out of sync_mode
-    //	ichain = 0x0003;						// ALCT VirtexE
-    //	adr    = boot_adr;						// Boot register address
-    //	vme_jtag_anystate_to_rti(adr,ichain);	// Take TAP to RTI
-
-    //	chip_id = 0;
-    //	opcode  = 0x03;							// VirtexE USER2 opcode
-    //	reg_len = 8;							// Register length
-    //	i4_to_tdi('6C'x,tdi,reg_len,0)			// sync mode + marker
-    //	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    //	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-
-    // Turn off CFEB cable inputs
-    adr     = cfeb_inj_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFE0;
-    status  = vme_write(adr,wr_data);
-
-    // Turn on CFEB enables to over-ride mask_all
-    adr     = seq_trig_en_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x03FF;				// clear old cfeb_en and source
-    wr_data = wr_data | 0x7C00;				// ceb_en_source=0,cfeb_en=1F
-    status  = vme_write(adr,wr_data);
-
-    // Select sequencer to take clct ext or alct ext trig
-    adr     = seq_trig_en_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFF00;
-    wr_data = wr_data | 0x0060;				// Select alct or clct ext trig mode
-    status  = vme_write(adr,wr_data);
-
-    // Set ALCT delay for TMB matching
-    adr     = tmbtim_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFF0;
-    wr_data = wr_data | alct_delay;
-    status  = vme_write(adr,wr_data);
-
-    // Adjust trigger timing and L1A timing to account for cable and alct delays
-    adr     = seq_trig_dly1_adr+base_adr;	// 6C ALCT ext trig delay, delays cfeb wrt alct, cuz we are using alct gtl trigger input
-    wr_data = 0x0B71;
-    status  = vme_write(adr,wr_data);
-
-    adr     = seq_l1a_adr+base_adr;			// 74 L1A delay
-    wr_data = 0x037E;
-    status  = vme_write(adr,wr_data);
-
-    adr = tmbtim_adr+base_adr;				// B2 delay alct_vpf wrt clct_vpf
-    wr_data = 0x0030;
-    status = vme_write(adr,wr_data);
-
-    // Set start_trigger state for FMM
-    ttc_cmd = 6;
-    adr     = base_adr+ccb_cmd_adr;
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0003 | (ttc_cmd<<8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    ttc_cmd = 1;
-    wr_data = 0x0003 | (ttc_cmd<<8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    // Fire CCB external clct trigger with pulse generator
-    if (itrig_src==0)
-        printf("\tConnect GTL pulse +1.5V/0V to TMB P2A E10 (RAT E16),monitor TP382-7\n");
-
-    // Clear TMB firmware counters, enable alct debug lct error counter
-    adr     = base_adr+cnt_ctrl_adr;
-    wr_data = 0x0021;					// clear + enable alct err
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0020;					// unclear + enable alct err
-    status  = vme_write(adr,wr_data);
-
-    // Event loop: Arm scope trigger, taking sample of 1 event, pulser free runs at MHz speeds
-L23710:
-    rdscope        = true;
-    scp_arm        = true;
-    scp_readout    = false;
-    scp_raw_decode = false;
-    scp_silent     = false;
-    scp_playback   = false;
-
-    if (rdscope)
-        scope160c(base_adr,scp_ctrl_adr,scp_rdata_adr,scp_arm,scp_readout,scp_raw_decode,scp_silent,scp_playback,scp_raw_data);
-
-    msec=1000;
-    sleep(msec);						// duration in i*4 milliseconds
-
-    // Fake-fire ext_trig to test software without using pulser, eh
-    if (itrig_src==1)
-    {
-        adr     = ccb_trig_adr+base_adr;
-        status  = vme_read(adr,rd_data);	// get current state
-        wr_data = rd_data & 0xFFF7;			// clear bit[3] alct_ext_trig_vme
-        status  = vme_write(adr,wr_data);
-        wr_data = rd_data | 0x008;			// set bit[3] alct_ext_trig_vme
-        status  = vme_write(adr,wr_data);
-        wr_data = rd_data & 0xFFF7;			// clear bit[3] alct_ext_trig_vme
-        status  = vme_read(adr,rd_data);	// get current state
-    }
-
-    // Read back embedded scope data
-    scp_arm        = false;
-    scp_readout    = true;
-    scp_raw_decode = false;
-    scp_silent     = true;
-    scp_playback   = false;
-
-    if (rdscope)
-        scope160c(base_adr,scp_ctrl_adr,scp_rdata_adr,scp_arm,scp_readout,scp_raw_decode,scp_silent,scp_playback,scp_raw_data);
-
-    // Take snapshot of current counter state
-    adr = base_adr+cnt_ctrl_adr;
-    wr_data=0x0022;	//snap
-    status = vme_write(adr,wr_data);
-    wr_data=0x0020;	//unsnap
-    status = vme_write(adr,wr_data);
-
-    // Read counters
-    for (i=0; i<mxcounter; ++i) {
-        for (j=0; j<=1; ++j) {
-            adr = base_adr+cnt_ctrl_adr;
-            wr_data=(i << 9) | 0x0020 | (j << 8);
-            status = vme_write(adr,wr_data);
-            adr = base_adr+cnt_rdata_adr;
-            status = vme_read(adr,rd_data);
-
-            // Combine lsbs+msbs
-            if (j==0)			// Even addresses contain counter LSBs
-                cnt_lsb=rd_data;
-            else {				// Odd addresses contain counter MSBs
-                cnt_msb=rd_data;
-                cnt_full=cnt_lsb | (cnt_msb << 16);
-                cnt[i]=cnt_full;	// Assembled counter MSB,LSB
-            }
-        }}	//close j,i
-
-    // Read buffer status
-    adr    = buf_stat0_adr+base_adr;
-    status = vme_read(adr,rd_data);
-
-    wr_buf_ready	= (rd_data >>  0) & 0x1;		// Write buffer is ready
-    buf_stalled		= (rd_data >>  1) & 0x1;		// Buffer write pointer hit a fence and stalled
-    buf_q_full		= (rd_data >>  2) & 0x1;		// All raw hits ram in use, ram writing must stop
-    buf_q_empty		= (rd_data >>  3) & 0x1;		// No fences remain on buffer stack
-    buf_q_ovf_err	= (rd_data >>  4) & 0x1;		// Tried to push when stack full
-    buf_q_udf_err	= (rd_data >>  5) & 0x1;		// Tried to pop when stack empty
-    buf_q_adr_err	= (rd_data >>  6) & 0x1;		// Fence adr popped from stack doesnt match rls adr
-    buf_display		= (rd_data >>  8) & 0xFF;		// Buffer fraction in use display
-
-    adr    = buf_stat1_adr+base_adr;
-    status = vme_read(adr,rd_data);
-    wr_buf_adr = (rd_data >> 0) & 0x7FF;			// Current ddress of header write buffer
-
-    adr    = buf_stat2_adr+base_adr;
-    status = vme_read(adr,rd_data);
-    buf_fence_dist = (rd_data >> 0) & 0x7FF;		// Distance to 1st fence address
-    buf_free_space  = int(100.*float(buf_fence_dist)/2047.);
-
-    adr    = buf_stat3_adr+base_adr;
-    status = vme_read(adr,rd_data);
-    buf_fence_cnt = (rd_data >> 0) & 0x7FF;			// Number of fences in fence RAM currently
-
-    adr    = buf_stat4_adr+base_adr;
-    status = vme_read(adr,rd_data);
-    buf_fence_cnt_peak=(rd_data >> 0) & 0xFFF;		// Peak number of fences in fence RAM
-
-    // Get current FMM state
-    adr    = base_adr+ccb_cmd_adr;
-    status = vme_read(adr,rd_data);
-    fmm_state = (rd_data >> 4) & 0x0007;
-
-    // Get current Sequencer state and L1A queue status
-    adr     = base_adr+seqsm_adr;
-    status  = vme_read(adr,rd_data);
-    clct_sm = (rd_data >> 0) & 0x7;
-    read_sm = (rd_data >> 3) & 0x1F;
-
-    queue_full = (rd_data >>  8) & 0x1;
-    queue_empty= (rd_data >>  9) & 0x1;
-    queue_ovf  = (rd_data >> 10) & 0x1;
-    queue_udf  = (rd_data >> 11) & 0x1;
-
-    // Errors since last update
-    crc_err =cnt[11]-crc_err_old;						// cnt[11]=alct crc daq errors
-    crc_err =int(float(crc_err)/(float(msec)/1000.));	// errors per second
-    crc_err_old = cnt[11];
-
-    // Dislay counters
-    printf("\n");
-    printf("\t%2.2i %10i %s\n",0,crc_err,"ALCT: CRC errors/second");
-
-    printf("\n\tCounters:\n");
-    for (i=0; i<mxcounter; ++i) {
-        printf("\t%2.2i %10i %s\n",i,cnt[i],scnt[i].c_str());
-    }
-
-    printf("\n\tRaw hits buffer:\n");
-    printf("\twr_buf_ready   %4i\n",wr_buf_ready);
-    printf("\tbuf_stalled    %4i\n",buf_stalled);
-    printf("\tbuf_q_full     %4i\n",buf_q_full);
-    printf("\tbuf_q_empty    %4i\n",buf_q_empty);
-    printf("\tbuf_q_ovf_err  %4i\n",buf_q_ovf_err);
-    printf("\tbuf_q_udf_err  %4i\n",buf_q_udf_err);
-    printf("\tbuf_q_adr_err  %4i\n",buf_q_adr_err);
-    printf("\tbuf_display    %4i\n",buf_display);
-    printf("\twr_buf_adr     %4i\n",wr_buf_adr);
-    printf("\tbuf_fence_dist %4i\n",buf_fence_dist);
-    printf("\tbuf_fence_cnt  %4i\n",buf_fence_cnt);
-    printf("\tbuf_fence_peak %4i\n",buf_fence_cnt_peak);
-    printf("\tbuf_free_space %4i\n",buf_free_space);
-
-    printf("\n\tTrigger status:\n");
-    printf("\tFMM state      %4i %s\n",fmm_state,sfmm_state[fmm_state%5].c_str());
-    printf("\tclct_sm  state %4i %s\n",clct_sm,sclct_sm[clct_sm%6].c_str());
-    printf("\tread_sm  state %4i %s\n",read_sm,sread_sm[read_sm%21].c_str());
-
-    printf("\n\tReadout queue:\n");
-    printf("\tqueue_full     %4i\n",queue_full);
-    printf("\tqueue_empty    %4i\n",queue_empty);
-    printf("\tqueue_ovf      %4i\n",queue_ovf);
-    printf("\tqueue_udf      %4i\n",queue_udf);
-
-    goto L23710;
-
-    //------------------------------------------------------------------------------
-    //	ALCT JTAG read/write: Debug firmware
-    //------------------------------------------------------------------------------
-L23800:
-    printf("\tMake sure you removed the JTAG cable!\n");
-    printf("\tinfinite loop anystate to rti on chain 3\n");
-
-L23810:
-    ichain = 0x0002;							// ALCT User
-    adr    = boot_adr;							// Boot register address
-    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-    sleep(1);
-
-    // Read Virtex-E FPGA (5-bit opcode) and XC18V04 PROM IDcodes (8-bit opcode)
-    chip_id = 0;
-    opcode  = 0x09;								// FPGA IDcode opcode, expect v0A30093
-    reg_len = 32;								// IDcode length
-    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    sleep(1);
-
-    if (ifunc>0) goto L23810;
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT: Check CRC errors caused by ALCT trigger bits
-    //------------------------------------------------------------------------------
-L23900:
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig, enable l1a emulator
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFB6;			// Clear previous l1a
-    wr_data = wr_data | 0x0001;			// Turn off CCB backplane
-    wr_data = wr_data | 0x0004;			// Enable L1A emulator
-    status  = vme_write(adr,wr_data);
-
-    // Enable GTL ccb_clct_ext_trig
-    adr     = ccb_trig_adr+base_adr;
-    wr_data = 0;
-    wr_data = wr_data | 0x0001;			// request ccb l1a on alct_ext_trig
-    wr_data = wr_data | 0x0040;			// ccb_allow_ext_bypass to input GTL pulser
-    wr_data = wr_data | (132<<8);		// set emulator delay for alct ext_trig timing
-    status  = vme_write(adr,wr_data);
-
-    // Select ALCT cable port:
-    adr     = vme_loopbk_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x000C;
-    status  = vme_write(adr,wr_data);
-
-    // Take TMB firmware out of sync_mode, enable alct ext_trig from ccb
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);	// get current state
-    wr_data = rd_data & 0xFF8F;			// clear bits[6:4] alct_seq_cmd[2:0]
-    wr_data = wr_data | 0x0001;			// set bit[0] to enable alct_ext_trig from ccb
-    status  = vme_write(adr,wr_data);
-
-    // Turn off CFEB cable inputs
-    adr     = cfeb_inj_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFE0;
-    status  = vme_write(adr,wr_data);
-
-    // Turn on CFEB enables to over-ride mask_all
-    adr     = seq_trig_en_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x03FF;			// clear old cfeb_en and source
-    wr_data = wr_data | 0x7C00;			// ceb_en_source=0,cfeb_en=1F
-    status  = vme_write(adr,wr_data);
-
-    // Select sequencer to take clct ext or alct ext trig
-    adr     = seq_trig_en_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFF00;
-    wr_data = wr_data | 0x0060;			// Select alct or clct ext trig mode
-    status  = vme_write(adr,wr_data);
-
-    // Set start_trigger state for FMM
-    ttc_cmd = 6;
-    adr     = base_adr+ccb_cmd_adr;
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0003 | (ttc_cmd<<8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    ttc_cmd = 1;
-    wr_data = 0x0003 | (ttc_cmd<<8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    // Fire CCB external clct trigger with pulse generator
-    printf("\tConnect GTL pulse +1.5V/0V to TMB P2A E10 (RAT E16),monitor TP382-7\n");
-
-    // Clear TMB firmware counters, enable alct debug lct error counter
-    adr     = base_adr+cnt_ctrl_adr;
-    wr_data = 0x0021;					// clear + enable alct err
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0020;					// unclear + enable alct err
-    status  = vme_write(adr,wr_data);
-
-    // Event loop:
-    crc_err_old=0;
-
-    for (ibit=0; ibit<=31; ++ibit) {
-
-        // Set new ALCT USER2 bits to enable specified alct trigger path bits
-        rsd[0]=1;	// rsd[3:0)='D'x
-        rsd[1]=0;
-        rsd[2]=1;
-        rsd[3]=1;
-        rsd[4]=0;	// sync mode
-        rsd[5]=1;	// enable l1a
-        rsd[6]=1;	// enable extrig
-        rsd[7]=0;	// dummy
-
-        for (i=8; i<=39; ++i)
-        {
-            rsd[i]=0x1;
-            if (i==(ibit+8)) rsd[i]=0;
-        }
-
-        // Write ALCT USER2 register (5 bit opcode)
-        ichain = 0x0003;							// ALCT VirtexE
-        adr    = boot_adr;							// Boot register address
-        vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-
-        chip_id = 0;
-        opcode  = 0x03;								// VirtexE USER2 opcode
-        reg_len = 40;								// Register length
-        vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-        vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);	// Write data
-        dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
-        //	pause("<cr> to continue");
-
-        // Accumulate hardware triggers
-        sleep(1000);								// duration in i*4 milliseconds
-
-        // Take snapshot of current counter state
-        adr = base_adr+cnt_ctrl_adr;
-        wr_data=0x0022;	//snap
-        status = vme_write(adr,wr_data);
-        wr_data=0x0020;	//unsnap
-        status = vme_write(adr,wr_data);
-
-        // Read counters
-        for (i=0; i<mxcounter; ++i) {
-            for (j=0; j<=1; ++j) {
-                adr = base_adr+cnt_ctrl_adr;
-                wr_data=(i << 9) | 0x0020 | (j << 8);
-                status = vme_write(adr,wr_data);
-                adr = base_adr+cnt_rdata_adr;
-                status = vme_read(adr,rd_data);
-
-                // Combine lsbs+msbs
-                if (j==0)			// Even addresses contain counter LSBs
-                    cnt_lsb=rd_data;
-                else {				// Odd addresses contain counter MSBs
-                    cnt_msb=rd_data;
-                    cnt_full=cnt_lsb | (cnt_msb << 16);
-                    cnt[i]=cnt_full;	// Assembled counter MSB,LSB
-                }
-            }}	//close j,i
-
-        // Display daq crc errors
-        crc_err=cnt[11]-crc_err_old;	// cnt[0]=alct crc daq errors
-        crc_err_old=cnt[11];
-
-        printf("\tibit=%2i ALCT daq CRC errors/sec=%10i\n",crc_err);
-
-        // Close liio
-    } // close for ibit
-
-    goto L2300;
-
-    //------------------------------------------------------------------------------
-    //	ALCT rxd clock delay scan: ALCT-to-TMB Teven|Todd
-    //------------------------------------------------------------------------------
-L231000:
-    //	unit  = stdout;
-    unit  = log_file;
-    debug = false;
-
-    fprintf(unit,"ALCT rxd clock delay scan: ALCT-to-TMB Teven|Todd\n");
-
-    // Get current 3D3444 + phaser delays
-    alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
-    alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
-    alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
-
-    // Get current posnegs
-    alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
-    alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
-
-    // Inquire
-    alct_rxd_posneg = alct_rxd_posneg_default;
-    alct_txd_posneg = alct_txd_posneg_default;
-    alct_rxd_delay	= alct_rxd_default;
-    alct_txd_delay	= alct_txd_default;
-    alct_tof_delay  = alct_tof_default;
-
-    inquire("Set alct_rxd_posneg? -1=scan, cr=%2i", minv=-1, maxv= 1, radix=10, alct_rxd_posneg);
-    inquire("Set alct_tof_delay ? -1=scan, cr=%2i", minv=-1, maxv=12, radix=10, alct_tof_delay );
-
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-    wr_data = wr_data | 0x1;					// Turn off CCB backplane
-    status  = vme_write(adr,wr_data);
-
-    // Put ALCT into xmit Teven|Todd pattern, seq_cmd[0],[2] share same wire pair
-    seq_cmd_bit[0]=1;	seq_cmd_bit[2]=1;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-    seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven|Todd pattern
-
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// Get current state
-    wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-    wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-    wr_data = wr_data | (seq_cmd_bit[1] << 5);
-    wr_data = wr_data | (seq_cmd_bit[2] << 6);
-    wr_data = wr_data | (seq_cmd_bit[3] << 7);
-    status  = vme_write(adr,wr_data);
-
-    // Scan tof and rxd_posneg, or use input values
-    alct_tof_delay_min	= (alct_tof_delay  < 0) ?  0 : alct_tof_delay;
-    alct_tof_delay_max	= (alct_tof_delay  < 0) ? 12 : alct_tof_delay;
-    alct_rxd_posneg_min	= (alct_rxd_posneg < 0) ?  0 : alct_rxd_posneg;
-    alct_rxd_posneg_max	= (alct_rxd_posneg < 0) ?  1 : alct_rxd_posneg;
-
-    for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-        for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-
-            // Set scanned delays and posnegs
-            ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-            posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-            posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-            // Clear error accumulators
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                for (ibit=0; ibit<=27; ++ibit) {
-                    alct_rxd_bad[alct_rxd_delay][ibit]=0;
-                }}
-
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                alct_sync_1st_err_ff[alct_rxd_delay] = 0;
-                alct_sync_2nd_err_ff[alct_rxd_delay] = 0;
-            }
-
-            // Step alct rxd clock delay
-            fprintf(unit,"\n");	
-            fprintf(unit,"Checking 80MHz Teven|Todd data TMB receives from ALCT\n");
-            fprintf(unit,"Setting  alct_tof_delay  =%2i\n",alct_tof_delay);
-            fprintf(unit,"Setting  alct_rxd_posneg =%2i\n",alct_rxd_posneg);
-            fprintf(unit,"Using    dps_max         =%2i\n",dps_max);
-            fprintf(unit,"Using    dps_delta       =%2i\n",dps_delta);
-            fprintf(unit,"\n");	
-            fprintf(unit,"Stepping alct_rxd_delay...\n\n");
-            if (unit!=stdout) fprintf(stdout,"Scanning alct_tof_delay=%2i alct_rxd_posneg=%1i...wait",alct_tof_delay,alct_rxd_posneg);
-
-            npasses = 1000;
-            for (ipass=1; ipass<=npasses; ++ipass) {							// L231015
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {	// L231010
-
-                    // Set alct_rxd_delay
-                    phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-
-                    // Clear TMB data check flipflops for this delay value, set transmitted data delay depth
-                    alct_sync_rxdata_dly = 0;
-                    alct_sync_tx_random  = 0;
-                    alct_sync_clr_err    = 1;
-
-                    adr     = alct_sync_ctrl_adr+base_adr;		// get current
-                    status	= vme_read(adr,rd_data);
-                    alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
-
-                    wr_data = (alct_sync_rxdata_dly <<  0) |	// Set delay depth, clear error FFs
-                        (alct_sync_tx_random  <<  4) |
-                        (alct_sync_clr_err    <<  5) |
-                        (alct_sync_rxdata_pre << 12);
-                    status	= vme_write(adr,wr_data);
-
-                    wr_data = wr_data & ~(1 << 5);				// un-clear error FFs
-                    status	= vme_write(adr,wr_data);
-
-                    // Read TMB received demux data
-                    for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
-                        adr     = alctfifo1_adr+base_adr;
-                        wr_data = 0x2000;				// select alct_loopback mode addressing
-                        wr_data = wr_data | (i << 1);
-                        status	= vme_write(adr,wr_data);
-
-                        adr     = alctfifo2_adr+base_adr;
-                        status  = vme_read(adr,rd_data);
-                        alct_demux_rd[i]=rd_data;
-                    }
-
-                    alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
-                    alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
-                    alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
-                    alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
-
-                    //	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
-                    //	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
-
-                    // Read TMB data check flipflops
-                    adr     = alct_sync_ctrl_adr+base_adr;
-                    status  = vme_read(adr,rd_data);
-
-                    alct_sync_1st_err[alct_rxd_delay]    = ((rd_data >> 6) & 0x1);
-                    alct_sync_2nd_err[alct_rxd_delay]    = ((rd_data >> 7) & 0x1);
-                    alct_sync_1st_err_ff[alct_rxd_delay] = ((rd_data >> 8) & 0x1) | alct_sync_1st_err_ff[alct_rxd_delay];
-                    alct_sync_2nd_err_ff[alct_rxd_delay] = ((rd_data >> 9) & 0x1) | alct_sync_1st_err_ff[alct_rxd_delay];
-
-                    if (ipass==1) {
-                        fprintf(unit,"Teven|Todd: rxd_delay=%2i ",alct_rxd_delay);
-                        fprintf(unit,"rxdata_1st=%8.8X rxdata_2nd=%8.8X ",alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
-                        fprintf(unit,"1st_err=%1i/%1i 2nd_err=%1i/%1i\n",
-                                alct_sync_1st_err[alct_rxd_delay],alct_sync_1st_err_ff[alct_rxd_delay],
-                                alct_sync_2nd_err[alct_rxd_delay],alct_sync_2nd_err_ff[alct_rxd_delay]);
-                        //	fprintf(unit,"\t\t expect_1st=%8.8X expect_2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
-                    }
-
-                    // Compare received bits to expected pattern
-                    alct_1st_expect = 0xAAAAAAA;	// Teven
-                    alct_2nd_expect = 0x5555555;	// Todd 
-
-                    if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_sync_expect_1st %8.8X %8.8X",alct_1st_expect,alct_sync_expect_1st); pause("WTF!?");}
-                    if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_sync_expect_2nd %8.8X %8.8X",alct_2nd_expect,alct_sync_expect_2nd); pause("WTF!?");}
-
-                    for (ibit=0; ibit<=27; ++ibit) {
-                        ibit_1st_expected = (alct_1st_expect		>> ibit) & 0x1;
-                        ibit_2nd_expected = (alct_2nd_expect		>> ibit) & 0x1;
-                        ibit_1st_received = (alct_sync_rxdata_1st	>> ibit) & 0x1;
-                        ibit_2nd_received = (alct_sync_rxdata_2nd	>> ibit) & 0x1;
-                        if ((ibit_1st_expected !=  ibit_1st_received) ||
-                                (ibit_2nd_expected !=  ibit_2nd_received)) alct_rxd_bad[alct_rxd_delay][ibit]++;
-                    }	// Close ibit
-
-                }	// Close ipass L23101:
-                if (ipass==1) fprintf(unit,"\nAccumulating statistics...\n\n");
-                if ((ipass%10==0) && (unit==stdout)) fprintf(unit,"%4i\r",npasses-ipass);
-            }	// Close alct_rxd_delay L231015:
-
-            // Find good spots window width and center in alct_rxd_delay for this alct_tof_delay and alct_rxd_posneg
-            ngood		=  0;
-            ngood_max	=  0;
-            ngood_edge	=  0;
-            ngood_center=  0;
-
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                good_spot= !(alct_sync_1st_err_ff[alct_rxd_delay] || alct_sync_2nd_err_ff[alct_rxd_delay]);
-                good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=good_spot;
-                fprintf(unit,"alct_rxd_delay=%2i good_spot=%1i\n",alct_rxd_delay,good_spot);
-            }
-
-            for (i=0; i<(dps_max*2); ++i) {	// scan delays 0 to 25 twice to span the awkward 25 to 0 wrap around
-                alct_rxd_delay=i%(dps_max+1);
-                good_spot=good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-                //	printf("alct_rxd_delay=%2i good_spot=%1i\n",alct_rxd_delay,good_spot);
-                //	printf("i             =%2i good_spot=%1i\n",i,good_spot);
-
-                if  (good_spot==1) ngood++;			// this is a good spot
-                if ((good_spot==0) && (ngood>0)) {	// good spot just went away, so window preceeds it
-                    ngood_max  = ngood;
-                    ngood_edge = i;
-                    ngood      = 0;
-                }	// close if
-            }	// close for i
-
-            if (ngood_max>0) ngood_center=(dps_max+ngood_edge-(ngood_max/2))%(dps_max+1);
-
-            window_width[alct_rxd_posneg][alct_tof_delay]  = ngood_max;
-            window_center[alct_rxd_posneg][alct_tof_delay] = ngood_center;
-
-            fprintf(unit,"Window width  = %2i at tof=%2i posneg=%1i\n",window_width[alct_rxd_posneg][alct_tof_delay],alct_tof_delay,alct_rxd_posneg);
-            fprintf(unit,"Window center = %2i at tof=%2i posneg=%1i\n",window_center[alct_rxd_posneg][alct_tof_delay],alct_tof_delay,alct_rxd_posneg);
-            fprintf(unit,"\n");	
-
-            if (unit!=stdout)
-                fprintf(stdout," width=%2i center=%2i\n",
-                        window_width[alct_rxd_posneg][alct_tof_delay],
-                        window_center[alct_rxd_posneg][alct_tof_delay]);
-
-            // Display timing window twice in case good area is near 0 or 25ns
-            fprintf(unit,"Rxd    \n");	
-            fprintf(unit,"Step   Berrs Average 12 01234567890123456789012345678  %5i samples\n",npasses);	
-
-            for (j=0; j<=1; ++j) {
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                    nbad=0;
-                    for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_rxd_bad[alct_rxd_delay][ibit];}
-                    avgbad=double(nbad)/double(npasses);
-                    nx=int(avgbad);
-                    if ((nx==0) && (nbad != 0)) nx=1;
-                    fprintf(unit,"%2i  %8i %7.4f %c%c |",alct_rxd_delay,nbad,avgbad,passfail[alct_sync_1st_err_ff[alct_rxd_delay]],passfail[alct_sync_2nd_err_ff[alct_rxd_delay]]);
-                    if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
-                    if (alct_rxd_delay==window_center[alct_rxd_posneg][alct_tof_delay]) fprintf(unit,"\t\t\t\t<--Center");
-                    fprintf(unit,"\n");
-                }}
-
-            // Display bad bits vs delay
-            fprintf(unit,"\nCable Pair Errors vs alct_rxd_clock Delay Step\n");
-
-            fprintf(unit," delay ");
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {fprintf(unit,"%5i",alct_rxd_delay);}	// display delay values header
-            fprintf(unit,"\n");
-
-            fprintf(unit,"pair   ");
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {fprintf(unit," ----");}
-            fprintf(unit,"\n");
-
-            for (ibit=0; ibit<=27; ++ibit) {
-                fprintf(unit,"rx[%2i] ",ibit);
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {fprintf(unit,"%5i",alct_rxd_bad[alct_rxd_delay][ibit]);}
-                fprintf(unit,"\n");
-            }
-
-            // Close scan loops
-        }	// alct_tof_delay
-    }	// alct_rxd_posneg
-
-// Display window center and width vs tof and posneg
-if ((alct_rxd_posneg_min != alct_rxd_posneg_max) && alct_tof_delay_min != alct_tof_delay_max) alct_rxd_scan_done=true;
-
-fprintf(unit,"\n");
-for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-    for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-
-        fprintf(unit,"Tof=%2i Posneg=%1i Window center=%2i  width=%2i\n",
-                alct_tof_delay,alct_rxd_posneg,
-                window_center[alct_rxd_posneg][alct_tof_delay],
-                window_width[alct_rxd_posneg][alct_tof_delay]);
-
-        newcenter=window_center[alct_rxd_posneg][alct_tof_delay];
-    }
-    fprintf(unit,"\n");
-}
-
-// Make a new default rxd delay table that can be imported to c++, need it for txd tof scan
-if (alct_rxd_scan_done) {
-    fprintf(log_file,"\nWindow Center vs ToF Look-up Table\n");
-    fprintf(log_file,"int window_center_rxd[2][16]={");
-    for (alct_rxd_posneg=0; alct_rxd_posneg<=1;  ++alct_rxd_posneg) {
-        for (alct_tof_delay=0;  alct_tof_delay<=15;  ++alct_tof_delay ) {
-            if (alct_tof_delay<=12)fprintf(log_file,"%3i",window_center[alct_rxd_posneg][alct_tof_delay]);
-            if (alct_tof_delay> 12)fprintf(log_file,"%3i",0);
-            if (!((alct_rxd_posneg==1) && (alct_tof_delay==15))) fprintf(log_file,",");
-        }}
-    fprintf(log_file,"};\n");
-}
-
-// Set alct rxd delay and posneg to new value or restore default
-alct_rxd_default=newcenter;
-
-inquire("\nDefault alct_rxd_delay  =%3i, change? ", minv=0, maxv=dps_max, radix=10, alct_rxd_default);
-inquire(  "Default alct_rxd_posneg =%3i, change? ", minv=0, maxv=1,       radix=10, alct_rxd_posneg_default);
-
-printf("Setting alct_rxd_delay  =%3i\n",alct_rxd_default);
-printf("Setting alct_rxd_posneg =%3i\n",alct_rxd_posneg_default);
-
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay	= alct_tof_default;
-
-ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg_default);
-posneg_wr(base_adr,"alct_txd",alct_txd_posneg_default);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);				// Get current state
-wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-goto L2300;
-
-//------------------------------------------------------------------------------
-//	ALCT txd clock delay scan: TMB-to-ALCT Teven|Todd Loopback
-//------------------------------------------------------------------------------
-L231100:
-//	unit = stdout;
-unit = log_file;
-
-fprintf(unit,"ALCT txd clock delay scan: ALCT-to-TMB Teven|Todd Loopback\n");
-
-// Get current 3D3444 + phaser delays
-alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
-alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
-alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
-
-// Get current posnegs
-alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
-alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
-
-// Inquire
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay  = alct_tof_default;
-alct_rxd_posneg = alct_rxd_posneg_default;
-alct_txd_posneg = alct_txd_posneg_default;
-
-inquire("Set alct_rxd_delay ?          cr=%2i", minv= 0, maxv= dps_max, radix=10, alct_rxd_delay);
-inquire("Set alct_rxd_posneg?          cr=%2i", minv= 0, maxv= 1,       radix=10, alct_rxd_posneg);
-inquire("Set alct_txd_posneg? -1=scan, cr=%2i", minv=-1, maxv= 1,       radix=10, alct_txd_posneg);
-inquire("Set alct_tof_delay ? -1=scan, cr=%2i", minv=-1, maxv=12,       radix=10, alct_tof_delay );
-
-alct_rxd_default = alct_rxd_delay;
-
-// Turn off CCB inputs to zero alct_adb_sync and ext_trig
-adr     = ccb_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-wr_data = wr_data | 0x1;					// Turn off CCB backplane
-status  = vme_write(adr,wr_data);
-
-// Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
-seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);			// Get current state
-wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-// Scan tof and txd_posneg, or use input values
-alct_tof_delay_min	= (alct_tof_delay  < 0) ?  0 : alct_tof_delay;
-alct_tof_delay_max	= (alct_tof_delay  < 0) ? 12 : alct_tof_delay;
-alct_txd_posneg_min	= (alct_txd_posneg < 0) ?  0 : alct_txd_posneg;
-alct_txd_posneg_max	= (alct_txd_posneg < 0) ?  1 : alct_txd_posneg;
-alct_tof_scan		= (alct_tof_delay  < 0) ?  true : false;
-
-for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-    for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-
-        // Set scanned delays
-        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-        // Shift rxd to track moving tof, use a scan table if it exists, else use default table
-        if (alct_tof_scan) {
-            if (alct_rxd_scan_done) {
-                alct_rxd_delay = window_center[alct_rxd_posneg][alct_tof_delay];
-                fprintf(unit,"Setting alct_rxd_delay=%2i for alct_rxd_posneg=%1i tof=%2i, ",alct_rxd_delay,alct_rxd_posneg,alct_tof_delay);
-                fprintf(unit,"using alct_rxd_delay scan table\n");}
-            else {
-                alct_rxd_delay = window_center_rxd[alct_rxd_posneg][alct_tof_delay];
-                fprintf(unit,"Setting alct_rxd_delay=%2i for alct_rxd_posneg=%1i tof=%2i, ",alct_rxd_delay,alct_rxd_posneg,alct_tof_delay);
-                fprintf(unit,"using default table\n");
-            }
-            phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-        }	// close if alct_tof_scan
-
-        // Set scanned posnegs
-        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-        posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-        // Clear error accumulators
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            for (ibit=0; ibit<=27; ++ibit) {
-                alct_txd_bad[alct_txd_delay][ibit]=0;
-            }}
-
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            alct_sync_1st_err_ff[alct_txd_delay] = 0;
-            alct_sync_2nd_err_ff[alct_txd_delay] = 0;
-        }
-
-        // Step alct txd clock delay
-        fprintf(unit,"\n");	
-        fprintf(unit,"Checking 80MHz Teven|Todd data ALCT looped back from TMB\n");
-        fprintf(unit,"Holding  alct_rxd_delay  =%2i\n",alct_rxd_delay);
-        fprintf(unit,"Setting  alct_tof_delay  =%2i\n",alct_tof_delay);
-        fprintf(unit,"Setting  alct_txd_posneg =%2i\n",alct_txd_posneg);
-        fprintf(unit,"Using    dps_max         =%2i\n",dps_max);
-        fprintf(unit,"Using    dps_delta       =%2i\n",dps_delta);
-        fprintf(unit,"\n");	
-        fprintf(unit,"Stepping alct_txd_delay...\n\n");
-        if (unit!=stdout) fprintf(stdout,"Scanning alct_tof_delay=%2i alct_txd_posneg=%1i...wait",alct_tof_delay,alct_txd_posneg);
-
-        npasses = 1000;
-        for (ipass=1; ipass<=npasses; ++ipass) {								// L231115
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++ alct_txd_delay) {	// L231110
-
-                // Set scanned delays
-                phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-                // Write Teven|Todd into ALCT loopback bank 0, writes 0s to banks 1,2
-                alct_1st_bank[0] = 0x2AA;	alct_2nd_bank[0] = 0x155;	//1st-in-time: Teven = 10'b10 1010 1010, 2nd-in-time: Todd  = 10'b01 0101 0101
-                alct_1st_bank[1] = 0;		alct_2nd_bank[1] = 0;
-                alct_1st_bank[2] = 0;		alct_2nd_bank[2] = 0;
-                seq_cmd_bit[0]   = 1;		seq_cmd_bit[2]   = 0;		// (seq_cmd[0] | seq_cmd[2] == 1) keeps ALCT in loopback mode
-
-                for (ibank=0; ibank<=2; ++ibank) {
-                    adr     = alct_cfg_adr+base_adr;
-                    status  = vme_read(adr,rd_data);				// Get current seq_cmd[3:0] state
-
-                    seq_cmd_bit[1] = (ibank >> 0) & 0x1;
-                    seq_cmd_bit[3] = (ibank >> 1) & 0x1;			// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
-
-                    wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
-                    wr_data = wr_data | (seq_cmd_bit[0] << 4);
-                    wr_data = wr_data | (seq_cmd_bit[1] << 5);
-                    wr_data = wr_data | (seq_cmd_bit[2] << 6);
-                    wr_data = wr_data | (seq_cmd_bit[3] << 7);
-                    status  = vme_write(adr,wr_data);				// Write new seq_cmd to select ibank
-
-                    adr		= alct_sync_txdata_1st+base_adr;
-                    wr_data = alct_1st_bank[ibank];					// Write 1st-in-time data for this bank
-                    status  = vme_write(adr,wr_data);	
-
-                    adr		= alct_sync_txdata_2nd+base_adr;
-                    wr_data = alct_2nd_bank[ibank];					// Write 2nd-in-time data for this bank
-                    status  = vme_write(adr,wr_data);
-                }
-
-                // Clear TMB data check flipflops for this delay value, set transmitted data delay depth
-                alct_sync_rxdata_dly = 0;
-                alct_sync_tx_random  = 0;
-                alct_sync_clr_err    = 1;
-
-                adr     = alct_sync_ctrl_adr+base_adr;			// Set delay depth, clear error FFs
-                status	= vme_read(adr,rd_data);				// get current
-                alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
-
-                wr_data = (alct_sync_rxdata_dly <<  0) |
-                    (alct_sync_tx_random  <<  4) |
-                    (alct_sync_clr_err    <<  5) |
-                    (alct_sync_rxdata_pre << 12);
-                status	= vme_write(adr,wr_data);
-
-                wr_data = wr_data & ~(1 << 5);					// un-clear error FFs
-                status	= vme_write(adr,wr_data);	
-
-                // Read TMB received demux data
-                for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
-                    adr     = alctfifo1_adr+base_adr;
-                    wr_data = 0x2000;				// select alct_loopback mode addressing
-                    wr_data = wr_data | (i << 1);
-                    status	= vme_write(adr,wr_data);
-
-                    adr     = alctfifo2_adr+base_adr;
-                    status  = vme_read(adr,rd_data);
-                    alct_demux_rd[i]=rd_data;
-                }
-
-                alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
-                alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
-                alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
-                alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
-
-                //	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
-                //	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
-
-                // Read TMB data check flipflops
-                adr     = alct_sync_ctrl_adr+base_adr;
-                status  = vme_read(adr,rd_data);
-
-                alct_sync_1st_err[alct_txd_delay]    = ((rd_data >> 6) & 0x1);
-                alct_sync_2nd_err[alct_txd_delay]    = ((rd_data >> 7) & 0x1);
-                alct_sync_1st_err_ff[alct_txd_delay] = ((rd_data >> 8) & 0x1) | alct_sync_1st_err_ff[alct_txd_delay];
-                alct_sync_2nd_err_ff[alct_txd_delay] = ((rd_data >> 9) & 0x1) | alct_sync_1st_err_ff[alct_txd_delay];
-
-                if (ipass==1) {
-                    fprintf(unit,"Teven|Todd: alct_txd_delay=%2i 1st=%8.8X 2nd=%8.8X ",alct_txd_delay,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
-                    fprintf(unit,"1st_err=%1i/%1i 2nd_err=%1i/%1i\n",alct_sync_1st_err[alct_txd_delay],alct_sync_1st_err_ff[alct_txd_delay],alct_sync_2nd_err[alct_txd_delay],alct_sync_2nd_err_ff[alct_txd_delay]);
-                }
-
-                // Compare received bits to expected pattern
-                alct_1st_expect = 0x2AA;	// Teven
-                alct_2nd_expect = 0x155;	// Todd 
-
-                if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_1st_expect=%8.8X alct_sync_expect_1st=%8.8X\n",alct_1st_expect,alct_sync_expect_1st);}
-                if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_2nd_expect=%8.8X alct_sync_expect_2nd %8.8X\n",alct_2nd_expect,alct_sync_expect_2nd);}
-
-                for (ibit=0; ibit<=27; ++ibit) {
-                    ibit_1st_expected = (alct_1st_expect		>> ibit) & 0x1;
-                    ibit_2nd_expected = (alct_2nd_expect		>> ibit) & 0x1;
-                    ibit_1st_received = (alct_sync_rxdata_1st	>> ibit) & 0x1;
-                    ibit_2nd_received = (alct_sync_rxdata_2nd	>> ibit) & 0x1;
-                    if ((ibit_1st_expected !=  ibit_1st_received) ||
-                            (ibit_2nd_expected !=  ibit_2nd_received)) alct_txd_bad[alct_txd_delay][ibit]++;
-                }	// Close ibit
-
-            }	// Close for ipass L231110
-            if (ipass==1   ) printf("\nAccumulating statistics...\n\n");
-            if (ipass%10==0) printf("%4i\r",npasses-ipass);
-        }	// Close for alct_txd_delay L231115:
-
-        // Find good spots window width and center in alct_txd_delay for this alct_tof_delay and alct_txd_posneg
-        ngood		=  0;
-        ngood_max	=  0;
-        ngood_edge	=  0;
-        ngood_center=  0;
-
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            good_spot= !(alct_sync_1st_err_ff[alct_txd_delay] || alct_sync_2nd_err_ff[alct_txd_delay]);
-            good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=good_spot;
-            //	printf("alct_txd_delay=%2i good_spot=%1i\n",alct_txd_delay,good_spot);
-        }
-
-        for (i=0; i<=(dps_max*2); ++i) {	// scan delays 0 to 25 twice to span the awkward 25 to 0 wrap around
-            alct_txd_delay=i%(dps_max+1);
-            good_spot=good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-            //	printf("alct_txd_delay=%2i good_spot=%1i\n",alct_txd_delay,good_spot);
-            //	printf("i             =%2i good_spot=%1i\n",i,good_spot);
-
-            if  (good_spot==1) ngood++;			// this is a good spot
-            if ((good_spot==0) && (ngood>0)) {	// good spot just went away, so window preceeds it
-                ngood_max  = ngood;
-                ngood_edge = i;
-                ngood      = 0;
-            }	// close if
-        }	// close for i
-
-        if (ngood_max>0) ngood_center=(dps_max+ngood_edge-(ngood_max/2))%(dps_max+1);
-
-        window_width[alct_txd_posneg][alct_tof_delay]  = ngood_max;
-        window_center[alct_txd_posneg][alct_tof_delay] = ngood_center;
-
-        fprintf(unit,"Window width  = %2i at tof=%2i posneg=%1i\n",window_width[alct_txd_posneg][alct_tof_delay],alct_tof_delay,alct_txd_posneg);
-        fprintf(unit,"Window center = %2i at tof=%2i posneg=%1i\n",window_center[alct_txd_posneg][alct_tof_delay],alct_tof_delay,alct_txd_posneg);
-        fprintf(unit,"\n");	
-
-        if (unit!=stdout)
-            fprintf(stdout," width=%2i center=%2i\n",
-                    window_width[alct_txd_posneg][alct_tof_delay],
-                    window_center[alct_txd_posneg][alct_tof_delay]);
-
-        // Display timing window twice in case good area is near 0 or 25ns
-        fprintf(unit,"Txd    \n");	
-        fprintf(unit,"Step   Berrs Average 12 01234567890123456789012345678  %5i samples\n",npasses);	
-
-        for (j=0; j<=1; ++j) {
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-                nbad=0;
-                for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_txd_bad[alct_txd_delay][ibit];}
-                avgbad=double(nbad)/double(npasses);
-                nx=int(avgbad);
-                if ((nx==0) && (nbad != 0)) nx=1;
-                fprintf(unit,"%2i  %8i %7.4f %c%c |",alct_txd_delay,nbad,avgbad,passfail[alct_sync_1st_err_ff[alct_txd_delay]],passfail[alct_sync_2nd_err_ff[alct_txd_delay]]);
-                if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
-                if (alct_txd_delay==window_center[alct_txd_posneg][alct_tof_delay]) fprintf(unit,"\t\t\t\t<--Center");
-                fprintf(unit,"\n");
-            }}
-
-        // Display bad bits vs delay
-        fprintf(unit,"\nCable Pair Errors vs alct_txd_clock Delay Step\n");
-
-        fprintf(unit," delay ");
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {fprintf(unit,"%5i",alct_txd_delay);}	// display delay values header
-        fprintf(unit,"\n");
-
-        fprintf(unit,"pair   ");
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {fprintf(unit," ----");}
-        fprintf(unit,"\n");
-
-        for (ibit=0; ibit<=27; ++ibit) {
-            fprintf(unit,"tx[%2i] ",ibit);
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {fprintf(unit,"%5i",alct_txd_bad[alct_txd_delay][ibit]);}
-            fprintf(unit,"\n");
-        }
-
-        // Close scan loops
-    }	// alct_tof_delay
-}	// alct_txd_posneg
-
-// Display window center and width vs tof and posneg
-fprintf(unit,"\n");
-for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-    for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-
-        fprintf(unit,"Tof=%2i Posneg=%1i Window center=%2i  width=%2i\n",
-                alct_tof_delay,alct_txd_posneg,
-                window_center[alct_txd_posneg][alct_tof_delay],
-                window_width[alct_txd_posneg][alct_tof_delay]);
-
-        newcenter=window_center[alct_txd_posneg][alct_tof_delay];
-    }
-    fprintf(unit,"\n");
-}
-
-// Set alct txd delay and posneg to new value or restore default
-alct_txd_default=newcenter;
-
-inquire("\nDefault alct_txd_delay  =%2i, change? ", minv=0, maxv=dps_max, radix=10, alct_txd_default);
-inquire(  "Default alct_txd_posneg =%2i, change? ", minv=0, maxv= 1,      radix=10, alct_txd_posneg_default);
-
-printf("Setting alct_txd_delay  =%2i\n",alct_txd_default);
-printf("Setting alct_txd_posneg =%2i\n",alct_txd_posneg_default);
-
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay	= alct_tof_default;
-alct_rxd_posneg	= alct_rxd_posneg_default;
-alct_txd_posneg	= alct_txd_posneg_default;
-
-ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg_default);
-posneg_wr(base_adr,"alct_txd",alct_txd_posneg_default);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);				// Get current state
-wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-goto L2300;
-
-//------------------------------------------------------------------------------
-//	ALCT Tx|Rx default delays TMB-to-ALCT Walking 1 Loopback
-//------------------------------------------------------------------------------
-L231200:
-//	unit  = stdout;
-unit  = log_file;
-debug = false;
-
-fprintf(unit,"\nALCT tx+rx default delays TMB-to-ALCT Walking 1 Loopback\n");
-
-// Get current 3D3444 + phaser delays
-alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
-alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
-alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
-
-// Get current posnegs
-alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
-alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
-
-// Inquire
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay  = alct_tof_default;
-alct_rxd_posneg = alct_rxd_posneg_default;
-alct_txd_posneg = alct_txd_posneg_default;
-
-inquire("Set alct_rxd_delay ? cr=%2i", minv=0, maxv=dps_max, radix=10, alct_rxd_delay );
-inquire("Set alct_txd_delay ? cr=%2i", minv=0, maxv=dps_max, radix=10, alct_txd_delay );
-inquire("Set alct_tof_delay ? cr=%2i", minv=0, maxv=12,      radix=10, alct_tof_delay );
-inquire("Set alct_rxd_posneg? cr=%2i", minv=0, maxv= 1,      radix=10, alct_rxd_posneg);
-inquire("Set alct_txd_posneg? cr=%2i", minv=0, maxv= 1,      radix=10, alct_txd_posneg);
-
-// Turn off CCB inputs to zero alct_adb_sync and ext_trig
-adr     = ccb_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-wr_data = wr_data | 0x1;					// Turn off CCB backplane
-status  = vme_write(adr,wr_data);
-
-// Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
-seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);			// Get current state
-wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-// Set non-scanned posnegs
-posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-// Set non-scanned delays
-ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-// Clear error accumulators
-for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
-    for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
-        for (ibit=0; ibit<=27; ++ibit) {
-            alct_walking1_err[itx][ifs][ibit]=0;
-            alct_walking1_hit[itx][ifs][ibit][0]=0;
-            alct_walking1_hit[itx][ifs][ibit][1]=0;
-        }}}
-
-// Step walking 1 bit
-fprintf(unit,"\nChecking 80MHz walking 1 data ALCT looped back from TMB\n\n");
-fprintf(unit,"        ");
-fprintf(unit,"1st 0123456789012345678901234567 2nd 0123456789012345678901234567 \n");
-
-npasses = 1000;
-for (ipass=1; ipass<=npasses; ++ipass) {			// L231205
-    for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
-        for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
-
-            // Write walking 1 into ALCT loopback bank 0,1,2
-            ibank = itx/10;		// 0-9 in bank 0, 10-19 in bank 1, 20-27 in bank 2
-            ibit  = itx%10;		// bit position within a bank
-
-            alct_1st_bank[0] = 0;
-            alct_1st_bank[1] = 0;
-            alct_1st_bank[2] = 0;
-            alct_1st_bank[ibank] = (1 << ibit) * (ifs==0);
-
-            alct_2nd_bank[0] = 0;
-            alct_2nd_bank[1] = 0;
-            alct_2nd_bank[2] = 0;
-            alct_2nd_bank[ibank] = (1 << ibit) * (ifs==1);
-
-            seq_cmd_bit[0]=1; seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) keeps ALCT in loopback mode
-
-            for (ibank=0; ibank<=2; ++ibank) {
-                adr     = alct_cfg_adr+base_adr;
-                status  = vme_read(adr,rd_data);				// Get current seq_cmd[3:0] state
-
-                seq_cmd_bit[1] = (ibank >> 0) & 0x1;
-                seq_cmd_bit[3] = (ibank >> 1) & 0x1;			// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
-
-                wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
-                wr_data = wr_data | (seq_cmd_bit[0] << 4);
-                wr_data = wr_data | (seq_cmd_bit[1] << 5);
-                wr_data = wr_data | (seq_cmd_bit[2] << 6);
-                wr_data = wr_data | (seq_cmd_bit[3] << 7);
-                status  = vme_write(adr,wr_data);				// Write new seq_cmd to select ibank
-
-                adr		= alct_sync_txdata_1st+base_adr;
-                wr_data = alct_1st_bank[ibank];					// Write 1st-in-time data for this bank
-                status  = vme_write(adr,wr_data);	
-
-                adr		= alct_sync_txdata_2nd+base_adr;
-                wr_data = alct_2nd_bank[ibank];					// Write 2nd-in-time data for this bank
-                status  = vme_write(adr,wr_data);
-            }
-
-            // Read TMB received demux data
-            for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
-                adr     = alctfifo1_adr+base_adr;
-                wr_data = 0x2000;				// select alct_loopback mode addressing
-                wr_data = wr_data | (i << 1);
-                status	= vme_write(adr,wr_data);
-
-                adr     = alctfifo2_adr+base_adr;
-                status  = vme_read(adr,rd_data);
-                alct_demux_rd[i]=rd_data;
-            }
-
-            alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
-            alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
-            alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
-            alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
-
-            //	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
-            //	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
-            //	if (ipass==1) fprintf(unit,"Teven|Todd: 1st=%8.8X 2nd=%8.8X\n",alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
-            //	fprintf(unit,"Walking 1: 1st/2nd=%1i tx bit=%2i 1st=%8.8X 2nd=%8.8X\n",ifs,itx,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
-
-            // Display tx bits vs received bits
-            if (ipass==1) {
-                fprintf(unit,"%1i %2i tx",ifs,itx);
-                fprintf(unit," 1st "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(i==itx)*(ifs==0)]);
-                fprintf(unit," 2nd "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(i==itx)*(ifs==1)]);
-                fprintf(unit,"\n");
-                fprintf(unit,"     rx");
-                fprintf(unit," 1st "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(alct_sync_rxdata_1st >> i) & 0x1]);
-                fprintf(unit," 2nd "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(alct_sync_rxdata_2nd >> i) & 0x1]);
-                fprintf(unit,"\n");
-            }
-
-            // Compare received bits to expected pattern
-            alct_1st_expect = (1 << itx) * (ifs==0);
-            alct_2nd_expect = (1 << itx) * (ifs==1); 
-
-            if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_sync_expect_1st %8.8X %8.8X",alct_1st_expect,alct_sync_expect_1st); pause("WTF!?");}
-            if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_sync_expect_2nd %8.8X %8.8X",alct_2nd_expect,alct_sync_expect_2nd); pause("WTF!?");}
-
-            for (ibit=0; ibit<=27; ++ibit) {
-                ibit_1st_expected = (alct_1st_expect >> ibit) & 0x1;
-                ibit_2nd_expected = (alct_2nd_expect >> ibit) & 0x1;
-                ibit_1st_received = (alct_sync_rxdata_1st  >> ibit) & 0x1;
-                ibit_2nd_received = (alct_sync_rxdata_2nd  >> ibit) & 0x1;
-
-                if ((ibit_1st_expected !=  ibit_1st_received) ||
-                        (ibit_2nd_expected !=  ibit_2nd_received)) alct_walking1_err[itx][ifs][ibit]++;
-
-                alct_walking1_hit[itx][ifs][ibit][0]=alct_walking1_hit[itx][ifs][ibit][0]+ibit_1st_received;
-                alct_walking1_hit[itx][ifs][ibit][1]=alct_walking1_hit[itx][ifs][ibit][1]+ibit_2nd_received;
-            }	// Close ibit
-
-            // Close bit, first, passes
-        }	// close itx bit loop
-    }	// close ifs first/second loop
-    if (ipass==1   ) printf("\nAccumulating statistics...\n\n");
-    if (ipass%10==0) printf("%4i\r",npasses-ipass);
-
-}	// Close for ipass L231205
-
-// Display hit bits
-if (debug) {
-    fprintf(unit,"\nALCT Sync-mode Walking 1: Errors\n"); 
-    for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
-        for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
-            fprintf(unit,"ifs=%1i itx=%2i ",ifs,itx);
-            for (ibit=0; ibit<=27; ++ibit) {
-                fprintf(unit,"%5i",alct_walking1_err[itx][ifs][ibit]);
-            }
-            fprintf(unit,"\n");
-        }}
-}
-
-// Display summary
-fprintf(unit,"ALCT Sync-mode Walking 1 Loopback: Any bit hit displays a 1\n"); 
-fprintf(unit,"                            1         2         3         4         5\n"); 
-fprintf(unit,"1st|2nd TxBit  Rx=01234567890123456789012345678901234567890123456789012345\n"); 
-for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
-    for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
-        fprintf(unit,"ifs=%2i  itx=%2i    ",ifs,itx);
-        nbad=0;
-        for (ibit=0; ibit<=27; ++ibit) {fprintf(unit,"%c",dash1[(alct_walking1_hit[itx][ifs][ibit][0]!=0)]);}
-        for (ibit=0; ibit<=27; ++ibit) {fprintf(unit,"%c",dash1[(alct_walking1_hit[itx][ifs][ibit][1]!=0)]);}
-        for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_walking1_err[itx][ifs][ibit];}
-        fprintf(unit," %c",(passfail[nbad!=0]));
-        fprintf(unit,"\n");
-    }}
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);				// Get current state
-wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-goto L2300;
-
-//------------------------------------------------------------------------------
-//	ALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback
-//------------------------------------------------------------------------------
-L231300:
-//	unit  = stdout;
-unit  = log_file;
-debug = false;
-
-fprintf(unit,"\nALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback\n");
-
-// Get current 3D3444 + phaser delays
-alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
-alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
-alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
-
-// Get current posnegs
-alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
-alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
-
-// Inquire
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay  = alct_tof_default;
-alct_rxd_posneg = alct_rxd_posneg_default;
-alct_txd_posneg = alct_txd_posneg_default;
-msec            = 1000;
-
-inquire("Set alct_rxd_posneg? -1=scan, cr=%3i", minv=-1, maxv= 1, radix=10, alct_rxd_posneg);
-inquire("Set alct_txd_posneg? -1=scan, cr=%3i", minv=-1, maxv= 1, radix=10, alct_txd_posneg);
-inquire("Set alct_tof_delay ? -1=scan, cr=%3i", minv=-1, maxv=12, radix=10, alct_tof_delay );
-inquire("Millisecs per spot ?          cr=%3i", minv= 0, maxv=1000000, radix=10, msec);
-
-// Turn off CCB inputs to zero alct_adb_sync and ext_trig
-adr     = ccb_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-wr_data = wr_data | 0x1;					// Turn off CCB backplane
-status  = vme_write(adr,wr_data);
-
-// Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=1;		// (seq_cmd[2] &!seq_cmd[0]) puts ALCT into loopback randoms mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[3] , seq_cmd[1]) selects alct storage bank 0,1,2
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);			// Get current state
-wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-// Scan tof and posnegs, or use input values
-alct_tof_delay_min  = (alct_tof_delay  >= 0) ? alct_tof_delay :  0;
-alct_tof_delay_max  = (alct_tof_delay  >= 0) ? alct_tof_delay : 12;
-
-alct_rxd_posneg_min = (alct_rxd_posneg >= 0) ? alct_rxd_posneg : 0;
-alct_rxd_posneg_max = (alct_rxd_posneg >= 0) ? alct_rxd_posneg : 1;
-
-alct_txd_posneg_min = (alct_txd_posneg >= 0) ? alct_txd_posneg : 0;
-alct_txd_posneg_max = (alct_txd_posneg >= 0) ? alct_txd_posneg : 1;
-
-for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-    for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-
-            // Set scanned delays and posnegs
-            ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-            posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-            posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-            // Display scanned parameters
-            fprintf(unit,"\n");
-            fprintf(unit,"Scan Setting:\n");
-            fprintf(unit,"alct_tof_delay  = %2i\n", alct_tof_delay );
-            fprintf(unit,"alct_rxd_posneg = %2i\n", alct_rxd_posneg);
-            fprintf(unit,"alct_txd_posneg = %2i\n", alct_txd_posneg);
-            fprintf(unit,"\n");
-
-            // Step alct rxd and txd clock delays, and transmitter pipeline depth
-            fprintf(unit,"Checking 80MHz Random numbers ALCT looped back from TMB\n");
-
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-                phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                    phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-
-                    printf("tof=%2i txd_posneg=%1i rxd_posneg=%1i txd_delay=%2i rxd_delay=%2i\r",
-                            alct_tof_delay,alct_txd_posneg,alct_rxd_posneg,alct_txd_delay,alct_rxd_delay);
-
-                    for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
-                        alct_sync_rxdata_dly = pipe_depth;
-
-                        // Set pipe depth, clear data check flip-flops
-                        alct_sync_tx_random  = 1;
-                        alct_sync_clr_err    = 1;
-
-                        adr      = alct_sync_ctrl_adr+base_adr;					// Set pipe depth, clear error FFs
-                        status   = vme_read(adr,rd_data);						// get current
-                        alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
-
-                        wr_data = (alct_sync_rxdata_dly <<  0) |
-                            (alct_sync_tx_random  <<  4) |
-                            (alct_sync_clr_err    <<  5) |
-                            (alct_sync_rxdata_pre << 12);
-                        status	= vme_write(adr,wr_data);
-
-                        wr_data = wr_data & ~(1 << 5);							// un-clear error FFs, hammer it a few times while system settles from delay changes
-                        for (i=0; i<=100; ++i) {
-                            status	= vme_write(adr,wr_data);	
-                        }
-
-                        // Wait for error stats to accumulate
-                        ibad=0;
-                        for (i=0; i<=msec; i=i+100) {							// 0 msec first time thru for quick reject of  bad spots
-                            sleep(i);
-
-                            // See if TMB data check flipflops are OK
-                            adr     = alct_sync_ctrl_adr+base_adr;
-                            status  = vme_read(adr,rd_data);
-
-                            alct_sync_1st_err_ff[0] = (rd_data >> 8) & 0x1;
-                            alct_sync_2nd_err_ff[0] = (rd_data >> 9) & 0x1;
-
-                            ibad = alct_sync_1st_err_ff[0] | alct_sync_2nd_err_ff[0];
-                            alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth]=ibad;
-
-                            //	fprintf(unit,"alct_txd_delay=%1X alct_rxd_delay=%1X pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
-                            if (ibad != 0) break;			// TMB data check already went bad, so done with this rx tx pair
-                        }	// close for msec
-
-                        // Read TMB received demux data just to see whats going on
-                        if (debug) {
-                            for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
-                                adr     = alctfifo1_adr+base_adr;
-                                wr_data = 0x2000;				// select alct_loopback mode addressing
-                                wr_data = wr_data | (i << 1);
-                                status	= vme_write(adr,wr_data);
-
-                                adr     = alctfifo2_adr+base_adr;
-                                status  = vme_read(adr,rd_data);
-                                alct_demux_rd[i]=rd_data;
-                            }
-
-                            alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
-                            alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
-                            alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
-                            alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
-
-                            fprintf(unit,"Random Loopback: alct_txd_delay=%2i alct_rxd_delay=%2i", alct_txd_delay,alct_rxd_delay);
-                            fprintf(unit,"  read 1st=%8.8X 2nd=%8.8X ", alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
-                            fprintf(unit,"expect 1st=%8.8X 2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
-                        }
-
-                        // Close txd,rxd,depth loops...we are still inside posnegs and ToF loops
-                    }}}
-
-            // Find correct depth in the transmitter delay pipeline, and count good spots
-            ngood_spots=0;
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                    ngood_depths=0;
-                    good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=-1;
-                    for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
-                        ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
-                        if (ibad==0) {
-                            ngood_depths++;
-                            good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=pipe_depth;
-                            ngood_spots++;
-                            fprintf(log_file,"alct_txd_delay=%3i alct_rxd_delay=%3i pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
-                        }	// close ibad
-                    }	// close pipe
-                    if (ngood_depths >1) printf("Warning: data match found at >1 pipeline depths, should not happen tx=%2i rx=%2i ngood_depths=%2i\n",alct_txd_delay,alct_rxd_delay,ngood_depths);
-                }}	// close txt rxd
-
-            good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay]=ngood_spots;
-            fprintf(unit,"\n\ntof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
-
-            // Display good depths vs rxd txd
-            fprintf(unit,"\nPipeline depth adr bit where RxData=TxData vs alct_txd_delay vs alct_rxd_delay  %3imsec=%ibx\n",msec,msec*int(40e3));
-            fprintf(unit," rxd_step=");	
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%5i",alct_rxd_delay);
-            fprintf(unit,"\n");
-
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-                fprintf(unit,"txd_step=%2i ",alct_txd_delay);
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                    good_depths=0;
-                    for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
-                        ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
-                        if (ibad==0) good_depths=good_depths | (1 << pipe_depth);
-                    }	// close pipe_depth
-                    fprintf(unit,"%5.4X",good_depths);
-                }	// close rxd
-                fprintf(unit,"\n");
-            }	// close tx
-
-            // Display timing matrix twice in case good area is near an edge
-            fprintf(unit,"\n\nRandom loopback good_spots at Tof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i, \n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg);
-            fprintf(unit,"scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
-            fprintf(unit,"    rxd_step=");
-            for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
-            fprintf(unit,"\n");
-
-            for (i=0; i<=1; ++i) {
-                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-                    fprintf(unit,"txd_step=%3i ",alct_txd_delay);
-                    for (j=0; j<=1; ++j) {
-                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                            pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-                            symbol = (pipe_depth >= 0) ? '0'+pipe_depth : '-';	// display "-" for bad data, display ascii-hex pipe depth for good data
-                            fprintf(unit,"%c",symbol);
-                        }}	// close rx 1st pass, rx 2nd pass
-                    fprintf(unit,"\n");
-                }}	// close tx 1st pass, tx 2nd pass
-
-            // Close posneg scan loops
-        }}
-    fprintf(unit,"\nClosed posneg loops");
-
-    // Display good spots pipe depth at this ToF for all combinations of posnegs
-    fprintf(unit,"\n\nRandom loopback good_spots pipe depth at Tof=%2i for ALL alct_rxd_posneg | alct_txd_posneg combinations\n",alct_tof_delay);
-    fprintf(unit,"Scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
-    fprintf(unit,"    rxd_step=");
-    for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
-    fprintf(unit,"\n");
-
-    for (i=0; i<=1; ++i) {
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            fprintf(unit,"txd_step=%3i ",alct_txd_delay);
-            for (j=0; j<=1; ++j) {
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-
-                    symbol='-';
-                    for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-                        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-                            pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-                            if (pipe_depth >= 0) symbol='0'+pipe_depth;	// display "-" for bad data, display ascii-hex pipe depth for good data at ANY posneg
-                        }}	// close posneg local loops
-
-                    fprintf(unit,"%c",symbol);
-                }}	// close rx 1st pass, rx 2nd pass
-            fprintf(unit,"\n");
-        }}	// close tx 1st pass, tx 2nd pass
-
-    // Display good spots posnegs at this ToF for all combinations of posnegs
-    fprintf(unit,"\n\nRandom loopback good_spots posneg code at Tof=%2i for ALL alct_rxd_posneg | alct_txd_posneg combinations\n",alct_tof_delay);
-    fprintf(unit,"Scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
-    fprintf(unit,"Posneg code = {rxd_posneg,txd_posneg}\n");	
-    fprintf(unit,"    rxd_step=");
-    for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
-    fprintf(unit,"\n");
-
-    good_spots_tof[alct_tof_delay]=0;
-
-    for (i=0; i<=1; ++i) {
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            fprintf(unit,"txd_step=%3i ",alct_txd_delay);
-            for (j=0; j<=1; ++j) {
-                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-
-                    ngood_depths=0;
-                    posneg_code =0;
-
-                    for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-                        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-                            pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-                            if (pipe_depth >= 0) {
-                                ngood_depths++;
-                                posneg_code=posneg_code | (alct_rxd_posneg << 1) | (alct_txd_posneg << 0);
-                            }
-                        }}	// close posneg local loops
-
-                    symbol = (ngood_depths > 0) ? '0'+posneg_code : '-';	// display "-" for bad data, display ascii-hex code for good data
-                    fprintf(unit,"%c",symbol);
-                    if (ngood_depths > 0) good_spots_tof[alct_tof_delay]++;
-                }}	// close rx 1st pass, rx 2nd pass
-            fprintf(unit,"\n");
-        }}	// close tx 1st pass, tx 2nd pass
-
-    good_spots_tof[alct_tof_delay]=good_spots_tof[alct_tof_delay]/4;	// correct for having counting 2x in rx and 2x in tx
-
-    // Close ToF scan loop
-}
-
-// Display good spots vs tof and posnegs
-fprintf(unit,"\nEnd of ToF scan------------------------------------------------------------------------------------\n");
-fprintf(unit,"\nRandom Loopback Scan Summary\n");
-for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-    for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-            ngood_spots=good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay];
-            fprintf(unit,"tof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
-        }}
-    fprintf(unit,"\n");
-}
-
-// Display good spots vs tof at ALL posnegs
-fprintf(unit,"\n\n");
-for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-    ngood_spots=good_spots_tof[alct_tof_delay];
-    fprintf(unit,"ToF=%2i good_spots for ALL posnegs = %3i\n",alct_tof_delay,ngood_spots);
-}
-
-// Display good depths vs tof at ALL posnegs
-fprintf(unit,"\n\n");
-
-for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-
-    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-            depth_code  =0;
-            ngood_depths=0;
-            i=0;
-
-            for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-                for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-
-                    pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-                    if (pipe_depth >= 0) {
-                        depth_code=depth_code | (pipe_depth << i*4);
-                        ngood_depths++;
-                    }
-                    i++;
-                }}
-            if (ngood_depths > 0)
-                fprintf(unit,"ToF=%2i good depths for ALL posnegs rxd=%3i txd=%3i depth_code= %4.4X\n",alct_tof_delay,alct_rxd_delay,alct_txd_delay,depth_code);
-        }}}
-
-// Restore default delays and posnegs
-fprintf(unit,"\n");
-fprintf(unit,"Restoring default alct_tof_delay  = %2i\n",alct_tof_default);
-fprintf(unit,"Restoring default alct_rxd_delay  = %2i\n",alct_rxd_default);
-fprintf(unit,"Restoring default alct_txd_delay  = %2i\n",alct_txd_default);
-fprintf(unit,"Restoring default alct_rxd_posneg = %2i\n",alct_rxd_posneg_default);
-fprintf(unit,"Restoring default alct_txd_posneg = %2i\n",alct_txd_posneg_default);
-
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay	= alct_tof_default;
-alct_rxd_posneg	= alct_rxd_posneg_default;
-alct_txd_posneg	= alct_txd_posneg_default;
-
-ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);					// Get current state
-wr_data = rd_data & 0xFF0F;							// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);			// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-goto L2300;
-
-//------------------------------------------------------------------------------
-//	ALCT-TMB Quick Test Series
-//------------------------------------------------------------------------------
-L231400:
-printf("\tQuick test series removed 5.20.2010\n");
-pause("\tReturn to sub-menu <cr> ");
-goto L2300;
-
-//------------------------------------------------------------------------------
-//	CFEB rxd clock delay scan: ALCT|CFEB-to-TMB Teven|Todd
-//------------------------------------------------------------------------------
-L231500:
-//	unit  = stdout;
-unit  = log_file;
-debug = false;
-display_cfeb=true;
-//	display_cfeb=false;
-
-fprintf(unit,"CFEB rxd clock delay scan using ALCT as a CFEB:  Teven|Todd\n");
-
-// Get current 3D3444 + phaser delays + posnegs
-for (icfeb=0; icfeb<=4; ++icfeb) {
-    sprintf(ccfeb, "%1i",icfeb);	// Convert icfeb to string
-    scfeb=string(ccfeb);
-    cfeb_rxd_delay_default[icfeb]  = phaser_rd(base_adr,string("cfeb_rxd_").append(scfeb),dps_delta);
-    cfeb_rxd_posneg_default[icfeb] = posneg_rd(base_adr,string("cfeb_rxd_").append(scfeb));
-    cfeb_nbx_delay_default[icfeb]  = cfebbx_rd(base_adr,string("cfeb_nbx_").append(scfeb));
-    cfeb_txc_delay_default[icfeb]  = dddstr_rd(base_adr,string("cfeb_txc_").append(scfeb));
-}
-cfeb_tof_delay_default         = dddstr_rd(base_adr,string("cfeb_tof"));
-
-// Inquire
-icfeb=0;
-inquire("Select CFEB[0-4]   ?          cr=%3i", minv= 0, maxv=  4, radix=10, icfeb);
-
-cfeb_tof_delay  = cfeb_tof_delay_default;
-cfeb_rxd_delay	= cfeb_rxd_delay_default[icfeb];
-cfeb_rxd_posneg = cfeb_rxd_posneg_default[icfeb];
-cfeb_nbx_delay  = cfeb_nbx_delay_default[icfeb];
-
-inquire("Set cfeb_tof_delay ? -1=scan, cr=%3i", minv=-1, maxv= 12, radix=10, cfeb_tof_delay );
-inquire("Set cfeb_rxd_posneg? -1=scan, cr=%3i", minv=-1, maxv=  1, radix=10, cfeb_rxd_posneg);
-inquire("Set cfeb_nbx_delay ?          cr=%3i", minv=-1, maxv= 15, radix=10, cfeb_nbx_delay );
-
-// Set CFEB fifo tbins, each one is an independent rx data sample
-adr    = base_adr+seq_fifo_adr;
-status = vme_read(adr,rd_data);
-
-fifo_mode		= (rd_data >> 0) & 0x07;	// 3 bits
-fifo_tbins		= (rd_data >> 3) & 0x1F;	// 5 bits
-fifo_pretrig	= (rd_data >> 8) & 0x1F;	// 5 bits
-
-fifo_tbins      = 31;
-
-wr_data = rd_data & 0xF000;			// clear lower bits
-    wr_data = wr_data
-    | ((fifo_mode    & 0x07) << 0)		// [2:0]
-| ((fifo_tbins   & 0x1F) << 3)		// [7:3]
-    | ((fifo_pretrig & 0x1F) << 8);		// [12:8]
-
-    status  = vme_write(adr,wr_data);
-
-    // Turn off CCB backplane inputs, turn on L1A emulator
-    adr     = ccb_cfg_adr+base_adr;
-    wr_data = 0x003D;
-    status  = vme_write(adr,wr_data);
-
-    // Enable l1a on sequencer trigger, turn off dmb trigger, set internal l1a delay
-    adr     = ccb_trig_adr+base_adr;
-    wr_data = 0x0004;
-    wr_data = wr_data | (l1a_delay << 8);
-    status  = vme_write(adr,wr_data);
-
-    // Turn off ALCT cable inputs, enable synchronized alct+clct triggers
-    adr     = alct_inj_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x0000;
-    wr_data = wr_data | 0x0005;
-    wr_data = wr_data | (alct_injector_delay << 5);
-    status  = vme_write(adr,wr_data);
-
-    // Set ALCT delay for TMB matching
-    adr     = tmbtim_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFF0;
-    wr_data = wr_data | 0x0003;
-    status  = vme_write(adr,wr_data);
-
-    // Turn on all CFEB inputs so we can check for crosstalk
-    adr     = cfeb_inj_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFE0;
-    wr_data = wr_data | 0x001F;
-    status  = vme_write(adr,wr_data);
-
-    // Turn on CFEB enables to over-ride mask_all
-    adr     = seq_trig_en_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x03FF;		// clear old cfeb_en and source
-    wr_data = wr_data | 0x7C00;		// ceb_en_source=0,cfeb_en=1F
-    status  = vme_write(adr,wr_data);
-
-    // Turn off internal level 1 accept for sequencer, set l1a window width
-    adr     = seq_l1a_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0x00FF;
-    wr_data = wr_data | 0x0300;		// l1a window width
-    status  = vme_write(adr,wr_data);
-
-    // Turn off CLCT pattern trigger
-    adr     = seq_trig_en_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFF00;
-    status  = vme_write(adr,wr_data);
-
-    // Clear previous ALCT inject
-    adr     = alct_inj_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFFD;
-    status  = vme_write(adr,wr_data);
-
-    // Set start_trigger state for FMM
-    ttc_cmd = 6;			// start_trigger
-    adr     = base_adr+ccb_cmd_adr;
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0003 | (ttc_cmd << 8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    ttc_cmd = 1;			// bx0
-    wr_data = 0x0003 | (ttc_cmd << 8);
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0001;
-    status  = vme_write(adr,wr_data);
-
-    // Clear DMB RAM write-address
-    adr     = dmb_ram_adr+base_adr;
-    wr_data = 0x2000;	//reset RAM write address
-    status  = vme_write(adr,wr_data);
-    wr_data = 0x0000;	// unreset
-    status  = vme_write(adr,wr_data);
-
-    // Set CFEB nbx delay
-    adr     = delay0_int_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// Get current cfeb0-3
-    cfeb_delay_is[0]= (rd_data >>  0) & 0xF;
-    cfeb_delay_is[1]= (rd_data >>  4) & 0xF;
-    cfeb_delay_is[2]= (rd_data >>  8) & 0xF;
-    cfeb_delay_is[3]= (rd_data >> 12) & 0xF;
-
-    adr     = delay1_int_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// Get current cfeb4
-    cfeb_delay_is[4]= (rd_data >>  0) & 0xF;
-
-    cfeb_delay_is[icfeb]=cfeb_nbx_delay;		// Set new delay for selected cfeb
-
-    adr     = delay0_int_adr+base_adr;			// Write new cfeb0-3
-    wr_data = 0;
-    wr_data = wr_data | (cfeb_delay_is[0] <<  0);
-    wr_data = wr_data | (cfeb_delay_is[1] <<  4);
-    wr_data = wr_data | (cfeb_delay_is[2] <<  8);
-    wr_data = wr_data | (cfeb_delay_is[3] << 12);
-    status  = vme_write(adr,wr_data);
-
-    adr     = delay1_int_adr+base_adr;			// Write new cfeb 4
-    wr_data = rd_data & 0xFFF0;
-    wr_data = wr_data | (cfeb_delay_is[4] <<   0);
-    status  = vme_write(adr,wr_data);
-
-    // Put ALCT into xmit Teven|Todd pattern, seq_cmd[0],[2] share same wire pair
-    seq_cmd_bit[0]=1;	seq_cmd_bit[2]=1;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-    seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven|Todd pattern
-
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// Get current state
-    wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-    wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-    wr_data = wr_data | (seq_cmd_bit[1] << 5);
-    wr_data = wr_data | (seq_cmd_bit[2] << 6);
-    wr_data = wr_data | (seq_cmd_bit[3] << 7);
-    status  = vme_write(adr,wr_data);
-
-    // Scan tof and rxd_posneg, or use input values
-    cfeb_tof_delay_min	= (cfeb_tof_delay  < 0) ?  0 : cfeb_tof_delay;
-    cfeb_tof_delay_max	= (cfeb_tof_delay  < 0) ? 12 : cfeb_tof_delay;
-    cfeb_rxd_posneg_min	= (cfeb_rxd_posneg < 0) ?  0 : cfeb_rxd_posneg;
-    cfeb_rxd_posneg_max	= (cfeb_rxd_posneg < 0) ?  1 : cfeb_rxd_posneg;
-
-    for (cfeb_rxd_posneg = cfeb_rxd_posneg_min; cfeb_rxd_posneg <= cfeb_rxd_posneg_max; ++cfeb_rxd_posneg) {
-        for (cfeb_tof_delay  = cfeb_tof_delay_min;  cfeb_tof_delay  <= cfeb_tof_delay_max;  ++cfeb_tof_delay ) {
-
-            // Set scanned delays and posnegs
-            alct_tof_delay=cfeb_tof_delay;									// ALCT is acting as a cfeb, so use it to delay tof
-            ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-            sprintf(ccfeb, "%1i",icfeb);	// Convert icfeb to string
-            scfeb=string(ccfeb);
-            posneg_wr(base_adr,string("cfeb_rxd_").append(scfeb),cfeb_rxd_posneg);
-
-            // Clear error accumulators
-            for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
-                for (ibit=0; ibit<=23; ++ibit) {
-                    cfeb_rxd_bad[cfeb_rxd_delay][ibit]=0;
-                }}
-
-            for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
-                cfeb_sync_1st_err[cfeb_rxd_delay] = 0;
-                cfeb_sync_2nd_err[cfeb_rxd_delay] = 0;
-            }
-
-            // Step alct rxd clock delay
-            fprintf(unit,"\n");	
-            fprintf(unit,"Checking 80MHz Teven|Todd data ALCT sends into CFEB%1i\n",icfeb);
-            fprintf(unit,"Setting  cfeb_tof_delay  =%2i\n",cfeb_tof_delay);
-            fprintf(unit,"Setting  cfeb_rxd_posneg =%2i\n",cfeb_rxd_posneg);
-            fprintf(unit,"Using    dps_max         =%2i\n",dps_max);
-            fprintf(unit,"Using    dps_delta       =%2i\n",dps_delta);
-            fprintf(unit,"\n");	
-            fprintf(unit,"Stepping cfeb_rxd_delay...\n");
-            //	if (unit!=stdout) fprintf(stdout,"Scanning cfeb_tof_delay=%2i cfeb_rxd_posneg=%1i...wait",cfeb_tof_delay,cfeb_rxd_posneg);
-            printf("Scanning cfeb_tof_delay=%2i cfeb_rxd_posneg=%1i...wait\n\n",cfeb_tof_delay,cfeb_rxd_posneg);
-
-            npasses=33;
-            for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) { if(debug) fprintf(log_file,"cfeb_rxd_delay=%2i\n",cfeb_rxd_delay);
-                for (ipass=1; ipass<=npasses; ++ipass) {
-
-                    // Set cfeb_rxd_delay
-                    phaser_wr(base_adr,string("cfeb_rxd_").append(scfeb),cfeb_rxd_delay,dps_delta);
-
-                    // Wait >51 usec for raw hits RAM to write all 2048 addresses
-                    sleep(1);
-
-                    // Fire VME trigger
-                    adr     = seq_trig_en_adr+base_adr;
-                    status  = vme_read(adr,rd_data);
-                    wr_data = rd_data & 0xFF00;
-                    wr_data	= wr_data | (1 << 7);	// fire vme trigger
-                    status  = vme_write(adr,wr_data);
-                    wr_data = rd_data & 0xFF00;		// unfire vme trigger
-                    status  = vme_write(adr,wr_data);
-
-                    // Wait for TMB to read out to DMB
-                    sleep(1);
-
-                    // Get DMB RAM word count and busy bit
-                    adr       = dmb_wdcnt_adr+base_adr;
-                    status    = vme_read(adr,rd_data);
-                    dmb_wdcnt = rd_data & 0x0FFF;
-                    dmb_busy  = (rd_data >> 14) & 0x0001;
-
-                    if (debug) {	
-                        fprintf(log_file,"\tdmb word count = %4i\n",dmb_wdcnt);
-                        fprintf(log_file,"\tdmb busy       = %4i\n",dmb_busy);
-                    }
-
-                    if (dmb_busy  != 0) pause ("Can not read RAM: dmb reports busy");
-                    if (dmb_wdcnt <= 0) pause ("Can not read RAM: dmb reports word count <=0");
-
-                    // Write RAM read address to TMB
-                    for (iadr=0; iadr<=dmb_wdcnt-1; ++iadr) {
-                        adr     = dmb_ram_adr+base_adr;
-                        wr_data = iadr & 0xFFFF;
-                        status  = vme_write(adr,wr_data);
-
-                        // Read RAM data from TMB
-                        adr    = dmb_rdata_adr+base_adr;
-                        status = vme_read(adr,rd_data);			// read lsbs
-                        dmb_rdata_lsb=rd_data;
-
-                        adr    = dmb_wdcnt_adr+base_adr;
-                        status = vme_read(adr,rd_data);			// read msbs
-                        dmb_rdata_msb = (rd_data >> 12) & 0x3;	// rdata msbs
-
-                        dmb_rdata = dmb_rdata_lsb | (dmb_rdata_msb << 16);
-                        vf_data[iadr]=dmb_rdata;
-
-                        if (debug) fprintf(log_file,"Adr=%4i Data=%5.5X\n",iadr,dmb_rdata);
-                    }	// close iadr
-
-                    // Clear RAM address for next event
-                    adr     = dmb_ram_adr+base_adr;
-                    wr_data = 0x2000;	// reset RAM write address
-                    status  = vme_write(adr,wr_data);
-                    wr_data = 0x0000;	// unreset
-                    status  = vme_write(adr,wr_data);
-
-                    // Point to start of CFEB data
-                    iframe     = 5;
-                    r_nheaders = vf_data[iframe] & 0x3F;					// Number of header words
-                    adr_e0b    = r_nheaders;
-
-                    if (debug) fprintf(log_file,"r_nheaders=%i\n",r_nheaders);
-                    if (adr_e0b <=0) pause ("Unreasonable nheaders");
-
-                    iframe=19;
-                    r_ncfebs=			(vf_data[iframe] >>  0) & 0x7;		// Number of CFEBs read out
-                    r_fifo_tbins=		(vf_data[iframe] >>  3) & 0x1F;		// Number of time bins per CFEB in dump
-
-                    if (debug) fprintf(log_file,"r_fifo_tbins=%i\n",r_fifo_tbins);
-                    if (r_fifo_tbins<=0) pause ("Unreasonable ntbins");
-
-                    // Copy triad bits to a holding array
-                    iframe = adr_e0b+1;										// First raw hits frame for cfeb0
-
-                    for (jcfeb  = 0; jcfeb  <= r_ncfebs-1;     ++jcfeb ) {	// Loop over all cfebs so we can see crosstalk
-                        for (itbin  = 0; itbin  <= r_fifo_tbins-1; ++itbin ) {	// Loop over time bins
-                            for (ilayer = 0; ilayer <= mxly-1;         ++ilayer) {	// Loop over layers
-
-                                rdcid  = (vf_data[iframe] >> 12) & 0x7;					// CFEB ID in the dump
-                                rdtbin = (vf_data[iframe] >>  8) & 0xF;					// Tbin number in the dump
-                                hits8  =  vf_data[iframe]        & 0xFF;				// 8 triad block
-
-                                for (ids=0; ids< mxds; ++ids) {							// Loop over hits per block
-                                    hits1=(hits8 >> ids) & 0x1;								// Extract 1 hit
-                                    ids_abs=ids+jcfeb*8;									// Absolute distrip id
-                                    read_pat[itbin][ilayer][ids_abs]=hits1;					// hit this distrip
-                                    if (hits1 != 0) nonzero_triads++;						// Count nonzero triads
-                                    dprintf(log_file,"iframe=%4i vf_data=%5.5X hits8=%i jcfeb=%i itbin=%i ids_abs=%i hits1=%i\n",iframe,vf_data[iframe],hits8,jcfeb,itbin,ids_abs,hits1);
-                                }														// Close ids
-                                iframe++;												// Next frame
-                            }														// Close for ilayer
-                        }														// Close for itbin
-                    }														// Close for jcfeb
-
-                    // Display cfeb and ids column markers
-                    if (display_cfeb) {
-                        fprintf(log_file,"\n");
-                        fprintf(log_file,"     Raw Hits Triads\n");
-
-                        fprintf(log_file,"Cfeb-");
-                        for (jcfeb=0; jcfeb < mxcfeb; ++jcfeb) { fprintf(log_file,"%|");	// display cfeb columms
-                            for (ids=0;   ids   < mxds;   ++ids  )   fprintf(log_file,"%1.1i",jcfeb);}
-                        fprintf(log_file,"|\n");
-
-                        fprintf(log_file,"Ds---");
-                        for (jcfeb=0; jcfeb < mxcfeb; ++jcfeb) { fprintf(log_file,"%|",x);	// display ids columns
-                            for (ids=0;   ids   < mxds;   ++ids  )   fprintf(log_file,"%1.1i",ids%10);}
-                        fprintf(log_file,"|\n");
-                        fprintf(log_file,"Ly Tb\n");
-
-                        // Display CFEB raw hits
-                        for (ilayer=0; ilayer <= mxly-1;         ++ilayer)        {
-                            for (itbin=0;  itbin  <= r_fifo_tbins-1; ++itbin ) { fprintf(log_file,"%1i %2i ",ilayer,itbin);
-
-                                for (ids_abs=0;ids_abs<=39;++ids_abs) {
-                                    if (ids_abs%8==0) {fprintf(log_file,"|");}
-                                    fprintf(log_file,"%1.1i",read_pat[itbin][ilayer][ids_abs]);
-                                }	// close for ids_abs
-                                fprintf(log_file,"|\n");
-                            }	// close itbin
-                            fprintf(log_file,"\n");
-                        }	// close ilayer
-                    }	// close display cfeb
-
-                    // Map CFEB Signal names into Triad names, use BFA150/CED243 for simulator check
-                    //	ALCT	Pins	1st Cy 	2nd Cy	Triad_ff	CFEB
-                    //	rx0		1+	2-	Ly0Tr0	Ly3Tr0	0	24		rx0
-                    //	rx1		49+	50-	Ly0Tr1	Ly3Tr1	1	25		rx23
-                    //	rx2		3+	4-	Ly0Tr2	Ly3Tr2	2	26		rx1
-                    //	rx3		47+	48-	Ly0Tr3	Ly3Tr3	3	27		rx22
-                    //	rx4		5+	6-	Ly5Tr0	Ly4Tr0	4	28		rx2
-                    //	rx5		45+	46-	Ly5Tr1	Ly4Tr1	5	29		rx21
-                    //	rx6		7+	8-	Ly5Tr2	Ly4Tr2	6	30		rx3
-                    //	rx7		43+	44-	Ly5Tr3	Ly4Tr3	7	31		rx20
-                    //	rx8		9+	10-	Ly1Tr0	Ly2Tr0	8	32		rx4
-                    //	rx9		41+	42-	Ly1Tr1	Ly2Tr1	9	33		rx19
-                    //	rx10	11+	12-	Ly1Tr2	Ly2Tr2	10	34		rx5
-                    //	rx11	39+	40-	Ly1Tr3	Ly2Tr3	11	35		rx18
-                    //	rx12	13+	14-	Ly0Tr4	Ly3Tr4	12	36		rx6
-                    //	rx13	37+	38-	Ly0Tr5	Ly3Tr5	13	37		rx17
-                    //	rx14	15+	16-	Ly0Tr6	Ly3Tr6	14	38		rx7
-                    //	rx15	35+	36-	Ly0Tr7	Ly3Tr7	15	39		rx16
-                    //	rx16	17+	18-	Ly5Tr4	Ly4Tr4	16	40		rx8
-                    //	rx17	33+	34-	Ly5Tr5	Ly4Tr5	17	41		rx15
-                    //	rx18	19+	20-	Ly5Tr6	Ly4Tr6	18	42		rx9
-                    //	rx19	31+	32-	Ly5Tr7	Ly4Tr7	19	43		rx14
-                    //	rx20	21+	22-	Ly1Tr4	Ly2Tr4	20	44		rx10
-                    //	rx21	29+	30-	Ly1Tr5	Ly2Tr5	21	45		rx13
-                    //	rx22	23+	24-	Ly1Tr6	Ly2Tr6	22	46		rx11
-                    //	rx23	27+	28-	Ly1Tr7	Ly2Tr7	23	47		rx12
-
-                    // Each tbin is an independent rx data measurement
-                    ids_abs=icfeb*8;
-
-                    for (itbin=0; itbin<=r_fifo_tbins-1; ++itbin) {
-
-                        // First in time map
-                        cfeb_rxdata_1st[ 0] = read_pat[itbin][0][0+ids_abs];
-                        cfeb_rxdata_1st[ 1] = read_pat[itbin][0][1+ids_abs];
-                        cfeb_rxdata_1st[ 2] = read_pat[itbin][0][2+ids_abs];
-                        cfeb_rxdata_1st[ 3] = read_pat[itbin][0][3+ids_abs];
-
-                        cfeb_rxdata_1st[ 4] = read_pat[itbin][5][0+ids_abs];
-                        cfeb_rxdata_1st[ 5] = read_pat[itbin][5][1+ids_abs];
-                        cfeb_rxdata_1st[ 6] = read_pat[itbin][5][2+ids_abs];
-                        cfeb_rxdata_1st[ 7] = read_pat[itbin][5][3+ids_abs];
-
-                        cfeb_rxdata_1st[ 8] = read_pat[itbin][1][0+ids_abs];
-                        cfeb_rxdata_1st[ 9] = read_pat[itbin][1][1+ids_abs];
-                        cfeb_rxdata_1st[10] = read_pat[itbin][1][2+ids_abs];
-                        cfeb_rxdata_1st[11] = read_pat[itbin][1][3+ids_abs];
-
-                        cfeb_rxdata_1st[12] = read_pat[itbin][0][4+ids_abs];
-                        cfeb_rxdata_1st[13] = read_pat[itbin][0][5+ids_abs];
-                        cfeb_rxdata_1st[14] = read_pat[itbin][0][6+ids_abs];
-                        cfeb_rxdata_1st[15] = read_pat[itbin][0][7+ids_abs];
-
-                        cfeb_rxdata_1st[16] = read_pat[itbin][5][4+ids_abs];
-                        cfeb_rxdata_1st[17] = read_pat[itbin][5][5+ids_abs];
-                        cfeb_rxdata_1st[18] = read_pat[itbin][5][6+ids_abs];
-                        cfeb_rxdata_1st[19] = read_pat[itbin][5][7+ids_abs];
-
-                        cfeb_rxdata_1st[20] = read_pat[itbin][1][4+ids_abs];
-                        cfeb_rxdata_1st[21] = read_pat[itbin][1][5+ids_abs];
-                        cfeb_rxdata_1st[22] = read_pat[itbin][1][6+ids_abs];
-                        cfeb_rxdata_1st[23] = read_pat[itbin][1][7+ids_abs];
-
-                        // Second in time map
-                        cfeb_rxdata_2nd[ 0] = read_pat[itbin][3][0+ids_abs];
-                        cfeb_rxdata_2nd[ 1] = read_pat[itbin][3][1+ids_abs];
-                        cfeb_rxdata_2nd[ 2] = read_pat[itbin][3][2+ids_abs];
-                        cfeb_rxdata_2nd[ 3] = read_pat[itbin][3][3+ids_abs];
-
-                        cfeb_rxdata_2nd[ 4] = read_pat[itbin][4][0+ids_abs];
-                        cfeb_rxdata_2nd[ 5] = read_pat[itbin][4][1+ids_abs];
-                        cfeb_rxdata_2nd[ 6] = read_pat[itbin][4][2+ids_abs];
-                        cfeb_rxdata_2nd[ 7] = read_pat[itbin][4][3+ids_abs];
-
-                        cfeb_rxdata_2nd[ 8] = read_pat[itbin][2][0+ids_abs];
-                        cfeb_rxdata_2nd[ 9] = read_pat[itbin][2][1+ids_abs];
-                        cfeb_rxdata_2nd[10] = read_pat[itbin][2][2+ids_abs];
-                        cfeb_rxdata_2nd[11] = read_pat[itbin][2][3+ids_abs];
-
-                        cfeb_rxdata_2nd[12] = read_pat[itbin][3][4+ids_abs];
-                        cfeb_rxdata_2nd[13] = read_pat[itbin][3][5+ids_abs];
-                        cfeb_rxdata_2nd[14] = read_pat[itbin][3][6+ids_abs];
-                        cfeb_rxdata_2nd[15] = read_pat[itbin][3][7+ids_abs];
-
-                        cfeb_rxdata_2nd[16] = read_pat[itbin][4][4+ids_abs];
-                        cfeb_rxdata_2nd[17] = read_pat[itbin][4][5+ids_abs];
-                        cfeb_rxdata_2nd[18] = read_pat[itbin][4][6+ids_abs];
-                        cfeb_rxdata_2nd[19] = read_pat[itbin][4][7+ids_abs];
-
-                        cfeb_rxdata_2nd[20] = read_pat[itbin][2][4+ids_abs];
-                        cfeb_rxdata_2nd[21] = read_pat[itbin][2][5+ids_abs];
-                        cfeb_rxdata_2nd[22] = read_pat[itbin][2][6+ids_abs];
-                        cfeb_rxdata_2nd[23] = read_pat[itbin][2][7+ids_abs];
-
-                        // Remap CFEB bits to correct for stupid ALCT signal order and inversion
-                        cfeb_rxdata_1st_remap[ 0] = cfeb_rxdata_1st[ 0] ^ 0x1;
-                        cfeb_rxdata_1st_remap[ 1] = cfeb_rxdata_1st[23];
-                        cfeb_rxdata_1st_remap[ 2] = cfeb_rxdata_1st[ 1] ^ 0x1;
-                        cfeb_rxdata_1st_remap[ 3] = cfeb_rxdata_1st[22];
-
-                        cfeb_rxdata_1st_remap[ 4] = cfeb_rxdata_1st[ 2] ^ 0x1;
-                        cfeb_rxdata_1st_remap[ 5] = cfeb_rxdata_1st[21];
-                        cfeb_rxdata_1st_remap[ 6] = cfeb_rxdata_1st[ 3] ^ 0x1;
-                        cfeb_rxdata_1st_remap[ 7] = cfeb_rxdata_1st[20];
-
-                        cfeb_rxdata_1st_remap[ 8] = cfeb_rxdata_1st[ 4] ^ 0x1;
-                        cfeb_rxdata_1st_remap[ 9] = cfeb_rxdata_1st[19];
-                        cfeb_rxdata_1st_remap[10] = cfeb_rxdata_1st[ 5] ^ 0x1;
-                        cfeb_rxdata_1st_remap[11] = cfeb_rxdata_1st[18];
-
-                        cfeb_rxdata_1st_remap[12] = cfeb_rxdata_1st[ 6] ^ 0x1;
-                        cfeb_rxdata_1st_remap[13] = cfeb_rxdata_1st[17];
-                        cfeb_rxdata_1st_remap[14] = cfeb_rxdata_1st[ 7] ^ 0x1;
-                        cfeb_rxdata_1st_remap[15] = cfeb_rxdata_1st[16];
-
-                        cfeb_rxdata_1st_remap[16] = cfeb_rxdata_1st[ 8] ^ 0x1;
-                        cfeb_rxdata_1st_remap[17] = cfeb_rxdata_1st[15];
-                        cfeb_rxdata_1st_remap[18] = cfeb_rxdata_1st[ 9] ^ 0x1;
-                        cfeb_rxdata_1st_remap[19] = cfeb_rxdata_1st[14];
-
-                        cfeb_rxdata_1st_remap[20] = cfeb_rxdata_1st[10] ^ 0x1;
-                        cfeb_rxdata_1st_remap[21] = cfeb_rxdata_1st[13];
-                        cfeb_rxdata_1st_remap[22] = cfeb_rxdata_1st[11] ^ 0x1;
-                        cfeb_rxdata_1st_remap[23] = cfeb_rxdata_1st[12];
-
-                        cfeb_rxdata_2nd_remap[ 0] = cfeb_rxdata_2nd[ 0] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[ 1] = cfeb_rxdata_2nd[23];
-                        cfeb_rxdata_2nd_remap[ 2] = cfeb_rxdata_2nd[ 1] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[ 3] = cfeb_rxdata_2nd[22];
-
-                        cfeb_rxdata_2nd_remap[ 4] = cfeb_rxdata_2nd[ 2] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[ 5] = cfeb_rxdata_2nd[21];
-                        cfeb_rxdata_2nd_remap[ 6] = cfeb_rxdata_2nd[ 3] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[ 7] = cfeb_rxdata_2nd[20];
-
-                        cfeb_rxdata_2nd_remap[ 8] = cfeb_rxdata_2nd[ 4] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[ 9] = cfeb_rxdata_2nd[19];
-                        cfeb_rxdata_2nd_remap[10] = cfeb_rxdata_2nd[ 5] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[11] = cfeb_rxdata_2nd[18];
-
-                        cfeb_rxdata_2nd_remap[12] = cfeb_rxdata_2nd[ 6] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[13] = cfeb_rxdata_2nd[17];
-                        cfeb_rxdata_2nd_remap[14] = cfeb_rxdata_2nd[ 7] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[15] = cfeb_rxdata_2nd[16];
-
-                        cfeb_rxdata_2nd_remap[16] = cfeb_rxdata_2nd[ 8] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[17] = cfeb_rxdata_2nd[15];
-                        cfeb_rxdata_2nd_remap[18] = cfeb_rxdata_2nd[ 9] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[19] = cfeb_rxdata_2nd[14];
-
-                        cfeb_rxdata_2nd_remap[20] = cfeb_rxdata_2nd[10] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[21] = cfeb_rxdata_2nd[13];
-                        cfeb_rxdata_2nd_remap[22] = cfeb_rxdata_2nd[11] ^ 0x1;
-                        cfeb_rxdata_2nd_remap[23] = cfeb_rxdata_2nd[12];
-
-                        // Convert to integers
-                        cfeb_sync_rxdata_1st = 0;
-                        cfeb_sync_rxdata_2nd = 0;
-
-                        for (i=0; i<=23; ++i) {
-                            cfeb_sync_rxdata_1st = cfeb_sync_rxdata_1st | (cfeb_rxdata_1st_remap[i] << i);
-                            cfeb_sync_rxdata_2nd = cfeb_sync_rxdata_2nd | (cfeb_rxdata_2nd_remap[i] << i);	
-                        }
-
-                        if (debug) {
-                            fprintf(log_file,"rxd_1st=%8.7X\n",cfeb_sync_rxdata_1st);
-                            fprintf(log_file,"rxd_2nd=%8.7X\n",cfeb_sync_rxdata_2nd);
-                        }
-
-                        // Compare received bits to expected pattern
-                        cfeb_1st_expect = 0x0AAAAAA;	// Teven
-                        cfeb_2nd_expect = 0x0555555;	// Todd 
-
-                        if (cfeb_sync_rxdata_1st != cfeb_1st_expect) cfeb_sync_1st_err[cfeb_rxd_delay]=1;
-                        if (cfeb_sync_rxdata_2nd != cfeb_2nd_expect) cfeb_sync_2nd_err[cfeb_rxd_delay]=1;
-
-                        for (ibit=0; ibit<=23; ++ibit) {
-                            ibit_1st_expected = (cfeb_1st_expect		>> ibit) & 0x1;
-                            ibit_2nd_expected = (cfeb_2nd_expect		>> ibit) & 0x1;
-                            ibit_1st_received = (cfeb_sync_rxdata_1st	>> ibit) & 0x1;
-                            ibit_2nd_received = (cfeb_sync_rxdata_2nd	>> ibit) & 0x1;
-                            if ((ibit_1st_expected !=  ibit_1st_received) ||
-                                    (ibit_2nd_expected !=  ibit_2nd_received)) cfeb_rxd_bad[cfeb_rxd_delay][ibit]++;
-                        }	// Close ibit
-
-                        // Close scan loops
-                    }	// close itbin
-                    printf("rxd=%2i tof=%2i posneg=%1i passes left=%4i\r",cfeb_rxd_delay,cfeb_tof_delay,cfeb_rxd_posneg,npasses-ipass);
-                }	// Close ipass
-            }	// Close cfeb_rxd_delay
-            fprintf(unit,"\n");
-
-            // Find good spots window width and center in cfeb_rxd_delay for this cfeb_tof_delay and cfeb_rxd_posneg
-            ngood		=  0;
-            ngood_max	=  0;
-            ngood_edge	=  0;
-            ngood_center=  0;
-
-            for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
-                good_spot= !(cfeb_sync_1st_err[cfeb_rxd_delay] || cfeb_sync_2nd_err[cfeb_rxd_delay]);
-                good_spots[cfeb_rxd_delay][cfeb_rxd_posneg][0][0][cfeb_tof_delay]=good_spot;
-                fprintf(unit,"cfeb_rxd_delay=%2i good_spot=%1i\n",cfeb_rxd_delay,good_spot);
-            }
-
-            for (i=0; i<(dps_max*2); ++i) {	// scan delays 0 to 25 twice to span the awkward 25 to 0 wrap around
-                cfeb_rxd_delay=i%(dps_max+1);
-                good_spot=good_spots[cfeb_rxd_delay][cfeb_rxd_posneg][0][0][cfeb_tof_delay];
-                //	printf("cfeb_rxd_delay=%2i good_spot=%1i\n",cfeb_rxd_delay,good_spot);
-                //	printf("i             =%2i good_spot=%1i\n",i,good_spot);
-
-                if  (good_spot==1) ngood++;			// this is a good spot
-                if ((good_spot==0) && (ngood>0)) {	// good spot just went away, so window preceeds it
-                    ngood_max  = ngood;
-                    ngood_edge = i;
-                    ngood      = 0;
-                }	// close if
-            }	// close for i
-
-            if (ngood_max>0) ngood_center=(dps_max+ngood_edge-(ngood_max/2))%(dps_max+1);
-
-            window_width[cfeb_rxd_posneg][cfeb_tof_delay]  = ngood_max;
-            window_center[cfeb_rxd_posneg][cfeb_tof_delay] = ngood_center;
-
-            fprintf(unit,"Window width  = %2i at tof=%2i posneg=%1i\n",window_width[cfeb_rxd_posneg][cfeb_tof_delay],cfeb_tof_delay,cfeb_rxd_posneg);
-            fprintf(unit,"Window center = %2i at tof=%2i posneg=%1i\n",window_center[cfeb_rxd_posneg][cfeb_tof_delay],cfeb_tof_delay,cfeb_rxd_posneg);
-            fprintf(unit,"\n");	
-
-            if (unit!=stdout)
-                fprintf(stdout,"\nwidth=%2i center=%2i\n",
-                        window_width[cfeb_rxd_posneg][cfeb_tof_delay],
-                        window_center[cfeb_rxd_posneg][cfeb_tof_delay]);
-
-            // Display timing window twice in case good area is near 0 or 25ns
-            nsamples = npasses*r_fifo_tbins;
-            fprintf(unit,"CFEB%1i Scan of cfeb_rxd_delay digital phase shift at ToF=%2i Posneg=%1i\n",icfeb,cfeb_tof_delay,cfeb_rxd_posneg);
-            fprintf(unit,"Passes  =%4i\n",npasses);	
-            fprintf(unit,"Tbins   =%4i\n",r_fifo_tbins);	
-            fprintf(unit,"Samples =%4i\n",nsamples);	
-            fprintf(unit,"Width   =%4i\n",ngood_max);
-            fprintf(unit,"Center  =%4i\n",ngood_center);
-            fprintf(unit,"\n");	
-            fprintf(unit,"Rxd\n");	
-            fprintf(unit,"Step   Berrs Average 12 0123456789012345678901234\n");	
-
-            for (j=0; j<=1; ++j) {
-                for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
-                    nbad=0;
-                    for (ibit=0; ibit<=23; ++ibit) {nbad=nbad+cfeb_rxd_bad[cfeb_rxd_delay][ibit];}
-                    avgbad=double(nbad)/double(nsamples);
-                    nx=int(avgbad);
-                    if ((nx==0) && (nbad != 0)) nx=1;
-                    fprintf(unit,"%2i  %8i %7.4f %c%c |",cfeb_rxd_delay,nbad,avgbad,passfail[cfeb_sync_1st_err[cfeb_rxd_delay]],passfail[cfeb_sync_2nd_err[cfeb_rxd_delay]]);
-                    if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
-                    if (cfeb_rxd_delay==window_center[cfeb_rxd_posneg][cfeb_tof_delay]) fprintf(unit,"\t\t\t\t<--Center=%2i  Width=%2i",ngood_center,ngood_max);
-                    fprintf(unit,"\n");
-                }}
-
-            // Display bad bits vs delay
-            fprintf(unit,"\nCFEB%1i Cable Pair Errors vs cfeb_rxd_clock Delay Step\n",icfeb);
-
-            fprintf(unit," delay ");
-            for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {fprintf(unit,"%5i",cfeb_rxd_delay);}	// display delay values header
-            fprintf(unit,"\n");
-
-            fprintf(unit,"pair   ");
-            for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {fprintf(unit," ----");}
-            fprintf(unit,"\n");
-
-            for (ibit=0; ibit<=23; ++ibit) {
-                fprintf(unit,"rx[%2i] ",ibit);
-                for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {fprintf(unit,"%5i",cfeb_rxd_bad[cfeb_rxd_delay][ibit]);}
-                fprintf(unit,"\n");
-            }
-
-            // Close scan loops
-        }	// cfeb_tof_delay
-    }	// cfeb_rxd_posneg
-
-// Display window center and width vs tof and posneg for plotting
-if ((cfeb_rxd_posneg_min != cfeb_rxd_posneg_max) && cfeb_tof_delay_min != cfeb_tof_delay_max) cfeb_rxd_scan_done=true;
-
-fprintf(unit,"\n");
-fprintf(unit,"CFEB%1i Scan summary:\n\n",icfeb);
-for (cfeb_rxd_posneg = cfeb_rxd_posneg_min; cfeb_rxd_posneg <= cfeb_rxd_posneg_max; ++cfeb_rxd_posneg) {
-    for (cfeb_tof_delay  = cfeb_tof_delay_min;  cfeb_tof_delay  <= cfeb_tof_delay_max;  ++cfeb_tof_delay ) {
-
-        fprintf(unit,"Tof=%2i Posneg=%1i Window center=%2i  width=%2i\n",
-                cfeb_tof_delay,cfeb_rxd_posneg,
-                window_center[cfeb_rxd_posneg][cfeb_tof_delay],
-                window_width[cfeb_rxd_posneg][cfeb_tof_delay]);
-
-        newcenter=window_center[cfeb_rxd_posneg][cfeb_tof_delay];
-    }
-    fprintf(unit,"\n");
-}
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);				// Get current state
-wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-goto L2300;
-
-//------------------------------------------------------------------------------
-//	ALCT effect of alct_tof_delay and posneg on bx0 arrival
-//------------------------------------------------------------------------------
-L231600:
-unit  = stdout;
-//	unit  = log_file;
-debug = false;
-
-fprintf(unit,"ALCT effect of alct_tof_delay and posneg on bx0 arrival\n");
-
-// Turn off CCB inputs to zero alct_adb_sync and ext_trig
-adr     = ccb_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-wr_data = wr_data | 0x1;					// Turn off CCB backplane
-status  = vme_write(adr,wr_data);
-
-// Turn off CFEB cable inputs
-adr     = cfeb_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFE0;					// mask_all=5'b00000
-status  = vme_write(adr,wr_data);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);			// Get current state
-wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-// Select TMB bx0 instead of default TTC bx0
-adr     = tmb_trig_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & !(1 << 13);				// turn off [13] mpc_sel_ttc_bx0
-status  = vme_write(adr,wr_data);
-
-// Step through alct_tof_delay using table of known alct_rxd_delay, alct_txd_delay values
-for (alct_tof_delay=0; alct_tof_delay<=12; ++alct_tof_delay) {
-
-    ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-    // Set best delay and posneg for ths tof
-    if (alct_tof_delay == 0) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 3; alct_txd_delay=15;}
-    if (alct_tof_delay == 1) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 5; alct_txd_delay=18;}
-    if (alct_tof_delay == 2) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 6; alct_txd_delay=19;}
-    if (alct_tof_delay == 3) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 9; alct_txd_delay=22;}
-    if (alct_tof_delay == 4) {alct_rxd_posneg=0; alct_txd_posneg=1; alct_rxd_delay=12; alct_txd_delay=24;}
-    if (alct_tof_delay == 5) {alct_rxd_posneg=0; alct_txd_posneg=1; alct_rxd_delay=13; alct_txd_delay= 0;}
-    if (alct_tof_delay == 6) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=15; alct_txd_delay= 2;}
-    if (alct_tof_delay == 7) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=18; alct_txd_delay= 4;}
-    if (alct_tof_delay == 8) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=19; alct_txd_delay= 6;}
-    if (alct_tof_delay == 9) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=22; alct_txd_delay= 8;}
-    if (alct_tof_delay ==10) {alct_rxd_posneg=1; alct_txd_posneg=0; alct_rxd_delay=23; alct_txd_delay=10;}
-    if (alct_tof_delay ==11) {alct_rxd_posneg=1; alct_txd_posneg=0; alct_rxd_delay=25; alct_txd_delay=12;}
-    if (alct_tof_delay ==12) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 1; alct_txd_delay=13;}
-
-    fprintf(unit,"ToF=%2i: Setting alct_rxd_posneg=%1i alct_txd_posneg=%1i alct_rxd_delay=%2i alct_txd_delay=%2i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,alct_rxd_delay,alct_txd_delay);
-
-    // Adjust phasers and posnegs for this tof
-    posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-    posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-    phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-    phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-    // Scan bx0 offset delays looking for alct*tmb bx0 match
-    for (i=0; i<=64; ++i) {		// scan bx0+-32
-        if (i<32) bxn_offset_pretrig = (3563-i) & 0xFFF;
-        else      bxn_offset_pretrig = (i-32  ) & 0xFFF;
-
-        //	for (bxn_offset_pretrig=0; bxn_offset_pretrig<=3563; ++bxn_offset_pretrig) {
-        adr     = seq_offset0_adr+base_adr;
-        status  = vme_read(adr,rd_data);
-        wr_data = rd_data & 0x000F;						// clear old offset
-        wr_data = wr_data | (bxn_offset_pretrig << 4);	// set   new offset
-        status  = vme_write(adr,wr_data);
-
-        // Resync ALCT and TMB bxns
-        adr     = base_adr+ccb_cmd_adr;
-
-        ttc_cmd = 3;		// ttc_resync
-        wr_data = 0x0003 | (ttc_cmd << 8);
-        status  = vme_write(adr,wr_data);
-        wr_data = 0x0001;
-        status  = vme_write(adr,wr_data);
-
-        ttc_cmd=1;			// bx0
-        wr_data = 0x0003 | (ttc_cmd << 8);
-        status  = vme_write(adr,wr_data);
-        wr_data = 0x0001;
-        status  = vme_write(adr,wr_data);
-
-        // Wait at least an LHC orbit for bxn to wrap around to 0 again
-        sleep(1);
-
-        // Check for alct_bx0==clct_bx0
-        adr     = bx0_delay_adr+base_adr;
-        status  = vme_read(adr,rd_data);
-        bx0_match = (rd_data >> 10) & 0x1;
-
-        if (bx0_match==1) fprintf(unit,"ToF=%2i bx0_match=%1i at bx0_offset=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig);
-        //	if (bx0_match==0) fprintf(unit,"ToF=%2i bx0_match=%1i at bx0_offset=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig);
-
-        // Close scan loops
-    }	// close bxn_offset
-    }	// close alct_tof_delay
-
-    goto L2300;
-
-    //----------------------------------------------------------------------------------
-    //	ALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback using posneg table
-    //----------------------------------------------------------------------------------
-L231700:
-    //	unit  = stdout;
-    unit  = log_file;
-    debug = false;
-
-    fprintf(unit,"\nALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback, using posneg table\n");
-
-    // Get current 3D3444 + phaser delays
-    alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
-    alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
-    alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
-
-    // Get current posnegs
-    alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
-    alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
-
-    // Inquire
-    alct_tof_delay  = alct_tof_default;
-    msec            = 1000;
-
-    inquire("Set alct_tof_delay ? -1=scan, cr=%3i", minv=-1, maxv=12, radix=10, alct_tof_delay );
-    inquire("Millisecs per spot ?          cr=%3i", minv= 0, maxv=1000000, radix=10, msec);
-
-    // Turn off CCB inputs to zero alct_adb_sync and ext_trig
-    adr     = ccb_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-    wr_data = wr_data | 0x1;					// Turn off CCB backplane
-    status  = vme_write(adr,wr_data);
-
-    // Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
-    seq_cmd_bit[0]=0;	seq_cmd_bit[2]=1;		// (seq_cmd[2] &!seq_cmd[0]) puts ALCT into loopback randoms mode
-    seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[3] , seq_cmd[1]) selects alct storage bank 0,1,2
-
-    adr     = alct_cfg_adr+base_adr;
-    status  = vme_read(adr,rd_data);			// Get current state
-    wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-    wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-    wr_data = wr_data | (seq_cmd_bit[1] << 5);
-    wr_data = wr_data | (seq_cmd_bit[2] << 6);
-    wr_data = wr_data | (seq_cmd_bit[3] << 7);
-    status  = vme_write(adr,wr_data);
-
-    // Scan tof and posnegs, or use input values
-    alct_tof_delay_min  = (alct_tof_delay  >= 0) ? alct_tof_delay :  0;
-    alct_tof_delay_max  = (alct_tof_delay  >= 0) ? alct_tof_delay : 12;
-
-    for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-
-        // Set tof delay
-        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-        // Display scanned parameters
-        fprintf(unit,"\n");
-        fprintf(unit,"Scan Setting:\n");
-        fprintf(unit,"alct_tof_delay  = %2i\n", alct_tof_delay);
-        fprintf(unit,"\n");
-
-        // Step alct rxd and txd clock delays, and transmitter pipeline depth
-        fprintf(unit,"Checking 80MHz Random numbers ALCT looped back from TMB\n");
-
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-
-                // Look up posnegs and integer delays
-                if (alct_rxd_delay > 25) stop ("alct_rxd_delay>25, posneg table requires 0-25");
-                if (alct_txd_delay > 25) stop ("alct_txd_delay>25, posneg table requires 0-25");
-
-                alct_rxd_posneg    = alct_rxd_posneg_table[alct_rxd_delay];
-                alct_txd_posneg    = alct_txd_posneg_table[alct_txd_delay];
-                alct_txd_int_delay = alct_txd_int_delay_table[alct_txd_delay];
-                alct_rxd_int_delay = alct_rxd_int_delay_table[alct_rxd_delay];
-
-                adr	    = base_adr+alct_stat_adr;
-                status  = vme_read(adr,rd_data);
-                wr_data = rd_data & 0x0FFF;								// clear old alc_txd_int_delay 
-                wr_data = wr_data | (alct_txd_int_delay << 12);			// set   new alc_txd_int_delay 
-                status  = vme_write(adr,wr_data);
-
-                posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-                posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-                //	fprintf(unit,"alct_rxd_posneg = %2i\n", alct_rxd_posneg);
-                //	fprintf(unit,"alct_txd_posneg = %2i\n", alct_txd_posneg);
-
-                printf("tof=%2i txd_posneg=%1i rxd_posneg=%1i txd_delay=%2i rxd_delay=%2i txd_int=%2i\r",
-                        alct_tof_delay,alct_txd_posneg,alct_rxd_posneg,alct_txd_delay,alct_rxd_delay,alct_txd_int_delay);
-
-                for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
-                    alct_sync_rxdata_dly = pipe_depth;
-
-                    // Set pipe depth, clear data check flip-flops
-                    alct_sync_tx_random  = 1;
-                    alct_sync_clr_err    = 1;
-
-                    adr      = alct_sync_ctrl_adr+base_adr;					// Set pipe depth, clear error FFs
-                    status   = vme_read(adr,rd_data);						// get current
-                    alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
-
-                    wr_data = (alct_sync_rxdata_dly <<  0) |
-                        (alct_sync_tx_random  <<  4) |
-                        (alct_sync_clr_err    <<  5) |
-                        (alct_sync_rxdata_pre << 12);
-                    status	= vme_write(adr,wr_data);
-
-                    wr_data = wr_data & ~(1 << 5);							// un-clear error FFs, hammer it a few times while system settles from delay changes
-                    for (i=0; i<=100; ++i) {
-                        status	= vme_write(adr,wr_data);	
-                    }
-
-                    // Wait for error stats to accumulate
-                    ibad=0;
-                    for (i=0; i<=msec; i=i+100) {							// 0 msec first time thru for quick reject of  bad spots
-                        sleep(i);
-
-                        // See if TMB data check flipflops are OK
-                        adr     = alct_sync_ctrl_adr+base_adr;
-                        status  = vme_read(adr,rd_data);
-
-                        alct_sync_1st_err_ff[0] = (rd_data >> 8) & 0x1;
-                        alct_sync_2nd_err_ff[0] = (rd_data >> 9) & 0x1;
-
-                        ibad = alct_sync_1st_err_ff[0] | alct_sync_2nd_err_ff[0];
-                        alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth]=ibad;
-
-                        //	fprintf(unit,"alct_txd_delay=%1X alct_rxd_delay=%1X pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
-                        if (ibad != 0) break;			// TMB data check already went bad, so done with this rx tx pair
-                    }	// close for msec
-
-                    // Read TMB received demux data just to see whats going on
-                    if (debug) {
-                        for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
-                            adr     = alctfifo1_adr+base_adr;
-                            wr_data = 0x2000;				// select alct_loopback mode addressing
-                            wr_data = wr_data | (i << 1);
-                            status	= vme_write(adr,wr_data);
-
-                            adr     = alctfifo2_adr+base_adr;
-                            status  = vme_read(adr,rd_data);
-                            alct_demux_rd[i]=rd_data;
-                        }
-
-                        alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
-                        alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
-                        alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
-                        alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
-
-                        fprintf(unit,"Random Loopback: alct_txd_delay=%2i alct_rxd_delay=%2i", alct_txd_delay,alct_rxd_delay);
-                        fprintf(unit,"  read 1st=%8.8X 2nd=%8.8X ", alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
-                        fprintf(unit,"expect 1st=%8.8X 2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
-                    }
-
-                    // Close txd,rxd,depth loops...we are still inside ToF loop
-                }}}
-
-        // Find correct depth in the transmitter delay pipeline, and count good spots
-        ngood_spots=0;
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                ngood_depths=0;
-                good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=-1;
-                for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
-                    ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
-                    if (ibad==0) {
-                        ngood_depths++;
-                        good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=pipe_depth;
-                        ngood_spots++;
-                        //	fprintf(log_file,"alct_txd_delay=%3i alct_rxd_delay=%3i pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
-                    }	// close ibad
-                }	// close pipe
-                if (ngood_depths >1) printf("Warning: data match found at >1 pipeline depths, should not happen tx=%2i rx=%2i ngood_depths=%2i\n",alct_txd_delay,alct_rxd_delay,ngood_depths);
-            }}	// close txt rxd
-
-        //	good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay]=ngood_spots;
-        //	fprintf(unit,"\n\ntof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
-
-        good_spots_pos_tof[0][0][alct_tof_delay]=ngood_spots;
-        fprintf(unit,"\n\ntof=%2i good_spots=%3i\n",alct_tof_delay,ngood_spots);
-
-        // Display good depths vs rxd txd
-        fprintf(unit,"\nPipeline depth adr bit where RxData=TxData vs alct_txd_delay vs alct_rxd_delay  %3imsec=%ibx\n",msec,msec*int(40e3));
-        fprintf(unit," rxd_step=");	
-        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%5i",alct_rxd_delay);
-        fprintf(unit,"\n");
-
-        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-            fprintf(unit,"txd_step=%2i ",alct_txd_delay);
-            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                good_depths=0;
-                for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
-                    ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
-                    if (ibad==0) good_depths=good_depths | (1 << pipe_depth);
-                }	// close pipe_depth
-                fprintf(unit,"%5.4X",good_depths);
-            }	// close rxd
-            fprintf(unit,"\n");
-        }	// close tx
-
-        // Display timing matrix twice in case good area is near an edge
-        fprintf(unit,"\n\nRandom loopback good_spots at Tof=%2i \n",alct_tof_delay);
-        fprintf(unit,"scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
-        fprintf(unit,"    rxd_step=");
-        for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
-        fprintf(unit,"\n");
-
-        for (i=0; i<=1; ++i) {
-            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
-                fprintf(unit,"txd_step=%3i ",alct_txd_delay);
-                for (j=0; j<=1; ++j) {
-                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
-                        pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
-                        //	if (pipe_depth!=0)pipe_depth=pipe_depth-alct_rxd_int_delay_table[alct_tof_delay];	// temporarily correct for missing rxd delay stages
-                        symbol = (pipe_depth >= 0) ? '0'+pipe_depth : '-';	// display "-" for bad data, display ascii-hex pipe depth for good data
-                        fprintf(unit,"%c",symbol);
-                    }}	// close rx 1st pass, rx 2nd pass
-                fprintf(unit,"\n");
-            }}	// close tx 1st pass, tx 2nd pass
-
-        // Close posneg scan loops
-        //	}}
-        //	fprintf(unit,"\nClosed posneg loops");
-
-        // Close ToF scan loop
-}
-
-// Display good spots vs tof and posnegs
-fprintf(unit,"\nEnd of ToF scan------------------------------------------------------------------------------------\n");
-fprintf(unit,"\nRandom Loopback Scan Summary\n");
-for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
-    //	for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
-    //	for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
-    //	ngood_spots=good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay];
-    //	fprintf(unit,"tof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
-
-    ngood_spots=good_spots_pos_tof[0][0][alct_tof_delay];
-    fprintf(unit,"tof=%2i good_spots=%3i\n",alct_tof_delay,ngood_spots);
-
-    //	}}
-    //	fprintf(unit,"\n");
-}
-
-// Restore default delays and posnegs
-fprintf(unit,"\n");
-fprintf(unit,"Restoring default alct_tof_delay  = %2i\n",alct_tof_default);
-fprintf(unit,"Restoring default alct_rxd_delay  = %2i\n",alct_rxd_default);
-fprintf(unit,"Restoring default alct_txd_delay  = %2i\n",alct_txd_default);
-fprintf(unit,"Restoring default alct_rxd_posneg = %2i\n",alct_rxd_posneg_default);
-fprintf(unit,"Restoring default alct_txd_posneg = %2i\n",alct_txd_posneg_default);
-
-alct_rxd_delay	= alct_rxd_default;
-alct_txd_delay	= alct_txd_default;
-alct_tof_delay	= alct_tof_default;
-alct_rxd_posneg	= alct_rxd_posneg_default;
-alct_txd_posneg	= alct_txd_posneg_default;
-
-ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);					// Get current state
-wr_data = rd_data & 0xFF0F;							// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);			// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-goto L2300;
-
-//----------------------------------------------------------------------------------
-//	CFEB bad-bits register tests
-//----------------------------------------------------------------------------------
-L231800:
-//	unit  = stdout;
-unit  = log_file;
-//	debug = false;
-debug = true;
-
-fprintf(unit,"\n\tCFEB bad-bits register tests\n\n");
-
-//----------------------------------------------------------------------------------
-// CFEB bad-bits register tests: See how long it takes a bit to go bad
-//----------------------------------------------------------------------------------
-// Get default nbx
-adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
-status  = vme_read(adr,rd_data);					// Get TMB current value
-cfeb_badbits_nbx = rd_data;
-
-// Turn on CFEB inputs
-adr     = cfeb_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFE0;							// mask off all cfebs
-wr_data = wr_data | 0x1F;							// turn on  all cfebs
-status  = vme_write(adr,wr_data);
-
-// Loop over nbx wait times
-for (ibit=0; ibit<=15; ++ibit) {
-    nbx=(1<<ibit);
-
-    // Set nbx for bad bits to be high
-    adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
-    wr_data = nbx;										// Set a new nbx wait value
-    status  = vme_write(adr,wr_data);
-
-    // Reset bad bits
-    adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-    status  = vme_read(adr,rd_data);					// read current
-    rd_data = rd_data & 0xFFE0;							// clean out old reset bits
-    wr_data = rd_data | 0x001F;							// assert reset[4:0]
-    status  = vme_write(adr,wr_data);					// write reset
-    wr_data = rd_data;									// retrieve original register contents
-    status  = vme_write(adr,wr_data);					// write un-reset
-
-    // Loop over VME reads to cause a 16usec wait per cycle
-    for (icycle=0; icycle<=1000; ++icycle) {
-
-        // Get current bad cfeb bits register
-        adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-        status  = vme_read(adr,rd_data);
-
-        cfeb_badbits_reset   = (rd_data >>  0) & 0x1F;
-        cfeb_badbits_block   = (rd_data >>  5) & 0x1F;
-        cfeb_badbits_found   = (rd_data >> 10) & 0x1F;
-        cfeb_badbits_blocked = (rd_data >> 15) & 0x1;
-
-        // Check for bits gone bad
-        if (cfeb_badbits_found!=0) {
-            fprintf(unit,"\tcfeb_badbits_nbx=%6i: bad bits detected at vme cycle=%6i %6ibx\n",nbx,icycle,icycle*16*40);
-            break;
-        }	// close if cfeb
-    }	// close icycle
-
-    if (cfeb_badbits_found==0) pause("\tBad bits NOT detected...wtf?");
-
-    //	Close loops
-}	// close nbx
-
-// Restore default nbx
-adr     = cfeb_badbits_timer_adr+base_adr;
-wr_data = cfeb_badbits_nbx;
-status  = vme_write(adr,wr_data);
-
-//----------------------------------------------------------------------------------
-// CFEB bad-bits register tests: Check bad bits one CFEB at a time
-//----------------------------------------------------------------------------------
-// Giant loop over CFEBs
-for (jcfeb=0; jcfeb<=4; ++jcfeb) {
-    fprintf(unit,"\tEnable CFEB%1i Cable Inputs\n\n",jcfeb);
-
-    // Turn off CFEB inputs
-    adr     = cfeb_inj_adr+base_adr;
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & 0xFFE0;			// mask off all cfebs
-    wr_data = wr_data | (1 << jcfeb);	// turn on jth cfeb
-    status  = vme_write(adr,wr_data);
-
-    // Enable bad bit blocking
-    adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data | (0x1F << 5);
-    status  = vme_write(adr,wr_data);
-
-    // Reset bad bits
-    adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-    status  = vme_read(adr,rd_data);					// read current
-    rd_data = rd_data & 0xFFE0;							// clean out old reset bits
-    wr_data = rd_data | 0x001F;							// assert reset[4:0]
-    status  = vme_write(adr,wr_data);					// write reset
-    wr_data = rd_data;									// retrieve original register contents
-    status  = vme_write(adr,wr_data);					// restore register with resets off
-
-    // Wait for the bad bit high-too-long timer to cycle, 3564bx=89usec
-    sleep(1);
-
-    // Display bad cfeb bits register
-    adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-    status  = vme_read(adr,rd_data);
-
-    cfeb_badbits_reset   = (rd_data >>  0) & 0x1F;
-    cfeb_badbits_block   = (rd_data >>  5) & 0x1F;
-    cfeb_badbits_found   = (rd_data >> 10) & 0x1F;
-    cfeb_badbits_blocked = (rd_data >> 15) & 0x1;
-
-    adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
-    status  = vme_read(adr,rd_data);
-    cfeb_badbits_nbx = rd_data;
-
-    fprintf(unit,"\tcfeb_badbits_reset   = %4.2X\n",cfeb_badbits_reset);
-    fprintf(unit,"\tcfeb_badbits_block   = %4.2X\n",cfeb_badbits_block);
-    fprintf(unit,"\tcfeb_badbits_found   = %4.2X\n",cfeb_badbits_found);
-    fprintf(unit,"\tcfeb_badbits_blocked = %4.1X\n",cfeb_badbits_blocked);
-    fprintf(unit,"\tcfeb_badbits_nbx     = %4.4X=%4.4d\n",cfeb_badbits_nbx,cfeb_badbits_nbx);
-
-    // Read bad cfeb bits map from VME registers
-    for (icfeb =0; icfeb <=4; ++icfeb ) {					// loop over cfebs
-        for (ilayer=0; ilayer<=5; ++ilayer) {					// Loop over layers
-
-            adr_offset = 3*(icfeb*2) + 2*(ilayer/2); 				// Read 2 layers per VME address, 3 adrs per cfeb
-
-            if ((ilayer%2)==0) {									// Read VME for even layers
-                adr     = cfeb0_badbits_ly01_adr+adr_offset+base_adr;
-                status  = vme_read(adr,rd_data);
-                cfeb_badbits[icfeb][ilayer  ] = (rd_data >> 0) & 0xFF;
-                cfeb_badbits[icfeb][ilayer+1] = (rd_data >> 8) & 0xFF;
-                //	fprintf(unit,"icfeb=%1i ilayer=%1i cfeb_badbits=%4.4X\n",icfeb,ilayer,rd_data);
-            }	// close if ilayer
-
-        }}	// close for icfeb,ilayer
-
-    // Display cfeb and ids column markers
-    fprintf(unit,"\n");
-    fprintf(unit,"\tCFEB bad bits DiStrips\n\n");
-
-    fprintf(unit,"\tCFEB----");
-    for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|");	// display cfeb columms
-        for (ids=0;   ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",icfeb);}
-    fprintf(unit,"|\n");
-
-    fprintf(unit,"\tDiStrip-");
-    for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display ids columns
-        for (ids=0;   ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",ids%10);}
-    fprintf(unit,"|\n");
-
-    fprintf(unit,"\t        ");
-    for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display spacer columns
-        for (ids=0;   ids   < mxds;   ++ids  )   fprintf(unit,"-");}
-    fprintf(unit,"|\n");
-
-    // Display bad cfeb bits
-    for (ilayer=0; ilayer<=mxly-1; ++ilayer) {
-        fprintf(unit,"\tLayer %1i ",ilayer);
-
-        for (icfeb=0;  icfeb < mxcfeb; ++icfeb ) {
-            for (ids=0;    ids   < mxds;   ++ids   ) {
-
-                if (ids==0) {fprintf(unit,"|");}
-                ibadbit=(cfeb_badbits[icfeb][ilayer] >> ids) & 0x1;	// extract 1 distrip bit on this cfeb,layer
-                fprintf(unit,"%1.1x",ibadbit);
-            }}	// close ids,icfeb
-
-        fprintf(unit,"|\n");
-    }	// close ilayer
-
-    // Close giant cfeb loop
-    fprintf(unit,"\n");
-}	// close jcfeb
-
-//----------------------------------------------------------------------------------
-// CFEB bad-bits register tests: Check bad bits one CFEB bit at a time
-//----------------------------------------------------------------------------------
-// Get current thresholds
-adr    = seq_clct_adr+base_adr;
-status = vme_read(adr,rd_data);
-
-triad_persist		= (rd_data >>  0) & 0xF;	// 4 bits
-hit_thresh_pretrig	= (rd_data >>  4) & 0x7;	// 3 bits
-dmb_thresh_pretrig	= (rd_data >>  7) & 0x7;	// 3 bits
-hit_thresh_postdrift= (rd_data >> 10) & 0x7;	// 3 bits
-drift_delay			= (rd_data >> 13) & 0x3;	// 2 bits
-
-adr    = temp0_adr+base_adr;
-status = vme_read(adr,rd_data);
-
-pid_thresh_pretrig  = (rd_data >> 2) & 0xF;	// 4 bits
-pid_thresh_postdrift= (rd_data >> 6) & 0xF;	// 4 bits
-
-adr    = layer_trig_adr+base_adr;
-status = vme_read(adr,rd_data);
-lyr_thresh_pretrig = (rd_data >> 1) & 0xF;	// 4 bits
-
-// Lower thresholds to trigger on single bit hits
-hit_thresh_pretrig   = 1;
-hit_thresh_postdrift = 1;
-
-adr    = seq_clct_adr+base_adr;
-status = vme_read(adr,rd_data);	
-wr_data = rd_data;									// Current thresholds
-wr_data = wr_data & ~(0x7 <<  4);					// clear hit_thresh_pretrig
-wr_data = wr_data & ~(0x7 << 10);					// clear hit_thresh_postdrift
-
-wr_data = wr_data | (hit_thresh_pretrig   <<  4);	// set hit_thresh_pretrig
-wr_data = wr_data | (hit_thresh_postdrift << 10);	// set hit_thresh_postdrift
-status  = vme_write(adr,wr_data);
-
-// Get L1A delay
-adr     = ccb_trig_adr+base_adr;
-status  = vme_read(adr,rd_data);
-l1a_delay = (rd_data >> 8) & 0xFF;
-
-// Turn off CFEB cable inputs
-adr     = cfeb_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFE0;		// mask_all=5'b00000
-status  = vme_write(adr,wr_data);
-
-// Turn off ALCT cable inputs, enable synchronized alct+clct triggers
-adr     = alct_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-
-alct_injector_delay=13;
-
-wr_data = rd_data & 0x0000;
-wr_data = wr_data | 0x0005;
-wr_data = wr_data | (alct_injector_delay << 5);
-status  = vme_write(adr,wr_data);
-
-// Turn on CFEB enables to over-ride mask_all
-adr     = seq_trig_en_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0x03FF;			// clear old cfeb_en and source
-wr_data = wr_data | 0x7C00;			// ceb_en_source=0,cfeb_en=1F
-status  = vme_write(adr,wr_data);
-
-// Enable sequencer trigger, turn off dmb trigger, set internal l1a delay
-adr     = ccb_trig_adr+base_adr;
-wr_data = 0x0004;
-wr_data = wr_data | (l1a_delay << 8);
-status  = vme_write(adr,wr_data);
-
-// Turn off CCB backplane inputs, turn on L1A emulator, do this after turning off cfeb and alct cable inputs
-adr     = ccb_cfg_adr+base_adr;
-wr_data = 0x0000;
-wr_data = wr_data | 0x0001;	// ccb_ignore_rx
-wr_data = wr_data | 0x0004;	// ccb_int_l1a_en
-wr_data = wr_data | 0x0008;	// ccb_status_oe_vme
-wr_data = wr_data | 0x0010;	// alct_status_en
-wr_data = wr_data | 0x0020;	// clct_status_en
-status  = vme_write(adr,wr_data);
-
-// Turn off internal level 1 accept for sequencer, set l1a window width
-adr     = seq_l1a_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0x00FF;
-wr_data = wr_data | 0x0300;			//  l1a window width
-status  = vme_write(adr,wr_data);
-
-// Set pid_thresh_pretrig, pid_thresh_postdrift
-adr    = temp0_adr+base_adr;
-status = vme_read(adr,rd_data);
-
-wr_data=rd_data & 0xFC03;
-wr_data=wr_data | (pid_thresh_pretrig   << 2);	// 4 bits
-wr_data=wr_data | (pid_thresh_postdrift << 6);	// 4 bits
-status = vme_write(adr,wr_data);
-
-// Set start_trigger state for FMM
-//	ttc_cmd=1	// bx0
-//	ttc_cmd=3	// l1reset
-//	ttc_cmd=6	// start_trigger
-//	ttc_cmd=7	// stop_trigger
-adr     = base_adr+ccb_cmd_adr;
-
-ttc_cmd = 3;			// l1reset
-wr_data = 0x0003 | (ttc_cmd << 8);
-status  = vme_write(adr,wr_data);
-wr_data = 0x0001;
-status  = vme_write(adr,wr_data);
-
-ttc_cmd = 6;			// start_trigger
-wr_data = 0x0003 | (ttc_cmd << 8);
-status  = vme_write(adr,wr_data);
-wr_data = 0x0001;
-status  = vme_write(adr,wr_data);
-
-ttc_cmd = 1;			// bx0
-wr_data = 0x0003 | (ttc_cmd << 8);
-status  = vme_write(adr,wr_data);
-wr_data =0x0001;
-status  = vme_write(adr,wr_data);
-
-// Pass loop
-for (ipass=1; ipass<=3; ++ipass) {					// 1st pass checks individual bad bits, 2nd pass marks them all bad, 3rd pass shouldnt trigger
-    //	for (ipass=1; ipass<=1; ++ipass) {					// 1st pass checks individual bad bits, 2nd pass marks them all bad, 3rd pass shouldnt trigger
-
-    if (ipass==1) fprintf(unit,"\n1st Pass:  Check individual bad bit mapping\n");
-    if (ipass==2) fprintf(unit,"\n2nd Pass:  Mark all bits bad\n");
-    if (ipass==3) fprintf(unit,"\n3rd Pass:  Should not trigger on bad bits\n");
-
-    if (unit!=stdout) {
-        if (ipass==1) fprintf(stdout,"\n1st Pass:  Check individual bad bit mapping\n");
-        if (ipass==2) fprintf(stdout,"\n2nd Pass:  Mark all bits bad\n");
-        if (ipass==3) fprintf(stdout,"\n3rd Pass:  Should not trigger on bad bits\n");
-    }
-
-    // Set nbx for bad bits to be high
-    nbx     = 1;
-    adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
-    wr_data = nbx;										// Set a new nbx wait value
-    status  = vme_write(adr,wr_data);
-
-    // Enable bad bit blocking
-    adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-    status  = vme_read(adr,rd_data);
-    wr_data = rd_data & ~(0x1F << 5);					// Clear out old enables
-    wr_data = rd_data |  (0x1F << 5);					// Turn  on  new enables
-    status  = vme_write(adr,wr_data);
-
-    // Loop over cfeb input bits
-    for (icfeblp  = 0; icfeblp  <= 4; ++icfeblp ) {					// loop over cfebs
-        for (ilayerlp = 0; ilayerlp <= 5; ++ilayerlp) {					// Loop over layers
-            for (idslp    = 0; idslp    <= 7; ++idslp   ) {
-
-                if (unit!=stdout) fprintf(unit,"\tTesting cfeb%1i layer%1i ids%1i\n",icfeblp,ilayerlp,idslp);
-                printf(     "\tTesting cfeb%1i layer%1i ids%1i\n",icfeblp,ilayerlp,idslp);
-
-                // Reset bad bits on 1st pass to check individual bit mapping
-                if ((ipass==1) || ((ipass==2) && (icfeblp==0) && (ilayerlp==0) && (idslp==0)))
-                {
-                    adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-                    status  = vme_read(adr,rd_data);					// read current
-                    rd_data = rd_data & 0xFFE0;							// clean out old reset bits
-                    wr_data = rd_data | 0x001F;							// assert reset[4:0]
-                    status  = vme_write(adr,wr_data);					// write reset
-                    wr_data = rd_data;									// retrieve original register contents
-                    status  = vme_write(adr,wr_data);					// restore register with resets off
-                }
-
-                // Construct triad image with just 1 hit
-                for (ilayer   = 0; ilayer   <=  5; ++ilayer  ) {
-                    for (itbin    = 0; itbin    <= 31; ++itbin   ) {
-                        for (idistrip = 0; idistrip <= 39; ++idistrip) {
-                            itriad[itbin][idistrip][ilayer]=0;
-                        }}}
-
-                itbin    = 0;
-                idistrip = idslp+(8*icfeblp);
-                ilayer   = ilayerlp;
-
-                if (nbx==1)
-                    itriad[0][idistrip][ilayer]=1;
-
-                if (nbx!=1) {
-                    itriad[1][idistrip][ilayer]=1;
-                    itriad[2][idistrip][ilayer]=1;
-                    itriad[3][idistrip][ilayer]=1;
-                    itriad[4][idistrip][ilayer]=1;
-                }
-
-                // Display triad image
-                if (debug) {
-                    fprintf(unit,"\n\tTriad image tbin0\n");
-                    itbin=0;
-                    for (ilayer   = 0; ilayer   <=  5; ++ilayer  ) {
-                        fprintf(unit,"\tilayer%1i ",ilayer);
-                        for (idistrip = 0; idistrip <= 39; ++idistrip) {
-                            ibit=itriad[itbin][idistrip][ilayer];
-                            fprintf(unit,"%1i",ibit);
-                        }	// close idistrip
-                        fprintf(unit,"\n");
-                    }	// close ilayer
-                }	// close if debug
-
-                // Pack triads into pattern RAM
-                wr_data=0;
-
-                for (ilayer=0; ilayer<=5; ilayer=ilayer+2) {
-                    iram=ilayer/2;
-                    for (itbin=0; itbin<=31; ++itbin) {
-                        for (idistrip=0; idistrip<=39; ++idistrip) {
-                            icfeb=idistrip/8;
-                            idslocal=idistrip%8;
-                            if (idslocal==0) wr_data=0; 		// clear for each cfeb
-
-                            ibit=itriad[itbin][idistrip][ilayer];
-                            wr_data=wr_data | (ibit << idslocal);
-
-                            ibit=itriad[itbin][idistrip][ilayer+1];
-                            wr_data=wr_data | (ibit << (idslocal+8));
-
-                            pat_ram[itbin][iram][icfeb]=wr_data;
-                            dprintf(log_file,"pat_ram tbin=%2i ram=%1i wr_data=%4.4X\n",itbin,iram,wr_data);
-                        }	// close ilayer
-                    }	// close itbin
-                }	// close idistrip
-
-                // Write muon RAM data
-                for (icfeb = 0; icfeb <= 4;  ++icfeb) {
-                    for (iram  = 0; iram  <= 2;  ++iram ) {
-                        for (itbin = 0; itbin <= 31; ++itbin) {
-
-                            wadr   = itbin;
-                            adr    = cfeb_inj_adr+base_adr;					// Select injector RAM
-                            status = vme_read(adr,rd_data);					// Get current data
-
-                            wr_data = rd_data & 0xFC1F;						// Zero FEB select
-                            febsel  = (1 << icfeb);							// Select FEB
-                            wr_data = wr_data | (febsel << 5) | 0x7C00;		// Set febsel, enable injectors
-                            status  = vme_write(adr,wr_data);				// Select FEB
-
-                            adr     = cfeb_inj_adr_adr+base_adr;
-                            ren     = 0;
-                            wen     = 0;
-                            wr_data = wen | (ren << 2) | (wadr << 6);
-                            status  = vme_write(adr,wr_data);				// Set RAM Address + No write
-
-                            adr     = cfeb_inj_wdata_adr+base_adr;
-                            wr_data = pat_ram[itbin][iram][icfeb];
-                            wr_data_mem = wr_data;
-                            status  = vme_write(adr,wr_data);				// Store RAM Data
-
-                            adr     = cfeb_inj_adr_adr+base_adr;
-                            wen     = iram;
-                            wr_data = wen | (ren << 2) | (wadr << 6);
-                            status  = vme_write(adr,wr_data);				// Set RAM Address + Assert write
-
-                            wen     = 0;
-                            wr_data = wen | (ren << 2) | (wadr << 6);
-                            status  = vme_write(adr,wr_data);				// Set RAM Address + No write
-
-                            ren     = iram;
-                            wr_data = wen | (ren << 2) | (wadr << 6);
-                            status  = vme_write(adr,wr_data);				// Set RAM Address + Read enable
-
-                            adr     = cfeb_inj_rdata_adr+base_adr;			// Read RAM data
-                            status  = vme_read(adr,rd_data);
-
-                            if (rd_data != wr_data_mem) {
-                                printf("\tInj Err: cfeb%1i key%3i RAM%2i Tbin%2i wr=%4.4X rd=%4.4X\n",icfeb,ikey,iram,itbin,wr_data_mem,rd_data);
-                                pause ("borked");
-                            }
-
-                        }	// close itbin
-                    }	// close iram
-                }	// close icfeb
-
-                // Fire CLCT+ALCT Injectors
-                adr     = cfeb_inj_adr+base_adr;
-                status  = vme_read(adr,rd_data);
-                wr_data = rd_data | 0x8000;		// fire injector
-                status  = vme_write(adr,wr_data);
-                wr_data = rd_data & 0x7FFF;		// unfire
-                status  = vme_write(adr,wr_data);
-
-                // Wait for the bad bit high-too-long timer to cycle, 3564bx=89usec
-                sleep(1);
-
-                // Display bad cfeb bits register
-                adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
-                status  = vme_read(adr,rd_data);
-
-                cfeb_badbits_reset   = (rd_data >>  0) & 0x1F;
-                cfeb_badbits_block   = (rd_data >>  5) & 0x1F;
-                cfeb_badbits_found   = (rd_data >> 10) & 0x1F;
-                cfeb_badbits_blocked = (rd_data >> 15) & 0x1;
-
-                adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
-                status  = vme_read(adr,rd_data);
-                cfeb_badbits_nbx = rd_data;
-
-                fprintf(unit,"\tcfeb_badbits_reset   = %4.2X\n",cfeb_badbits_reset);
-                fprintf(unit,"\tcfeb_badbits_block   = %4.2X\n",cfeb_badbits_block);
-                fprintf(unit,"\tcfeb_badbits_found   = %4.2X\n",cfeb_badbits_found);
-                fprintf(unit,"\tcfeb_badbits_blocked = %4.1X\n",cfeb_badbits_blocked);
-                fprintf(unit,"\tcfeb_badbits_nbx     = %4.4X=%4.4d\n",cfeb_badbits_nbx,cfeb_badbits_nbx);
-
-                // Read bad cfeb bits map from VME registers
-                for (icfeb  = 0; icfeb  <=4; ++icfeb ) {				// loop over cfebs
-                    for (ilayer = 0; ilayer <=5; ++ilayer) {				// Loop over layers
-
-                        adr_offset = 3*(icfeb*2) + 2*(ilayer/2); 				// Read 2 layers per VME address, 3 adrs per cfeb
-
-                        if ((ilayer%2)==0) {									// Read VME for even layers
-                            adr     = cfeb0_badbits_ly01_adr+adr_offset+base_adr;
-                            status  = vme_read(adr,rd_data);
-                            cfeb_badbits[icfeb][ilayer  ] = (rd_data >> 0) & 0xFF;
-                            cfeb_badbits[icfeb][ilayer+1] = (rd_data >> 8) & 0xFF;
-                            //	fprintf(unit,"icfeb=%1i ilayer=%1i cfeb_badbits=%4.4X\n",icfeb,ilayer,rd_data);
-                        }	// close if ilayer
-
-                    }}	// close for icfeb,layer
-
-                // Compare bad cfeb bits map to whats expected
-                for (icfeb  = 0; icfeb  <= 4; ++icfeb ) {				// loop over cfebs
-                    for (ilayer = 0; ilayer <= 5; ++ilayer) {				// Loop over layers
-                        for (ids    = 0; ids    <= 7; ++ids   ) {				// Loop over local distrips
-                            iword  = cfeb_badbits[icfeb][ilayer];
-                            ibit   = (iword >> ids) & 0x1;
-
-                            if ((icfeb==icfeblp) && (ilayer==ilayerlp) && (ids==idslp)) {	// This is the 1 bit expected to be hit
-                                if (ipass==1) iword_expect=(1<<ids);			// 1st pass hits 1 bit
-                                if (ipass==2) iword_expect=iword | (1<<ids);	// 2nd pass accumulates bits
-                                if (ipass==3) iword_expect=0xFF;				// 3rd pass accumulated all bits
-                                if ((ibit != 1) || (iword != iword_expect)) fprintf(unit,"Bad bits error at icfeb=%1i ilayer=%1i ids=%1i iword=%4.4X expected %4.4X, ibit=%1i expected 1\n",icfeb,ilayer,ids,iword,iword_expect,ibit);
-                            }
-                            if (((icfeb!=icfeblp) || (ilayer!=ilayerlp)) && (ipass==1))	{					// This is NOT the 1 bit expected to be hit
-                                iword_expect=0;
-                                if (iword !=iword_expect) fprintf(unit,"Bad bits error at icfeb=%1i ilayer=%1i ids=%1i iword=%4.4X expected %4.4X\n",icfeb,ilayer,ids,iword,iword_expect);
-                            }
-
-                        }}}	// close loops
-
-                // Display cfeb and ids column markers
-                fprintf(unit,"\n\tCFEB----");
-                for (icfeb=0;  icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|");	// display cfeb columms
-                    for (ids  =0;  ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",icfeb);}
-                fprintf(unit,"|\n");
-
-                fprintf(unit,"\tDiStrip-");
-                for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display ids columns
-                    for (ids  =0; ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",ids%10);}
-                fprintf(unit,"|\n");
-
-                fprintf(unit,"\t        ");
-                for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display spacer columns
-                    for (ids  =0; ids   < mxds;   ++ids  )   fprintf(unit,"-");}
-                fprintf(unit,"|\n");
-
-                // Display bad cfeb bits
-                for (ilayer=0; ilayer<=mxly-1; ++ilayer) {
-                    fprintf(unit,"\tLayer %1i ",ilayer);
-
-                    for (icfeb=0;  icfeb < mxcfeb; ++icfeb ) {
-                        for (ids  =0;  ids   < mxds;   ++ids   ) {
-
-                            if (ids==0) {fprintf(unit,"|");}
-                            ibadbit=(cfeb_badbits[icfeb][ilayer] >> ids) & 0x1;	// extract 1 distrip bit on this cfeb,layer
-                            fprintf(unit,"%1.1x",ibadbit);
-                        }}	// close ids,icfeb
-
-                    fprintf(unit,"|\n");
-                }	// close ilayer
-
-                // Close big key-stepping loops
-            }	// close ids
-        }	// close ilayer
-    }	// close icfeb
-}	// close ipass
-// Done
-goto L2300;
-
-//------------------------------------------------------------------------------
-// ALCT effect of txd,rxd,tof,posnegs on bx0 arrival at TMB
-//------------------------------------------------------------------------------
-L231900:
-//	unit  = stdout;
-unit  = log_file;
-debug = false;
-
-printf("\t19: ALCT effect of txd,rxd,tof,posnegs on bx0 arrival at TMB\n");
-
-// Turn off CCB inputs to zero alct_adb_sync and ext_trig
-adr     = ccb_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFBF;					// Clear previous l1a
-wr_data = wr_data | 0x1;					// Turn off CCB backplane
-status  = vme_write(adr,wr_data);
-
-// Turn off CFEB cable inputs
-adr     = cfeb_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFE0;					// mask_all=5'b00000
-status  = vme_write(adr,wr_data);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);			// Get current state
-wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-// Select TMB bx0 instead of default TTC bx0
-adr     = tmb_trig_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & !(1 << 13);				// turn off [13] mpc_sel_ttc_bx0
-status  = vme_write(adr,wr_data);
-
-// Step through the entire phase space
-//	for (alct_tof_delay  =0; alct_tof_delay  <=12; ++alct_tof_delay ) {
-//	for (alct_txd_delay  =0; alct_txd_delay  <=25; ++alct_txd_delay ) {
-//	for (alct_rxd_delay  =0; alct_rxd_delay  <=25; ++alct_rxd_delay ) {
-//	for (alct_txd_posneg =0; alct_txd_posneg <= 1; ++alct_txd_posneg) {
-//	for (alct_rxd_posneg =0; alct_rxd_posneg <= 1; ++alct_rxd_posneg) {
-
-// Scan alct_rxd_delay and posneg
-for (alct_rxd_posneg =0; alct_rxd_posneg <= 1; ++alct_rxd_posneg) {
-    for (alct_rxd_delay  =0; alct_rxd_delay  <=25; ++alct_rxd_delay ) {
-
-        // Set tof and alct_txd to compensate, at tof=0 alct_txd_delay=15
-        if      (alct_rxd_delay == 0) {alct_tof_delay = 11; alct_txd_posneg=0; alct_txd_delay=12;}	// extrapolated
-        else if (alct_rxd_delay == 1) {alct_tof_delay = 12; alct_txd_posneg=0; alct_txd_delay=13;}
-        else if (alct_rxd_delay == 2) {alct_tof_delay =  0; alct_txd_posneg=0; alct_txd_delay=14;}	// extrapolated
-        else if (alct_rxd_delay == 3) {alct_tof_delay =  0; alct_txd_posneg=0; alct_txd_delay=15;}
-        else if (alct_rxd_delay == 4) {alct_tof_delay =  1; alct_txd_posneg=0; alct_txd_delay=16;}	// extrapolated
-        else if (alct_rxd_delay == 5) {alct_tof_delay =  1; alct_txd_posneg=0; alct_txd_delay=18;}
-        else if (alct_rxd_delay == 6) {alct_tof_delay =  2; alct_txd_posneg=0; alct_txd_delay=19;}
-        else if (alct_rxd_delay == 7) {alct_tof_delay =  2; alct_txd_posneg=0; alct_txd_delay=20;}	// extrapolated
-        else if (alct_rxd_delay == 8) {alct_tof_delay =  3; alct_txd_posneg=0; alct_txd_delay=21;}	// extrapolated
-        else if (alct_rxd_delay == 9) {alct_tof_delay =  3; alct_txd_posneg=0; alct_txd_delay=22;}
-        else if (alct_rxd_delay ==10) {alct_tof_delay =  3; alct_txd_posneg=0; alct_txd_delay=22;}	// extrapolated
-        else if (alct_rxd_delay ==11) {alct_tof_delay =  4; alct_txd_posneg=1; alct_txd_delay=23;}	// extrapolated
-        else if (alct_rxd_delay ==12) {alct_tof_delay =  4; alct_txd_posneg=1; alct_txd_delay=24;}
-        else if (alct_rxd_delay ==13) {alct_tof_delay =  5; alct_txd_posneg=1; alct_txd_delay= 0;}
-        else if (alct_rxd_delay ==14) {alct_tof_delay =  5; alct_txd_posneg=1; alct_txd_delay= 1;}	// extrapolated
-        else if (alct_rxd_delay ==15) {alct_tof_delay =  6; alct_txd_posneg=1; alct_txd_delay= 2;}
-        else if (alct_rxd_delay ==16) {alct_tof_delay =  6; alct_txd_posneg=1; alct_txd_delay= 3;}	// extrapolated
-        else if (alct_rxd_delay ==17) {alct_tof_delay =  7; alct_txd_posneg=1; alct_txd_delay= 4;}	// extrapolated
-        else if (alct_rxd_delay ==18) {alct_tof_delay =  7; alct_txd_posneg=1; alct_txd_delay= 4;}
-        else if (alct_rxd_delay ==19) {alct_tof_delay =  8; alct_txd_posneg=1; alct_txd_delay= 6;}
-        else if (alct_rxd_delay ==20) {alct_tof_delay =  8; alct_txd_posneg=1; alct_txd_delay= 6;}	// extrapolated
-        else if (alct_rxd_delay ==21) {alct_tof_delay =  9; alct_txd_posneg=1; alct_txd_delay= 7;}	// extrapolated
-        else if (alct_rxd_delay ==22) {alct_tof_delay =  9; alct_txd_posneg=1; alct_txd_delay= 8;}
-        else if (alct_rxd_delay ==23) {alct_tof_delay = 10; alct_txd_posneg=0; alct_txd_delay=10;}
-        else if (alct_rxd_delay ==24) {alct_tof_delay = 11; alct_txd_posneg=0; alct_txd_delay=11;}	// extrapolated
-        else if (alct_rxd_delay ==25) {alct_tof_delay = 11; alct_txd_posneg=0; alct_txd_delay=12;}
-        else	stop("moron");
-
-        fprintf(unit,  "ToF=%2i: Setting alct_rxd_posneg=%1i alct_txd_posneg=%1i alct_rxd_delay=%2i alct_txd_delay=%2i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,alct_rxd_delay,alct_txd_delay);
-        if (unit!=stdout)
-            fprintf(stdout,"ToF=%2i: Setting alct_rxd_posneg=%1i alct_txd_posneg=%1i alct_rxd_delay=%2i alct_txd_delay=%2i\r",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,alct_rxd_delay,alct_txd_delay);
-
-        // Adjust phasers, posnegs, tof
-        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
-
-        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
-        posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
-
-        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
-        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
-
-        // Scan bx0 offset delays looking for alct*tmb bx0 match
-        nmatches = 0;
-        bxn_offset_at_match = -99;
-
-        for (i=-32; i<=31; ++i) {		// scan bx0+-32
-            bxn_offset_signed= i;
-            if (i<0) bxn_offset_pretrig = (3564+i) & 0xFFF;
-            else     bxn_offset_pretrig = (i     ) & 0xFFF;
-
-            adr     = seq_offset0_adr+base_adr;
-            status  = vme_read(adr,rd_data);
-            wr_data = rd_data & 0x000F;						// clear old offset
-            wr_data = wr_data | (bxn_offset_pretrig << 4);	// set   new offset
-            status  = vme_write(adr,wr_data);
-
-            // Resync ALCT and TMB bxns
-            adr     = base_adr+ccb_cmd_adr;
-
-            ttc_cmd = 3;		// ttc_resync
-            wr_data = 0x0003 | (ttc_cmd << 8);
-            status  = vme_write(adr,wr_data);
-            wr_data = 0x0001;
-            status  = vme_write(adr,wr_data);
-
-            ttc_cmd=1;			// bx0
-            wr_data = 0x0003 | (ttc_cmd << 8);
-            status  = vme_write(adr,wr_data);
-            wr_data = 0x0001;
-            status  = vme_write(adr,wr_data);
-
-            // Wait at least an LHC orbit for bxn to wrap around to 0 again
-            sleep(1);
-
-            // Check for alct_bx0==clct_bx0
-            adr     = bx0_delay_adr+base_adr;
-            status  = vme_read(adr,rd_data);
-            bx0_match = (rd_data >> 10) & 0x1;
-
-            if (bx0_match==1)
-            {
-                nmatches++;
-                bxn_offset_at_match=i;
-                fprintf(unit,  "ToF=%2i bx0_match=%1i at bxn_offset=%4i signed=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig,bxn_offset_signed);
-                if (unit!=stdout) {
-                    if (nmatches==1)
-                        fprintf(stdout,"\n");
-                    fprintf(stdout,"ToF=%2i bx0_match=%1i at bxn_offset=%4i signed=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig,bxn_offset_signed);
-                }}
-
-            // close bxn scan
-        }	// close bxn_offset
-
-        if (nmatches==1) bx0_match_state="OK";
-        else             bx0_match_state="BAD";
-
-        fprintf(scn_file,"ToF=%2i alct_rxd_delay=%2i alct_rxd_posneg=%1i bx0_offset_at_match=%3i nmatches=%2i %3i %3i state=%s\n",alct_tof_delay,alct_rxd_delay,alct_rxd_posneg,bxn_offset_at_match,nmatches,alct_rxd_delay*10,bxn_offset_at_match+287+16,bx0_match_state.c_str());
-        fprintf(unit,    "ToF=%2i alct_rxd_delay=%2i alct_rxd_posneg=%1i bx0_offset_at_match=%3i nmatches=%2i %3i %3i state=%s\n",alct_tof_delay,alct_rxd_delay,alct_rxd_posneg,bxn_offset_at_match,nmatches,alct_rxd_delay*10,bxn_offset_at_match+287+16,bx0_match_state.c_str());
-        if (unit!=stdout)
-            fprintf(stdout,  "ToF=%2i bx0_offset_at_match=%3i nmatches=%2i state=%s\n",alct_tof_delay,bxn_offset_at_match,nmatches,bx0_match_state.c_str());
-
-        // close phase space scan
-        //	}	// close alct_tof_delay
-        //	}	// close alct_txd_delay
-        //	}	// close alct_txd_posneg
-            }	// close alct_rxd_posneg
-}	// close alct_rxd_delay
-
-// Done
-if (unit!=stdout) fprintf(stdout,"\n");
-goto L2300;
-
-//------------------------------------------------------------------------------
-// CFEB Blocked CFEB distrips walking hcm test
-//------------------------------------------------------------------------------
-L232000:
-//	unit  = stdout;
-unit  = log_file;
-debug = false;
-
-printf("\t20: CFEB Blocked CFEB distrips walking hcm test\n");
-
-// Turn off CCB backplane inputs, turn on L1A emulator
-adr     = ccb_cfg_adr+base_adr;
-wr_data = 0x003D;
-status  = vme_write(adr,wr_data);
-
-// Enable sequencer trigger, turn off dmb trigger, set internal l1a delay
-l1a_delay = 119;
-adr     = ccb_trig_adr+base_adr;
-wr_data = 0x0004;
-wr_data = wr_data | (l1a_delay << 8);
-status  = vme_write(adr,wr_data);
-
-// Turn ON CFEB cable inputs, otherwise they fill up the blocked bits table
-adr     = cfeb_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFE0;					// mask_all=5'b00000
-wr_data = wr_data | 0x1F;
-status  = vme_write(adr,wr_data);
-
-// Turn off ALCT cable inputs, enable synchronized alct+clct triggers
-adr     = alct_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0x0000;
-wr_data = wr_data | 0x0005;
-wr_data = wr_data | (alct_injector_delay << 5);
-status  = vme_write(adr,wr_data);
-
-// Take ALCT firmware out of loopback mode
-seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
-seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
-
-adr     = alct_cfg_adr+base_adr;
-status  = vme_read(adr,rd_data);			// Get current state
-wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
-wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
-wr_data = wr_data | (seq_cmd_bit[1] << 5);
-wr_data = wr_data | (seq_cmd_bit[2] << 6);
-wr_data = wr_data | (seq_cmd_bit[3] << 7);
-status  = vme_write(adr,wr_data);
-
-// Enable blocked bits readout
-adr    = base_adr+seq_fifo_adr;
-status = vme_read(adr,rd_data);
-bcb_read_enable = (rd_data >> 15) & 0x1;	// 1 bit
-bcb_read_enable = 1;						// set to 1 manually until it becomes the default
-wr_data = rd_data | (bcb_read_enable << 15);
-status = vme_write(adr,wr_data);
-
-// Turn off CLCT pattern trigger
-adr     = seq_trig_en_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFF00;
-status  = vme_write(adr,wr_data);
-
-// Clear previous ALCT inject
-adr     = alct_inj_adr+base_adr;
-status  = vme_read(adr,rd_data);
-wr_data = rd_data & 0xFFFD;
-status  = vme_write(adr,wr_data);
-
-// Set start_trigger state for FMM
-ttc_cmd = 6;			// start_trigger
-adr     = base_adr+ccb_cmd_adr;
-wr_data = 0x0001;
-status  = vme_write(adr,wr_data);
-wr_data = 0x0003 | (ttc_cmd << 8);
-status  = vme_write(adr,wr_data);
-wr_data = 0x0001;
-status  = vme_write(adr,wr_data);
-
-ttc_cmd = 1;			// bx0
-wr_data = 0x0003 | (ttc_cmd << 8);
-status  = vme_write(adr,wr_data);
-wr_data = 0x0001;
-status  = vme_write(adr,wr_data);
-
-// Clear DMB RAM write-address
-adr     = dmb_ram_adr+base_adr;
-wr_data = 0x2000;	//reset RAM write address
-status  = vme_write(adr,wr_data);
-wr_data = 0x0000;	// unreset
-status  = vme_write(adr,wr_data);
-
-// Clear HCMs, packed 2 layers per word, 3 words per cfeb, on even numbered addresses
-wr_data=0xFFFF;
-
-for (icfeb  = 0; icfeb  <= 4; ++icfeb        ) {
-    for (ilayer = 0; ilayer <= 5; ilayer=ilayer+2) {
-
-        hcm_adr = hcm001_adr + 2*(icfeb*3 + ilayer/2);
-        adr     = hcm_adr+base_adr;
-        status  = vme_write(adr,wr_data);
-
-    }}
-
-// Hot channel mask walking 1, hcms packed 2 layers per word, 3 words per cfeb
-for (icfeb  = 0; icfeb  <= 4; ++icfeb ) {	// loop over cfebs
-    for (ilayer = 0; ilayer <= 5; ++ilayer) {	// Loop over layers
-        for (ids    = 0; ids    <= 7; ++ids   ) {	// Loop over local distrips
-
-            hcm_adr = hcm001_adr + 2*(icfeb*3 + ilayer/2);
-
-            if (ilayer%2==0) hcm_data = (1 << (ids+0));	// layers 0,2,4 set bit[ids]=1
-            else             hcm_data = (1 << (ids+8));	// layers 1,3,5
-
-            adr     = hcm_adr+base_adr;
-            wr_data = ~hcm_data;						// invert, hcm[ids]=0, rest of mask=1
-            status  = vme_write(adr,wr_data);
-
-            printf("\tcfeb%1i layer%1i ids%1i adr=%6.6X data=%4.4X\r",icfeb,ilayer,ids,adr,wr_data);
-
-            // Fire VME trigger
-            adr     = seq_trig_en_adr+base_adr;
-            status  = vme_read(adr,rd_data);
-            wr_data = rd_data & 0xFF00;
-            wr_data	= wr_data | (1 << 7);	// fire vme trigger
-            status  = vme_write(adr,wr_data);
-            wr_data = rd_data & 0xFF00;		// unfire vme trigger
-            status  = vme_write(adr,wr_data);
-
-            // Get DMB RAM word count and busy bit
-            adr       = dmb_wdcnt_adr+base_adr;
-            status    = vme_read(adr,rd_data);
-            dmb_wdcnt = rd_data & 0x0FFF;
-            dmb_busy  = (rd_data >> 14) & 0x0001;
-
-            fprintf(log_file,"Raw Hits Dump: ikey=%3i\n",ikey);
-            fprintf(log_file,"word count = %4i\n",dmb_wdcnt);
-            fprintf(log_file,"busy       = %4i\n",dmb_busy);
-
-            if (dmb_busy) {
-                fprintf(log_file,"Can not read RAM: dmb reports busy\n");
-                fprintf(stdout,  "Can not read RAM: dmb reports busy\n");
-                pause("wtf?");
-            }
-
-            if (dmb_wdcnt <= 0) {
-                fprintf(log_file,"Can not read RAM: dmb reports word count <=0\n");
-                fprintf(stdout,  "Can not read RAM: dmb reports word count <=0\n");
-                pause("wtf?");
-            }
-
-            // Write RAM read address to TMB
-            for (i=0; i<=dmb_wdcnt-1; ++i) {
-                adr     = dmb_ram_adr+base_adr;
-                wr_data = i & 0xffff;
-                status  = vme_write(adr,wr_data);
-
-                // Read RAM data from TMB
-                adr    = dmb_rdata_adr+base_adr;
-                status = vme_read(adr,rd_data);				// read lsbs
-                dmb_rdata_lsb = rd_data;
-
-                adr    = dmb_wdcnt_adr+base_adr;
-                status = vme_read(adr,rd_data);				// read msbs
-                dmb_rdata_msb = (rd_data >> 12) & 0x3;		// rdata msbs
-                dmb_rdata     = dmb_rdata_lsb | (dmb_rdata_msb << 16);
-
-                vf_data[i]=dmb_rdata;
-                fprintf(log_file,"Adr=%5i Data=%6.5X\n",i,dmb_rdata);
-            } // close i
-
-            // Clear RAM address for next event
-            adr     = dmb_ram_adr+base_adr;
-            wr_data = 0x2000;	// reset RAM write address
-            status  = vme_write(adr,wr_data);
-            wr_data = 0x0000;	// unreset
-            status  = vme_write(adr,wr_data);
-
-            // Readout raw hits
-            decode_readout(vf_data,dmb_wdcnt,err_check=false);
-
-            // Check blocked bits match what was set
-
-            // Put HCM back to normal
-            adr     = hcm_adr+base_adr;
-            wr_data = 0xFFFF;
-            status  = vme_write(adr,wr_data);
-
-            // Close hcm walking 1 loops
-        }	// close for icfeb
-    }	// close for ilayer
-}	// close for ids
-
-// Done
-printf("\n");
-goto L2300;
-}
+//        void L2300() {
+//        L2300:
+//        
+//            // Display menu
+//            printf("\n");
+//            printf("\tALCT Test Submenu:\n");
+//            printf("\t1:  Read ALCT JTAG Register:  NORMAL ALCT firmware\n");
+//            printf("\t2:  Read ALCT JTAG Register:  DEBUG  ALCT firmware\n");
+//            printf("\t3:  ALCT tx clock delay scan: NORMAL ALCT firmware\n");
+//            printf("\t4:  ALCT tx clock delay scan: DEBUG  ALCT firmware\n");
+//            printf("\t5:  ALCT rx clock delay scan: DEBUG  ALCT firmware\n");
+//            printf("\t6:  Software ext_trig ALCT:   Check for CRC errors\n");
+//            printf("\t7:  Hardware ext_trig ALCT:   Check for CRC errors\n");
+//            printf("\t8:  JTAG tests\n");
+//            printf("\t9:  Hardware ext_trig ALCT:   ALCT bits vs CRC\n");
+//            printf("\t10: ALCT rxd clock delay scan:    ALCT-to-TMB Teven|Todd\n");
+//            printf("\t11: ALCT txd clock delay scan:    TMB-to-ALCT Teven|Todd Loopback\n");
+//            printf("\t12: ALCT txd+rxd default delays   TMB-to-ALCT Walking 1  Loopback\n");
+//            printf("\t13: ALCT txd+rxd clock delay scan TMB-to-ALCT TMB Random Loopback\n");
+//            printf("\t14: ALCT-TMB Quick Test\n");
+//            printf("\t15: CFEB rx loopback using ALCT\n");
+//            printf("\t16: ALCT effect of posneg and tof on bx0 arrival at TMB\n");
+//            printf("\t17: ALCT txd+rxd clock delay scan, Random Loopback, posneg table\n");
+//            printf("\t18: CFEB bad-bits register tests\n");
+//            printf("\t19: ALCT effect of txd,rxd,tof,posnegs on bx0 arrival at TMB\n");
+//            printf("\t20: CFEB Blocked CFEB distrips walking hcm test\n");
+//            printf("\t<cr> Exit\n");
+//            printf("       > ");
+//        
+//            gets(line);
+//            if (line[0]==NULL) return;
+//            sscanf(line,"%i",&ifunc);
+//        
+//            i=abs(ifunc);
+//            if (i== 1) goto L23100;
+//            if (i== 2) goto L23200;
+//            if (i== 3) goto L23300;
+//            if (i== 4) goto L23400;
+//            if (i== 5) goto L23500;
+//            if (i== 6) goto L23600;
+//            if (i== 7) goto L23700;
+//            if (i== 8) goto L23800;
+//            if (i== 9) goto L23900;
+//            if (i==10) goto L231000;
+//            if (i==11) goto L231100;
+//            if (i==12) goto L231200;
+//            if (i==13) goto L231300;
+//            if (i==14) goto L231400;
+//            if (i==15) goto L231500;
+//            if (i==16) goto L231600;
+//            if (i==17) goto L231700;
+//            if (i==18) goto L231800;
+//            if (i==19) goto L231900;
+//            if (i==20) goto L232000;
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT: Read JTAG chain: Normal Firmware
+//            //------------------------------------------------------------------------------
+//        L23100:
+//            printf("\tMake sure you removed the JTAG cable\n");
+//        
+//            //	Chain ID	Section		 Control or Program
+//            //	--------	------------ ------------------
+//            //	  0			Slow Control control registers
+//            //	  1			Slow Control PROM
+//            //	  2			Mezzanine    control registers
+//            //	  3			Mezzanine    FPGA+PROM
+//            //
+//            //
+//            //	Mezzanie Virtex Control Registers (5-bit opcode)
+//            //
+//            //	Name			OpCd		Len	Dir		Function
+//            //	------------	---			---	-----	------------------
+//            IDRead        = 0x0;  // 	40	read	Virtex ID register
+//            HCMaskRead    = 0x1;  // 	384	read	hot mask
+//            HCMaskWrite   = 0x2;  // 	384	write	hot mask
+//            RdTrig        = 0x3;  // 	5	read	trigger register
+//            WrTrig        = 0x4;  // 	5	write	trigger register
+//            RdCfg         = 0x6;  // 	69	read	control register
+//            WrCfg         = 0x7;  // 	69	write	control register
+//            Wdly          = 0xd;  // 	120	write	delay lines. cs_dly bits in Par
+//            Rdly          = 0xe;  // 	121?read	delay lines. cs_dly bits in Par
+//            CollMaskRead  = 0x13; // 	224	read	collision pattern mask
+//            CollMaskWrite = 0x14; // 	224	write	collision pattern mask
+//            ParamRegRead  = 0x15; // 	6	read	delay line control register actually
+//            ParamRegWrite = 0x16; // 	6	read	delay line control register actually
+//            InputEnable   = 0x17; // 	0	write?	commands to disable and enable input
+//            InputDisable  = 0x18; // 	0	write?	commands to disable and enable input
+//            YRwrite       = 0x19; // 	31	write	output register (for debugging with UCLA test board)
+//            OSread        = 0x1a; // 	49	read	output storage
+//            SNread        = 0x1b; //	1	read	one bit of serial number
+//            SNwrite0      = 0x1c; //	0	write	0 bit into serial number chip
+//            SNwrite1      = 0x1d; //	0	write	1 bit into serial number chip
+//            SNreset       = 0x1e; //	0	write	reset serial number chip
+//            Bypass        = 0x1f; // 	1	bypass
+//            //
+//            //	Configuration Register
+//            //	Register Bits	Signal				Default	BeamTest
+//            //	-------------	--------------		-------	--------
+//            //	ConfgReg[1:0]	trig_mode[1:0]		0		2
+//            //	ConfgReg[2]		ext_trig_en			0		0
+//            //	ConfgReg[3]		pretrig_halt		0		0
+//            //	ConfgReg[4]		inject				0		?
+//            //	ConfgReg[5]		inject_mode			0		?
+//            //	ConfgReg[12:6]	inject_mask[6:0]	7Fh		?
+//            //	ConfgReg[15:13]	nph_thresh[2:0]		2		2
+//            //	ConfgReg[18:16]	nph_pattern[2:0]	4		4
+//            //	ConfgReg[20:19]	drift_delay[1:0]	3		?
+//            //	ConfgReg[25:21]	fifo_tbins[4:0]		7		8
+//            //	ConfgReg[30:26]	fifo_pretrig[4:0]	1		12d
+//            //	ConfgReg[32:31]	fifo_mode[1:0]		1		?
+//            //	ConfgReg[35:33]	fifo_lastlct[2:0]	3		?
+//            //	ConfgReg[43:36]	l1a_delay[7:0]		78h		128d, 78h=120d
+//            //	ConfgReg[47:44]	l1a_window[3:0]		3		3
+//            //	ConfgReg[51:48]	l1a_offset[3:0]		0		1
+//            //	ConfgReg[52]	l1a_internal		0		0
+//            //	ConfgReg[55:53]	BoardID[2:0]		5		?
+//            //	ConfgReg[59:56]	bxn_offset[3:0]		0		?
+//            //	ConfgReg[60]	ccb_enable			0		-
+//            //	ConfgReg[61]	alct_jtag_ds		1		-
+//            //	ConfgReg[63:62]	alct_tmode[1:0]		0		-
+//            //	ConfgReg[65:64]	alct_amode[1:0]		0		?		
+//            //	ConfgReg[66]	alct_mask_all		0		-
+//            //	ConfgReg[67]	trig_info_en		1		?
+//            //	ConfgReg[68]	sn_select			0		0
+//            //
+//            //
+//            //	Virtex-E ID register
+//            //	Field		Len	Typical	Description
+//            //	-------		---	-------	--------------------------
+//            //	[3:0]		4	7		Chip ID number, fixed at 7
+//            //	[7:4]		4	C		Software Version ID [0-F]
+//            //	[23:8]		16	2001	Year: 4 BCD digits
+//            //	[31:24]		8	17		Day:  2 BCD digits
+//            //	[39:32]		8	09		Month: 2 BCD digits
+//            //
+//            //	Virtex-E / Spartan-6 ID register
+//            //	Field		Len	Name	Description
+//            //	-------		---	----	--------------------------
+//            //	[5:0]		6	ver		Firmware version
+//            //	[8:6]		3	wgn		(see Table 9)
+//            //	[9]			1	bf		(see Table 9)
+//            //	[10]		1	np		(see Table 9)
+//            //	[11]		1	mr		(see Table 9)
+//            //	[12]		1	ke		(see Table 9)
+//            //	[13]		1	rl		(see Table 9)
+//            //	[14]		1	pb		(see Table 9)
+//            //	[15]		1	sp6		(see Table 9)
+//            //	[16]		1	seu		(see Table 9)
+//            //	[18:17]		2	resvd	Reserved
+//            //	[30:19]		12	yea		binary code
+//            //	[35:31]		5	day		binary code
+//            //	[39:36]		4	month	binary code
+//        
+//            // IDCODEs
+//            //	Device		IR Length	IDCODEinstruction	DR Length	IDCODE			USERCODEinstruction	DR Length
+//            //	XCV600E		5 bits		0x09				32 bits		0xv0A30093		0x08				32 bits
+//            //	XC6SLX150	6 bits		0x09				32 bits		0xX401D093		0x08				32 bits
+//            //	XCS40XL		3 bits		0x6					32 bits		0x0041C093		None				None
+//            //	XC18V01		8 bits		0xFE				32 bits		0xv50X4093		0xFD				32 bits
+//            //	XC18V04		8 bits		0xFE				32 bits		0xv50X6093		0xFD				32 bits
+//            //	XCF08P		16 bits		0x00FE				32 bits		0xv5057093		0x00FD				32 bits
+//            //	XCF32P		16 bits		0x00FE				32 bits		0xv5059093		0x00FD				32 bits
+//            //
+//            //------------------------------------------------------------------------------
+//            // Read ALCT mez FPGA IDcode
+//            //!	ichain = 0x03;									// ALCT Virtex-E  Mezzanine pgm jtag chain
+//            ichain = 0x13;									// ALCT Spartan-6 Mezzanine pgm jtag chain
+//        
+//            adr    = boot_adr;								// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
+//        
+//            chip_id = 0;
+//            opcode  = 0x09;									// FPGA IDcode opcode
+//            reg_len = 32;
+//        
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//            tdi_to_i4(tdo,idcode,32,0);								// Deserialize
+//        
+//            idcode_decode (idcode, sdevice_type, sdevice_name, sdevice_version, sdevice_size);
+//        
+//            fprintf(stdout,"\tALCT Mez  Device=%1i IDcode=%8.8X %s Name=%s\tVer=%s\tSize=%s \n",
+//                    chip_id, idcode, sdevice_type.c_str(), sdevice_name.c_str(), sdevice_version.c_str(), sdevice_size.c_str());
+//        
+//            // Read FPGA and PROM IDcodes
+//            for (chip_id=0; chip_id<=2; ++chip_id) {
+//        
+//                if (chip_id==0) opcode=0x09;					// FPGA IDcode opcode, expect v0A30093
+//                if (chip_id==1) opcode=0xFE;					// PROM IDcode opcode
+//                reg_len=32;										// IDcode length
+//                // FPGA,PROM chip
+//                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//                tdi_to_i4(&tdo[0],idcode,32,0);
+//                idcode_decode (idcode, sdevice_type, sdevice_name, sdevice_version, sdevice_size);
+//        
+//                fprintf(stdout,"\tALCT Mez  Device=%1i IDcode=%8.8X %s Name=%s\tVer=%s\tSize=%s \n",
+//                        chip_id, idcode, sdevice_type.c_str(), sdevice_name.c_str(), sdevice_version.c_str(), sdevice_size.c_str());
+//        
+//            }	// close for chip_id
+//        
+//            // Read FPGA/PROM USERCodes
+//            for (chip_id=0; chip_id<=2; ++chip_id) {
+//                if (chip_id==0) opcode = 0x08;					// FPGA USERcode opcode
+//                if (chip_id==1) opcode = 0xFD;					// PROM USERcode opcode
+//                reg_len=32;										// IDcode length
+//                // FPGA,PROM chip
+//                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//                tdi_to_i4(&tdo[0],idcode,32,0);
+//                printf("\tALCT %s device %1i USERcode = %8.8X\n",alct_chip_type[chip_id].c_str(),chip_id,idcode);
+//            }	// close for chip_id
+//        
+//            // Create fat 0 for writing to data registers
+//            for (i=0; i<mxbitstream; ++i) {
+//                tdi[i]=0;
+//            }
+//        
+//            // Select ALCT Mezzanine FPGA control JTAG chain from TMB boot register
+//            ichain = 0x0002;								// ALCT Mezzanine control jtag chain
+//            adr    = boot_adr;								// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);			// Take TAP to RTI
+//        
+//            // Read ALCT ID register (5 bit opcode)
+//            chip_id = 0;
+//            opcode  = IDRead;								// ALCT ID register opcode
+//            reg_len = 40;									// Register length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//        
+//            // Decode ALCT ID register
+//            for (i=0; i<=39; ++i) {
+//                rsa[i]=tdo[i];
+//            }
+//        
+//            tdi_to_i4(&tdo[ 0], alct_idreg[0], 32,0);
+//            tdi_to_i4(&tdo[32], alct_idreg[1],  8,0);
+//            printf("\n\tALCT ID =%8.8X%8.8X\n",alct_idreg[1],alct_idreg[0]);
+//        
+//            bool alct_virtexe=false;
+//            if (alct_virtexe)
+//            {
+//                tdi_to_i4(&rsa[ 0], rsa_chip_id,  4,0);
+//                tdi_to_i4(&rsa[ 4], rsa_version,  4,0);
+//                tdi_to_i4(&rsa[ 8], rsa_year,    16,0);
+//                tdi_to_i4(&rsa[24], rsa_day,      8,0);
+//                tdi_to_i4(&rsa[32], rsa_month,    8,0);
+//        
+//                printf("\trsa_chip_id %4.1X\n",rsa_chip_id);
+//                printf("\trsa_version %4.1X\n",rsa_version);
+//                printf("\trsa_year    %4.4X\n",rsa_year);
+//                printf("\trsa_day     %4.2X\n",rsa_day);
+//                printf("\trsa_month   %4.2X\n",rsa_month);
+//            }
+//            else
+//            {
+//                tdi_to_i4(&rsa[ 0], rsa_ver,      6,0);
+//                tdi_to_i4(&rsa[ 6], rsa_wgn,      3,0);
+//                tdi_to_i4(&rsa[ 9], rsa_bf,       1,0);
+//                tdi_to_i4(&rsa[10], rsa_np,       1,0);
+//                tdi_to_i4(&rsa[11], rsa_mr,       1,0);
+//                tdi_to_i4(&rsa[12], rsa_ke,       1,0);
+//                tdi_to_i4(&rsa[13], rsa_rl,       1,0);
+//                tdi_to_i4(&rsa[14], rsa_pb,       1,0);
+//                tdi_to_i4(&rsa[15], rsa_sp6,      1,0);
+//                tdi_to_i4(&rsa[16], rsa_seu,      1,0);
+//                tdi_to_i4(&rsa[17], rsa_res1,     2,0);
+//                tdi_to_i4(&rsa[19], rsa_year,    12,0);
+//                tdi_to_i4(&rsa[31], rsa_day,      5,0);
+//                tdi_to_i4(&rsa[36], rsa_month,    4,0);
+//        
+//                printf("\trsa_ver     %4.2X\n",rsa_ver);
+//                printf("\trsa_wgn     %4.1X\n",rsa_wgn);
+//                printf("\trsa_bf      %4.1X\n",rsa_bf);
+//                printf("\trsa_np      %4.1X\n",rsa_np);
+//                printf("\trsa_mr      %4.1X\n",rsa_mr);
+//                printf("\trsa_ke      %4.1X\n",rsa_ke);
+//                printf("\trsa_rl      %4.1X\n",rsa_rl);
+//                printf("\trsa_pb      %4.1X\n",rsa_pb);
+//                printf("\trsa_sp6     %4.1X\n",rsa_sp6);
+//                printf("\trsa_seu     %4.1X\n",rsa_seu);
+//                printf("\trsa_res1    %4.1X\n",rsa_res1);
+//                printf("\trsa_year    %4.3X %4.4i\n",rsa_year,rsa_year);
+//                printf("\trsa_day     %4.2X %4.2i\n",rsa_day,rsa_day);
+//                printf("\trsa_month   %4.1X %4.2i\n",rsa_month,rsa_month);
+//            }
+//        
+//            // Read ALCT digital serial numbers
+//            // Reset DS2401
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNreset );
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
+//        
+//            // Send read command 33h to ibutton chip
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
+//        
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite1);
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
+//            vme_jtag_write_ir(adr,ichain,chip_id,SNwrite0);
+//        
+//            // Read 64 bits of DSN bit by bit
+//            reg_len    = 1;											// Register length
+//            alct_sn[0] = 0;
+//            alct_sn[1] = 0;
+//        
+//            for (i=0; i<=63; ++i) {
+//                vme_jtag_write_ir(adr,ichain,chip_id,SNread);
+//                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//                ibit=tdo[0];
+//                if (i>= 0 && i < 31) alct_sn[0] = alct_sn[0] | (ibit<<i);
+//                if (i>=32 && i < 63) alct_sn[1] = alct_sn[1] | (ibit<<i);
+//            }
+//        
+//            printf("\n\tALCT DSN =%8.8X%8.8X\n",alct_sn[1],alct_sn[0]);
+//        
+//            alct_dsn_mfg = (alct_sn[0] >>  0) & 0x00FF;
+//            alct_dsn     = (alct_sn[0] >>  8) & 0xFFFFFF;
+//            alct_dsn_crc = (alct_sn[0] >> 28) & 0x00FF;
+//        
+//            printf("\n\tDigital Serial for ALCT");
+//            printf(" CRC=%2.2X",alct_dsn_crc);
+//            printf(" DSN=%6.6X",alct_dsn);
+//            printf(" MFG=%2.2X",alct_dsn_mfg);
+//            printf("\n");
+//        
+//            // Select ALCT Mezzanine FPGA control JTAG chain from TMB boot register
+//            ichain = 0x0002;							// ALCT Mezzanine control jtag chain
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            // Read ALCT Configuration register (5 bit opcode)
+//            chip_id = 0;
+//            opcode  = RdCfg;							// ALCT cfg register opcode
+//            //	opcode  = 0x06;								// ALCT cfg register opcode
+//            reg_len = 69;								// Register length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//        
+//            // Decode ALCT configuration register
+//            for (i=0; i<69; ++i) {
+//                rsa[i]=tdo[i];
+//            }
+//        
+//            tdi_to_i4(&tdo[ 0], alct_cfgreg[0], 32,0);
+//            tdi_to_i4(&tdo[32], alct_cfgreg[1], 32,0);
+//            tdi_to_i4(&tdo[64], alct_cfgreg[2],  5,0);
+//        
+//            printf("\n\tALCT Cfg=%2.2X%8.8X%8.8X\n",alct_cfgreg[2],alct_cfgreg[1],alct_cfgreg[0]);
+//        
+//            tdi_to_i4(&rsa[ 0], rsa_trig_mode,    2,0);
+//            tdi_to_i4(&rsa[ 2], rsa_ext_trig_en,  1,0);
+//            tdi_to_i4(&rsa[ 3], rsa_pretrig_halt, 1,0);
+//            tdi_to_i4(&rsa[ 4], rsa_inject,       1,0);
+//            tdi_to_i4(&rsa[ 5], rsa_inject_mode,  1,0);
+//            tdi_to_i4(&rsa[ 6], rsa_inject_mask,  7,0);
+//            tdi_to_i4(&rsa[13], rsa_nph_thresh,   3,0);
+//            tdi_to_i4(&rsa[16], rsa_nph_pattern,  3,0);
+//            tdi_to_i4(&rsa[19], rsa_drift_delay,  2,0);
+//            tdi_to_i4(&rsa[21], rsa_fifo_tbins,   5,0);
+//            tdi_to_i4(&rsa[26], rsa_fifo_pretrig, 5,0);
+//            tdi_to_i4(&rsa[31], rsa_fifo_mode,    2,0);
+//            tdi_to_i4(&rsa[33], rsa_fifo_lastlct, 3,0);
+//            tdi_to_i4(&rsa[36], rsa_l1a_delay,    8,0);
+//            tdi_to_i4(&rsa[44], rsa_l1a_window,   4,0);
+//            tdi_to_i4(&rsa[48], rsa_l1a_offset,   4,0);	
+//            tdi_to_i4(&rsa[52], rsa_l1a_internal, 1,0);
+//            tdi_to_i4(&rsa[53], rsa_board_id,     3,0);
+//            tdi_to_i4(&rsa[56], rsa_bxn_offset,   4,0);
+//            tdi_to_i4(&rsa[60], rsa_ccb_enable,   1,0);
+//            tdi_to_i4(&rsa[61], rsa_alct_jtag_ds, 1,0);
+//            tdi_to_i4(&rsa[62], rsa_alct_tmode,   2,0);
+//            tdi_to_i4(&rsa[64], rsa_alct_amode,   2,0);
+//            tdi_to_i4(&rsa[66], rsa_alct_maskall, 1,0);
+//            tdi_to_i4(&rsa[67], rsa_trig_info_en, 1,0);
+//            tdi_to_i4(&rsa[68], rsa_sn_select,    1,0);
+//        
+//            printf("\t 0 rsa_trig_mode    %3i\n",rsa_trig_mode);
+//            printf("\t 2 rsa_ext_trig_en  %3i\n",rsa_ext_trig_en);
+//            printf("\t 3 rsa_pretrig_halt %3i\n",rsa_pretrig_halt);
+//            printf("\t 4 rsa_inject       %3i\n",rsa_inject);
+//            printf("\t 5 rsa_inject_mode  %3i\n",rsa_inject_mode);
+//            printf("\t 6 rsa_inject_mask  %3i\n",rsa_inject_mask);
+//            printf("\t13 rsa_nph_thresh   %3i\n",rsa_nph_thresh);
+//            printf("\t16 rsa_nph_pattern  %3i\n",rsa_nph_pattern);
+//            printf("\t19 rsa_drift_delay  %3i\n",rsa_drift_delay);
+//            printf("\t21 rsa_fifo_tbins   %3i\n",rsa_fifo_tbins);
+//            printf("\t26 rsa_fifo_pretrig %3i\n",rsa_fifo_pretrig);
+//            printf("\t31 rsa_fifo_mode    %3i\n",rsa_fifo_mode);
+//            printf("\t33 rsa_fifo_lastlct %3i\n",rsa_fifo_lastlct);
+//            printf("\t36 rsa_l1a_delay    %3i\n",rsa_l1a_delay);
+//            printf("\t44 rsa_l1a_window   %3i\n",rsa_l1a_window);
+//            printf("\t48 rsa_l1a_offset   %3i\n",rsa_l1a_offset);
+//            printf("\t52 rsa_l1a_internal %3i\n",rsa_l1a_internal);
+//            printf("\t53 rsa_board_id     %3i\n",rsa_board_id);
+//            printf("\t56 rsa_bxn_offset   %3i\n",rsa_bxn_offset);
+//            printf("\t60 rsa_ccb_enable   %3i\n",rsa_ccb_enable);
+//            printf("\t61 rsa_alct_jtag_ds %3i\n",rsa_alct_jtag_ds);
+//            printf("\t62 rsa_alct_tmode   %3i\n",rsa_alct_tmode);
+//            printf("\t64 rsa_alct_amode   %3i\n",rsa_alct_amode);
+//            printf("\t66 rsa_alct_maskall %3i\n",rsa_alct_maskall);
+//            printf("\t67 rsa_trig_info_en %3i\n",rsa_trig_info_en);
+//            printf("\t68 rsa_sn_select    %3i\n",rsa_sn_select);
+//            printf("\n");
+//        
+//            printf("\n\tWrite new data? bit,len,val <cr=no> ");
+//            gets(line);
+//            if (line[0]==NULL) goto L2300;
+//            sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
+//        
+//            // Set new ALCT cfg bits
+//            bit_to_array(ival,ivalarray,ilen);
+//        
+//            for (i=0; i<=68; ++i) {
+//                rsa[i]=tdo[i+1];
+//                if (i>=ibit && i<=(ibit+ilen-1)) rsa[i]=ivalarray[i-ibit];
+//            }
+//        
+//            // Write ALCT Configuration register (5 bit opcode)
+//            chip_id = 0;
+//            opcode  = WrCfg;										// ALCT cfg register opcode
+//            reg_len = 69;											// Register length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,rsa,tdo,reg_len);	// Write data
+//            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//        
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT JTAG read/write: Debug firmware
+//            //------------------------------------------------------------------------------
+//        L23200:
+//        
+//            printf("\tMake sure you removed the JTAG cable!\n");
+//        
+//            //	Chain ID	Section		 Control or Program
+//            //	--------	------------ ------------------
+//            //	  0			Slow Control control registers
+//            //	  1			Slow Control PROM
+//            //	  2			Mezzanine    control registers (alct normal firmware)
+//            //	  3			Mezzanine    FPGA+PROM
+//            //
+//            //
+//            //	ALCT Debug Firmware BSCAN Register USER1 readonly:
+//            //	Field		Len	Typical	Description
+//            //	-------		---	-------	--------------------------
+//            //	[ 3: 0]		4	B		Begin marker
+//            //	[ 7: 4]		4	A		Version ID
+//            //	[23: 8]		16	0823	Version date
+//            //	[39:24]		16	2004	Version date
+//            //	[40]		1	1		Mez FPGA reports done
+//            //	[41]		1	1		Slow control FPGA reports done
+//            //	[42]		1	1		DLL locked
+//            //	[43]		1	1		Clock enable
+//            //	[47:44]		4	C		USER2 alignment marker
+//            //	[48]		1	0		Cmd_sync_mode 1=sync mode	
+//            //	[49]		1	-		1=80MHz synch mode
+//            //	[50]		1	-		First  80MHz phase data ok
+//            //	[51]		1	-		Second 80MHz phase data ok
+//            //	[63:52]		12	-		First  80MHz phase data alct_rx_1st[16:5]
+//            //	[75:64]		12			Second 80MHz phase data alct_rx_2nd[16:5]
+//            //	[76]		1	1		cmd_l1a_en, enable l1a readout on ext_trig
+//            //	[77]		1	1		cmd_trig_en,enable trigger word on ext_trig
+//            //	[78]		1	0		cmd_dummy
+//            //	[79:76]		4	00		Free
+//            //	[83:80]		4=	E		End marker
+//            //
+//            //
+//            //  ALCT Debug Firmware BSCAN Register USER2 write/read:
+//            //	Field		Len	Typical	Description
+//            //	-------		---	-------	--------------------------
+//            //	[ 3: 0]		4	C		Alignment marker
+//            //	[4]			1	0		1=sync_mode
+//            //	[5]			1	1		cmd_l1a_en, enable l1a readout on ext_trig
+//            //	[6]			1	1		cmd_trig_en,enable trigger word on ext_trig
+//            //	[7]			1	0		cmd_dummy
+//            //	[23:8]		16	FFFF	tx_en0, enable alct0 trigger bits
+//            //	[39:24]		16	FFFF	tx_en1, enable alct1 trigger bits
+//            //
+//            //------------------------------------------------------------------------------
+//            // Select ALCT Mezzanine FPGA programming JTAG chain from TMB boot register
+//            ichain = 0x0003;							// ALCT Mezzanine pgm jtag chain
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            // Read Virtex-E FPGA (5-bit opcode) and XC18V04 PROM IDcodes (8-bit opcode)
+//            for (chip_id=0; chip_id<=1; ++chip_id) {
+//                if (chip_id==0) opcode = 0x09;				// FPGA IDcode opcode, expect v0A30093
+//                if (chip_id==1) opcode = 0xFE;				// PROM IDcode opcode
+//                reg_len=32;									// IDcode length
+//                // FPGA,PROM chip
+//                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//                tdi_to_i4(&tdo[0],idcode,32,0);
+//                printf("\tALCT %s device %1i IDcode   = %8.8X\n",alct_chip_type[chip_id].c_str(),chip_id,idcode);
+//            }
+//        
+//            // Read FPGA/PROM USERCodes (8 bit opcode)
+//            for (chip_id=0; chip_id<=1; ++chip_id) {
+//                if (chip_id==0) opcode = 0x08;				// FPGA USERcode opcode
+//                if (chip_id==1) opcode = 0xFD;				// PROM USERcode opcode
+//                reg_len=32;									// IDcode length
+//                // FPGA,PROM chip
+//                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//                tdi_to_i4(&tdo[0],idcode,32,0);
+//                printf("\tALCT %s device %1i USERcode = %8.8X\n",alct_chip_type[chip_id].c_str(),chip_id,idcode);
+//            }
+//        
+//            // Create fat 0 for writing to data registers
+//            for (i=0; i<mxbitstream; ++i) {
+//                tdi[i]=0;
+//            }
+//        
+//            // Select ALCT Mezzanine FPGA VirtexE JTAG chain from TMB boot register
+//            ichain = 0x0003;							// ALCT VirtexE
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            // Read ALCT VirtexE USER1 register (5 bit opcode)
+//            chip_id = 0;
+//            opcode  = 0x02;								// VirtexE USER1 opcode
+//            reg_len = 84;								// Register length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//            if (ifunc<0) goto L23200;
+//        
+//            // Decode ALCT USER1 register
+//            for (i=0; i<reg_len; ++i) {
+//                rsd[i]=tdo[i];
+//            }
+//        
+//            tdi_to_i4(&tdo[ 0], alct_user1[0], 32,0);
+//            tdi_to_i4(&tdo[32], alct_user1[1], 32,0);
+//            tdi_to_i4(&tdo[64], alct_user1[2], 16,0);
+//        
+//            printf("\n\tALCT USER1 = %8.8X%8.8X%8.8X\n",alct_user1[2],alct_user1[1],alct_user1[0]);
+//        
+//            tdi_to_i4(&rsd[ 0], rsd_begin,          4,0);
+//            tdi_to_i4(&rsd[ 4], rsd_version,        4,0);
+//            tdi_to_i4(&rsd[ 8], rsd_monthday,      16,0);
+//            tdi_to_i4(&rsd[24], rsd_year,          16,0);
+//            tdi_to_i4(&rsd[40], rsd_mc_done,        1,0);
+//            tdi_to_i4(&rsd[41], rsd_sc_done,        1,0);
+//            tdi_to_i4(&rsd[42], rsd_clock_lock,     1,0);
+//            tdi_to_i4(&rsd[43], rsd_clock_en,       1,0);
+//            tdi_to_i4(&rsd[44], rsd_cmd_align,      4,0);
+//            tdi_to_i4(&rsd[48], rsd_cmd_sync_mode,  1,0);
+//            tdi_to_i4(&rsd[49], rsd_sync_mode,      1,0);
+//            tdi_to_i4(&rsd[50], rsd_sync_rx_1st_ok, 1,0);
+//            tdi_to_i4(&rsd[51], rsd_sync_rx_2nd_ok, 1,0);
+//            tdi_to_i4(&rsd[52], rsd_alct_rx_1st,   12,0);
+//            tdi_to_i4(&rsd[64], rsd_alct_rx_2nd,   12,0);
+//            tdi_to_i4(&rsd[76], rsd_cmd_l1a_en,     1,0);
+//            tdi_to_i4(&rsd[77], rsd_cmd_trig_en,    1,0);
+//            tdi_to_i4(&rsd[78], rsd_cmd_dummy,      1,0);
+//            tdi_to_i4(&rsd[79], rsd_free0,          1,0);
+//            tdi_to_i4(&rsd[80], rsd_end,            4,0);
+//        
+//            printf("\trsd_begin          %4.1X\n",rsd_begin);
+//            printf("\trsd_version        %4.1X\n",rsd_version);
+//            printf("\trsd_monthday       %4.4X\n",rsd_monthday);
+//            printf("\trsd_year           %4.4X\n",rsd_year);
+//            printf("\trsd_mc_done        %4.1X\n",rsd_mc_done);
+//            printf("\trsd_sc_done        %4.1X\n",rsd_sc_done);
+//            printf("\trsd_clock_lock     %4.1X\n",rsd_clock_lock);
+//            printf("\trsd_clock_en       %4.1X\n",rsd_clock_en);
+//            printf("\trsd_cmd_align      %4.1X\n",rsd_cmd_align);
+//            printf("\trsd_cmd_sync_mode  %4.1X\n",rsd_cmd_sync_mode);
+//            printf("\trsd_sync_mode      %4.1X\n",rsd_sync_mode);
+//            printf("\trsd_sync_rx_1st_ok %4.1X\n",rsd_sync_rx_1st_ok);
+//            printf("\trsd_sync_rx_2nd_ok %4.1X\n",rsd_sync_rx_2nd_ok);
+//            printf("\trsd_alct_rx_1st    %4.3X\n",rsd_alct_rx_1st);
+//            printf("\trsd_alct_rx_2nd    %4.3X\n",rsd_alct_rx_2nd);
+//            printf("\trsd_cmd_l1a_en     %4.3X\n",rsd_cmd_l1a_en);
+//            printf("\trsd_cmd_trig_en    %4.3X\n",rsd_cmd_trig_en);
+//            printf("\trsd_cmd_dummy      %4.3X\n",rsd_cmd_dummy);
+//            printf("\trsd_free0          %4.1X\n",rsd_free0);
+//            printf("\trsd_end            %4.1X\n",rsd_end);
+//        
+//            // Read ALCT VirtexE USER2 register (5 bit opcode)
+//            chip_id = 0;
+//            opcode  = 0x03;								// VirtexE USER2 opcode
+//            reg_len = 40;								// Register length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//        
+//            // Decode ALCT USER2 register
+//            for (i=0; i<reg_len; ++i) {
+//                rsd[i]=tdo[i];
+//            }
+//        
+//            tdi_to_i4(&tdo[ 0],alct_user2[0],32,0);
+//            tdi_to_i4(&tdo[32],alct_user2[1], 8,0);
+//        
+//            printf("\tALCT USER2 = %8.8X%8.8X\n",alct_user2[1],alct_user2[0]);
+//        
+//            tdi_to_i4(&rsd[ 0], rsd_cmd_align,     4,0);
+//            tdi_to_i4(&rsd[ 4], rsd_cmd_sync_mode, 1,0);
+//            tdi_to_i4(&rsd[ 5], rsd_cmd_l1a_en,    1,0);
+//            tdi_to_i4(&rsd[ 6], rsd_cmd_trig_en,   1,0);
+//            tdi_to_i4(&rsd[ 7], rsd_cmd_dummy,     1,0);
+//            tdi_to_i4(&rsd[ 8], rsd_tx_en0,       16,0);
+//            tdi_to_i4(&rsd[24], rsd_tx_en1,       16,0);
+//        
+//            printf("\trsd[3:0]   rsd_cmd_align     %4.1X\n",rsd_cmd_align);
+//            printf("\trsd[4]     rsd_cmd_sync_mode %4.1X\n",rsd_cmd_sync_mode);
+//            printf("\trsd[5]     rsd_cmd_l1a_en    %4.1X\n",rsd_cmd_l1a_en);
+//            printf("\trsd[6]     rsd_cmd_trig_en   %4.1X\n",rsd_cmd_trig_en);
+//            printf("\trsd[7]     rsd_cmd_dummy     %4.1X\n",rsd_cmd_dummy);
+//            printf("\trsd[23:8]  rsd_tx_en0        %4.4X\n",rsd_tx_en0);
+//            printf("\trsd[39:24] rsd_tx_en1        %4.4X\n",rsd_tx_en1);
+//        
+//            // Restore USER2 because readout was destructive, alas
+//            for (i=0; i<reg_len; ++i) {
+//                tdi[i]=tdo[i];
+//            }
+//        
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            // Write new data to USER2
+//            printf("\n\tWrite new data? bit,len,val <cr=no> ");
+//            gets(line);
+//            if (line[0]==NULL) goto L23299;
+//            sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
+//        
+//            // Set new ALCT USER2 bits
+//            bit_to_array(ival,ivalarray,ilen);
+//        
+//            for (i=0; i<reg_len; ++i) {
+//                if (i>=ibit && i<=(ibit+ilen-1)) {
+//                    rsd[i]=ivalarray[i-ibit];
+//                }
+//            }
+//        
+//            // Write ALCT USER2 register (5 bit opcode)
+//            chip_id = 0;
+//            opcode  = 0x03;								// VirtexE USER2 opcode
+//            reg_len = 40;								// Register length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);	// Write data
+//            dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//        
+//        L23299:
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT Delay Scan:Time in ALCT transmit clock, ALCT Normal Firmware 
+//            //------------------------------------------------------------------------------
+//        L23300:
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//            wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select ALCT cable port
+//            adr     = vme_loopbk_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data | 0x000C;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take TMB out of sync_mode
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// get current state
+//            wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take ALCT debug firmware out of sync_mode
+//            //	ichain  = 0x0003;							// ALCT VirtexE
+//            //	adr     = boot_adr;							// Boot register address
+//            //	vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//            //	chip_id = 0;
+//            //	opcode  = 0x03;								// VirtexE USER2 opcode
+//            //	reg_len = 40;								// Register length
+//            //	i4_to_tdi(i4=0x6C,      &tdi[0], 8,0);		// not sync mode + marker
+//            //	i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0)		// tx enables
+//            //	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            //	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            // Get current 3D3444 delay
+//            adr	   = base_adr+vme_ddd0_adr;
+//            status = vme_read(adr,rd_data);
+//            alct_tx_default = rd_data & 0x000F;
+//            ddd0_delay      = rd_data & 0xFFF0;			 // zero out alct_tx delay
+//        
+//            // Clear error accumulator
+//            for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
+//                alct_tx_bad[ddd_delay]=0;
+//            }
+//        
+//            // Step alct clock delay
+//            npasses=1000;
+//        
+//            for (ipass     = 1; ipass     <= npasses; ++ipass    ) { // 23315
+//                for (ddd_delay = 0; ddd_delay <= 15;      ++ddd_delay) { // 23310
+//        
+//                    wr_data = ddd0_delay | (ddd_delay<<0);
+//                    adr	    = base_adr+vme_ddd0_adr;
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Start DDD state machine
+//                    adr	    = base_adr+vme_dddsm_adr;
+//                    status  = vme_read(adr,rd_data);
+//                    autostart = rd_data & 0x0020;	// get current autostart state
+//                    wr_data	= 0x0000 | autostart;	// stop machine
+//                    status	= vme_write(adr,wr_data);
+//                    wr_data = 0x0001 | autostart;	// start machine
+//                    status	= vme_write(adr,wr_data);
+//                    wr_data = 0x0000 | autostart;	// unstart machine
+//                    status	= vme_write(adr,wr_data);
+//        
+//                    // Wait for it to finish
+//                    for (i=1; i<=1000; ++i) {
+//                        status   = vme_read(adr,rd_data);
+//                        ddd_busy = (rd_data >> 6) & 0x1;
+//                        ddd_verify_ok = (rd_data >> 7) & 0x1;
+//                        if (ddd_busy==0) goto L23305;
+//                    }
+//                    printf("\n\t3d3444 verify failed %2i\n",ddd_delay);
+//        
+//                    // Get alct raw hits busy bit
+//        L23305:
+//                    adr    = alct_fifo_adr+base_adr;
+//                    status = vme_read(adr,rd_data);
+//                    alct_raw_busy = rd_data & 0x0001;
+//        
+//                    // Check for correct data received
+//                    alct_tx_bad[ddd_delay] = alct_tx_bad[ddd_delay] + alct_raw_busy;
+//        
+//                    // Close loops
+//                }	// close for ddd_delay 23310
+//        
+//                if (ipass    == 1) printf("\tAccumulating statistics...\n\n");
+//                if (ipass%10 == 0) printf("\t%4i\r",npasses-ipass);
+//        
+//            }	// close for ipass 23315
+//        
+//            // Display timing results
+//            printf(" 2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
+//        
+//            for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
+//                pctbad = 100.*float(alct_tx_bad[ddd_delay])/float(npasses);
+//                nbad   = int(pctbad/10.);
+//                if (pctbad!=0.0 && nbad==0) nbad=1;
+//                printf("   %2i  %7i%7.0f ",ddd_delay,alct_tx_bad[ddd_delay],pctbad);
+//                for (i=1;i<=nbad;++i) printf("x"); printf("\n");
+//            }
+//        
+//            // Put back default delay
+//            wr_data = ddd0_delay | (alct_tx_default<<0);
+//            adr	    = base_adr+vme_ddd0_adr;
+//            status  = vme_write(adr,wr_data);
+//            adr	    = base_adr+vme_dddsm_adr;
+//            status  = vme_read(adr,rd_data);
+//            autostart = rd_data & 0x0020;	// get current autostart state
+//            wr_data	= 0x0000 | autostart;	// stop machine
+//            status	= vme_write(adr,wr_data);
+//            wr_data = 0x0001 | autostart;	// start machine
+//            status	= vme_write(adr,wr_data);
+//            wr_data = 0x0000 | autostart;	// unstart machine
+//            status	= vme_write(adr,wr_data);
+//        
+//            for (i=1; i<=1000; ++i) {
+//                status   = vme_read(adr,rd_data);
+//                ddd_busy = (rd_data >> 6) & 0x1;
+//                ddd_verify_ok = (rd_data >> 7) & 0x1;
+//                if (ddd_busy==0) goto L23320;
+//            }
+//        
+//            printf("\n\tVerify failed writing back default ddd_delay=%2i\n",ddd_delay);
+//        
+//        L23320:
+//            pause("\tALCT txclock delay scan complete");
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT Delay Scan:Time in ALCT transmit clock,ALCT Debug Firmware 
+//            //------------------------------------------------------------------------------
+//        L23400:
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBF;		// Clear previous l1a
+//            wr_data = wr_data | 0x1;		// Turn off CCB backplane
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select ALCT cable port
+//            adr     = vme_loopbk_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data | 0x000C;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put TMB into sync_mode
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// get current state
+//            wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
+//            wr_data = wr_data | (0x5<<4);				// alct_seq_cmd=5 for alct_sync_mode
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put ALCT debug firmware into sync_mode
+//            ichain = 0x0003;							// ALCT VirtexE
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            chip_id = 0;
+//            opcode  = 0x03;								// VirtexE USER2 opcode
+//            reg_len = 40;								// Register length
+//            i4_to_tdi(i4=0x7C,      &tdi[0], 8,0);		// sync mode + marker
+//            i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            // Get current 3D3444 delay
+//            adr	   = base_adr+vme_ddd0_adr;
+//            status = vme_read(adr,rd_data);
+//            alct_tx_default = rd_data & 0x000F;
+//            ddd0_delay      = rd_data & 0xFFF0;			 // zero out alct_tx delay
+//        
+//            // Clear error accumulator
+//            for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
+//                alct_tx_bad[ddd_delay]=0;
+//            }
+//        
+//            // Step alct tx clock delay
+//            printf("\tStepping alct_tx clock delay, checking 80MHz data TMB gets from ALCT\n");
+//        
+//            npasses=1000;
+//        
+//            for (ipass     = 1; ipass     <= npasses; ++ipass    ) {	// 23415
+//                for (ddd_delay = 0; ddd_delay <= 15;      ++ddd_delay) {	// 23410
+//        
+//                    adr	    = base_adr+vme_ddd0_adr;
+//                    wr_data = ddd0_delay | (ddd_delay<<0);
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Start DDD state machine
+//                    adr	    = base_adr+vme_dddsm_adr;
+//                    status  = vme_read(adr,rd_data);
+//                    autostart = rd_data & 0x0020;	// get current autostart state
+//                    wr_data	= 0x0000 | autostart;	// stop machine
+//                    status	= vme_write(adr,wr_data);
+//                    wr_data = 0x0001 | autostart;	// start machine
+//                    status	= vme_write(adr,wr_data);
+//                    wr_data = 0x0000 | autostart;	// unstart machine
+//                    status	= vme_write(adr,wr_data);
+//        
+//                    // Wait for it to finish
+//                    for (i=1; i<=1000; ++i) {
+//                        status   = vme_read(adr,rd_data);
+//                        ddd_busy = (rd_data>>6) | 0x1;
+//                        ddd_verify_ok = (rd_data>>7) & 0x1;
+//                        if (ddd_busy==0) goto L23405;
+//                    }
+//                    printf("\n\t3d3444 verify failed, ddd_delay=%2i\n",ddd_delay);
+//        
+//                    // Read demux data
+//        L23405:
+//                    for (i=0; i<=3; ++i) 		// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+//                    {
+//                        adr     = alctfifo1_adr+base_adr;
+//                        wr_data = 0x2000;			// select sync_mode addressing
+//                        wr_data = wr_data | (i<<1);
+//                        status	= vme_write(adr,wr_data);
+//        
+//                        adr    = alctfifo2_adr+base_adr;
+//                        status = vme_read(adr,rd_data);
+//                        alct_demux_rd[i]=rd_data;
+//                    }
+//        
+//                    alct_1st_demux = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+//                    alct_2nd_demux = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+//                    alct_demux_err = 0;
+//        
+//                    if (alct_1st_demux!=0xAAAAAAA) alct_demux_err=1;
+//                    if (alct_2nd_demux!=0x5555555) alct_demux_err=1;
+//        
+//                    if (ipass==1) printf("%2i %8.8X %8.8X\n",ddd_delay,alct_1st_demux,alct_2nd_demux);
+//        
+//                    // Check for correct data received
+//                    alct_tx_bad[ddd_delay] = alct_tx_bad[ddd_delay] + alct_demux_err;
+//        
+//                    // Close loops
+//                }	// close for ddd_delay 23410
+//        
+//                if (ipass    == 1) printf("\tAccumulating statistics...\n\n");
+//                if (ipass%10 == 0) printf("\t%4i\r",npasses-ipass);
+//        
+//            }	// close for ipass 23415
+//        
+//            // Display timing results
+//            printf(" 2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
+//        
+//            for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
+//                pctbad = 100.*float(alct_tx_bad[ddd_delay])/float(npasses);
+//                nbad   = int(pctbad/10.);
+//                if (pctbad!=0.0 && nbad==0) nbad=1;
+//                printf("   %2i  %7i%7.0f ",ddd_delay,alct_tx_bad[ddd_delay],pctbad);
+//                for (i=1;i<=nbad;++i) printf("x"); printf("\n");
+//            }
+//        
+//            // Set alct tx delay
+//            inquire("\tSet default alct_txd_delay delay? cr=%2i", minv=0, maxv=15, radix=10, alct_tx_default);
+//        
+//            wr_data = ddd0_delay | (alct_tx_default<<0);
+//            adr	    = base_adr+vme_ddd0_adr;
+//            status  = vme_write(adr,wr_data);
+//            adr	    = base_adr+vme_dddsm_adr;
+//            status  = vme_read(adr,rd_data);
+//            autostart = rd_data & 0x0020;	// get current autostart state
+//            wr_data	= 0x0000 | autostart;	// stop machine
+//            status	= vme_write(adr,wr_data);
+//            wr_data = 0x0001 | autostart;	// start machine
+//            status	= vme_write(adr,wr_data);
+//            wr_data = 0x0000 | autostart;	// unstart machine
+//            status	= vme_write(adr,wr_data);
+//        
+//            for (i=1; i<=1000; ++i) {
+//                status   = vme_read(adr,rd_data);
+//                ddd_busy = (rd_data>>6) & 0x1;
+//                ddd_verify_ok = (rd_data>>7) & 0x1;
+//                if (ddd_busy==0) goto L23440;
+//            }
+//            printf("\n\tVerify failed writing back default ddd_delay=%2i\n",ddd_delay);
+//        
+//            // Take ALCT debug firmware out of sync_mode
+//        L23440:
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// get current state
+//            wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take ALCT debug firmware out of sync_mode
+//            ichain = 0x0003;							// ALCT VirtexE
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            chip_id = 0;
+//            opcode  = 0x03;								// VirtexE USER2 opcode
+//            reg_len = 40;								// Register length
+//            i4_to_tdi(i4=0x6C,      &tdi[0], 8,0);		// not sync mode + marker
+//            i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT Delay Scan:Time in ALCT receive clock,ALCT Debug Firmware 
+//            //------------------------------------------------------------------------------
+//        L23500:
+//            printf("\tMake sure you removed the JTAG cable\n");
+//        
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBF;		// Clear previous l1a
+//            wr_data = wr_data | 0x1;		// Turn off CCB backplane
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select ALCT cable port:
+//            adr     = vme_loopbk_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x000C;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put TMB firmware into sync_mode
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// get current state
+//            wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
+//            wr_data = wr_data | (0x5<<4);				// alct_seq_cmd=5 for alct_sync_mode
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put ALCT debug firmware into sync_mode
+//            ichain = 0x0003;							// ALCT VirtexE
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            chip_id = 0;
+//            opcode  = 0x03;								// VirtexE USER2 opcode
+//            reg_len = 40;								// Register length
+//            i4_to_tdi(i4=0x7C,      &tdi[0], 8,0);		// sync mode + marker
+//            i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            // Get current 3D3444 delay
+//            adr	   = base_adr+vme_ddd0_adr;
+//            status = vme_read(adr,rd_data);
+//            alct_rx_default =(rd_data>>4) & 0x000F;		// alct rx clock
+//            ddd0_delay      = rd_data     & 0xFF0F;		// zero out alct_rx delay
+//        
+//            // Clear error accumulator
+//            for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
+//                alct_rx_bad[ddd_delay]=0;
+//            }
+//        
+//            // Step alct rx clock delay
+//            printf("\tStepping alct_rx clock delay checking 80MHz data ALCT gets from TMB\n");
+//            printf("\tYou should set alct_txd_delay first\n");
+//        
+//            npasses=100;
+//        
+//            for (ipass=1;    ipass      <=npasses; ++ipass    ) { // 23515
+//                for (ddd_delay=0; ddd_delay <=15;      ++ddd_delay) { // 23510
+//        
+//                    adr	    = base_adr+vme_ddd0_adr;
+//                    wr_data = ddd0_delay | (ddd_delay<<4);
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Start DDD state machine
+//                    adr	    = base_adr+vme_dddsm_adr;
+//                    status  = vme_read(adr,rd_data);
+//                    autostart = rd_data & 0x0020;	// get current autostart state
+//                    wr_data	= 0x0000 | autostart;	// stop machine
+//                    status	= vme_write(adr,wr_data);
+//                    wr_data = 0x0001 | autostart;	// start machine
+//                    status	= vme_write(adr,wr_data);
+//                    wr_data = 0x0000 | autostart;	// unstart machine
+//                    status	= vme_write(adr,wr_data);
+//        
+//                    // Wait for it to finish
+//                    for (i=1; i<=1000; ++i) {
+//                        status   = vme_read(adr,rd_data);
+//                        ddd_busy      = (rd_data>>6) & 0x1;
+//                        ddd_verify_ok = (rd_data>>7) & 0x1;
+//                        if (ddd_busy==0) goto L23505;
+//                    }
+//                    printf("\n\t3d3444 verify failed ddd_delay=%2i\n",ddd_delay);
+//        
+//                    // Read demux data on ALCT side
+//        L23505:
+//        
+//                    // Select ALCT Mezzanine FPGA VirtexE JTAG chain from TMB boot register
+//                    ichain = 0x0003;							// ALCT VirtexE
+//                    adr    = boot_adr;							// Boot register address
+//                    vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//                    // Read ALCT VirtexE USER1 register (5 bit opcode)
+//                    chip_id = 0;
+//                    opcode  = 0x02;								// VirtexE USER1 opcode
+//                    reg_len = 84;								// Register length
+//                    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//                    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//                    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//        
+//                    // Decode ALCT USER1 register
+//                    for (i=0; i<reg_len; ++i) {
+//                        rsd[i]=tdo[i];
+//                    }
+//        
+//                    tdi_to_i4(&rsd[ 0], rsd_begin,           4,0);
+//                    tdi_to_i4(&rsd[ 4], rsd_version,         4,0);
+//                    tdi_to_i4(&rsd[ 8], rsd_monthday,       16,0);
+//                    tdi_to_i4(&rsd[24], rsd_year,           16,0);
+//                    tdi_to_i4(&rsd[40], rsd_mc_done,         1,0);
+//                    tdi_to_i4(&rsd[41], rsd_sc_done,         1,0);
+//                    tdi_to_i4(&rsd[42], rsd_clock_lock,      1,0);
+//                    tdi_to_i4(&rsd[43], rsd_clock_en,        1,0);
+//                    tdi_to_i4(&rsd[44], rsd_cmd_align,       4,0);
+//                    tdi_to_i4(&rsd[48], rsd_cmd_sync_mode,   1,0);
+//                    tdi_to_i4(&rsd[49], rsd_sync_mode,       1,0);
+//                    tdi_to_i4(&rsd[50], rsd_sync_rx_1st_ok,  1,0);
+//                    tdi_to_i4(&rsd[51], rsd_sync_rx_2nd_ok,  1,0);
+//                    tdi_to_i4(&rsd[52], rsd_alct_rx_1st,    12,0);
+//                    tdi_to_i4(&rsd[64], rsd_alct_rx_2nd,    12,0);
+//                    tdi_to_i4(&rsd[76], rsd_free0,           4,0);
+//                    tdi_to_i4(&rsd[80], rsd_end,             4,0);
+//        
+//                    dprintf(stdout,"\trsd_sync_rx_1st_ok %4.1X\n",rsd_sync_rx_1st_ok);
+//                    dprintf(stdout,"\trsd_sync_rx_2nd_ok %4.1X\n",rsd_sync_rx_2nd_ok);
+//                    dprintf(stdout,"\trsd_alct_rx_1st    %4.3X\n",rsd_alct_rx_1st);
+//                    dprintf(stdout,"\trsd_alct_rx_2nd    %4.3X\n",rsd_alct_rx_2nd);
+//        
+//                    alct_demux_err=0;
+//        
+//                    if (rsd_alct_rx_1st!=0x0AAA) alct_demux_err=1;
+//                    if (rsd_alct_rx_2nd!=0x0555) alct_demux_err=1;
+//        
+//                    adr	   = base_adr+alct_stat_adr;
+//                    status = vme_read(adr,rd_data);
+//        
+//                    rsd_alct_rx_1st = (rd_data>>1) & 0x0001;	// get seq status[0]
+//                    rsd_alct_rx_2nd = (rd_data>>2) & 0x0001;	// get seq status[1]
+//        
+//                    //	if (rsd_alct_rx_1st!=1) alct_demux_err=1;
+//                    //	if (rsd_alct_rx_2nd!=1) alct_demux_err=1;
+//        
+//                    if (ipass==1) printf(" %2i 8.8X %8.8X\n",ddd_delay,rsd_alct_rx_1st,rsd_alct_rx_2nd);
+//        
+//                    // Check for correct data received
+//                    alct_rx_bad[ddd_delay] = alct_rx_bad[ddd_delay] + alct_demux_err;
+//        
+//                    // Cose loops
+//                }	// close for ddd_delay 23510
+//        
+//                if (ipass    == 1) printf("\tAccumulating statistics...\n\n");
+//                if (ipass%10 == 0) printf("\t%4i\r",npasses-ipass);
+//        
+//            }	// close for ipass 23515
+//        
+//            // Display timing results
+//            printf(" 2nsStep Berrs   Pct  0123456789  %5i cycles\n",npasses);
+//        
+//            for (ddd_delay=0; ddd_delay<=15; ++ddd_delay) {
+//                pctbad = 100.*float(alct_tx_bad[ddd_delay])/float(npasses);
+//                nbad   = int(pctbad/10.);
+//                if (pctbad!=0.0 && nbad==0) nbad=1;
+//                printf("   %2i  %7i%7.0f ",ddd_delay,alct_tx_bad[ddd_delay],pctbad);
+//                for (i=1;i<=nbad;++i) printf("x"); printf("\n");
+//            }
+//        
+//            // Set alct tx delay
+//            inquire("\tSet default alct_rxd_delay delay? cr=%2i", minv=0, maxv=15, radix=10, alct_rx_default);
+//        
+//            wr_data = ddd0_delay | (alct_rx_default<<4);
+//            adr	    = base_adr+vme_ddd0_adr;
+//            status  = vme_write(adr,wr_data);
+//            adr   	= base_adr+vme_dddsm_adr;
+//            status  = vme_read(adr,rd_data);
+//            autostart = rd_data & 0x0020;	// get current autostart state
+//            wr_data	= 0x0000 | autostart;	// stop machine
+//            status	= vme_write(adr,wr_data);
+//            wr_data = 0x0001 | autostart;	// start machine
+//            status	= vme_write(adr,wr_data);
+//            wr_data = 0x0000 | autostart;	// unstart machine
+//            status	= vme_write(adr,wr_data);
+//        
+//            for (i=1; i<=1000; ++i ) {
+//                status  = vme_read(adr,rd_data);
+//                ddd_busy      = (rd_data>>6) & 0x1;
+//                ddd_verify_ok = (rd_data>>7) & 0x1;
+//                if (ddd_busy==0) goto L23540;
+//            }
+//            printf("\n\tVerify failed writing back default ddd_delay=%2i\n",ddd_delay);
+//        
+//            // Take TMB firmware out of sync_mode
+//        L23540:
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// get current state
+//            wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take ALCT debug firmware out of sync_mode
+//            ichain = 0x0003;							// ALCT VirtexE
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            chip_id = 0;
+//            opcode  = 0x03;								// VirtexE USER2 opcode
+//            reg_len = 40;								// Register length
+//            i4_to_tdi(i4=0x6C,      &tdi[0], 8,0);		// not sync mode + marker
+//            i4_to_tdi(i4=0xFFFFFFFF,&tdi[8],32,0);		// tx enables
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT Software ext_trig ALCT, check for CRC errors, ALCT Debug Firmware 
+//            //------------------------------------------------------------------------------
+//        L23600:
+//            printf("\tMake sure you set alct_txd_delay and alct_rxd_delay");
+//        
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//            //	adr     = ccb_cfg_adr+base_adr;
+//            //	status  = vme_read(adr,rd_data);
+//            //	wr_data = rd_data & 0xFFBF;		// Clear previous l1a
+//            //	wr_data = wr_data | 0x1;		// Turn off CCB backplane
+//            //	status  = vme_write(adr,wr_data);
+//        
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig, enable l1a emulator
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBA;		// Clear previous l1a
+//            wr_data = wr_data | 0x0001;		// Turn off CCB backplane
+//            wr_data = wr_data | 0x0004;		// Enable L1A emulator
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Disable GTL ccb_clct_ext_trig
+//            adr     = ccb_trig_adr+base_adr;
+//            wr_data = 0;
+//            wr_data = wr_data | 0x0001;		// request ccb l1a on alct_ext_trig
+//            //	if (itrig_src==0) wr_data = wr_data | 0x0040;	// ccb_allow_ext_bypass to input GTL pulser
+//            wr_data = wr_data | (132<<8);	// set emulator delay for alct ext_trig timing
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select ALCT cable port
+//            adr     = vme_loopbk_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x000C;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take TMB firmware out of sync_mode
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// get current state
+//            wr_data = rd_data & 0xFF8F;					// clear bits[6:4] alct_seq_cmd[2:0]
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take ALCT debug firmware out of sync_mode
+//            //	ichain = 0x0003;							// ALCT VirtexE
+//            //	adr    = boot_adr;							// Boot register address
+//            //	vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//            //	chip_id = 0;
+//            //	opcode  = 0x03;								// VirtexE USER2 opcode
+//            //	reg_len = 8;								// Register length
+//            //	i4_to_tdi(i4=6C,tdi,reg_len,0);				// sync mode + marker
+//            //	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            //	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            // Set start_trigger state for FMM
+//            ttc_cmd = 6;
+//            adr     = base_adr+ccb_cmd_adr;
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0003 | (ttc_cmd<<8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            ttc_cmd = 1;
+//            wr_data = 0x0003 | (ttc_cmd<<8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status = vme_write(adr,wr_data);
+//        
+//            // Clear error counters
+//            ievent              = 0;
+//            err_alct_fifo_clr	= 0;	// ALCT fifo failed to clear
+//            err_alct_lct0		= 0;	// ALCT LCT0 unchanged
+//            err_alct_lct1		= 0;	// ALCT LCT1 unchanged
+//            err_alct_fifo_busy	= 0;	// ALCT fifo stuck busy
+//            err_alct_fifo_ndone	= 0;	// ALCT fifo not done
+//            err_alct_raw_nwords	= 0;	// ALCT wrong word count
+//            err_firmware_crc	= 0;	// TMB firmware CRC
+//            err_alct_crc		= 0;	// ALCT crc error, WTF// 
+//        
+//            // Clear TMB firmware counters
+//            adr     = base_adr+cnt_ctrl_adr;
+//            wr_data = 0x0021;						// clear + enable alct err
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0020;						// unclear +  + enable alct err
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Event loop
+//        L23610:
+//            ievent++;
+//            if (ievent%100==0 || ievent==1) printf("\tEvent %9i\n",ievent);
+//        
+//            // Clear last event
+//            adr     = alctfifo1_adr+base_adr;
+//            wr_data = 1;							// reset word counter
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0	;							// enable word counter
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Make sure alct fifo went unbusy
+//            adr    = alct_fifo_adr+base_adr;
+//            status = vme_read(adr,rd_data);
+//            alct_raw_busy = (rd_data>>0) & 0x0001;
+//            alct_raw_done = (rd_data>>1) & 0x0001;
+//            if (alct_raw_busy==1) err_alct_fifo_clr++;	// ALCT FIFO failed to clear
+//        
+//            // Fire ext_trig to ALCT board
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);		// get current state
+//            wr_data = rd_data & 0xFFF0;				// clear bits[3:0] alct ext trig
+//            wr_data = wr_data | 0x0004;				// fire alct ext trig
+//            //	wr_data = wr_data | 0x0008;				// or fire alct ext inject
+//            status  = vme_write(adr,wr_data);
+//            wr_data = rd_data & 0xFFF0;				// clear bits[3:0] alct ext trig
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Read ALCT trigger words
+//            adr      = alct_alct0_adr+base_adr;
+//            status   = vme_read(adr,rd_data);		// get current state
+//            alct0_rd = rd_data;
+//        
+//            adr      = alct_alct1_adr+base_adr;
+//            status   = vme_read(adr,rd_data);		// get current state
+//            alct1_rd = rd_data;
+//        
+//            if (alct0_rd==alct0_prev) err_alct_lct0++;	// ALCT LCT0 unchanged
+//            if (alct1_rd==alct1_prev) err_alct_lct1++;	// ALCT LCT1 unchanged
+//        
+//            alct0_prev = alct0_rd;
+//            alct1_prev = alct1_rd;
+//        
+//            // Fire CCB L1A oneshot to ALCT
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBF;			// Clear previous l1a
+//            wr_data = wr_data | 0x1;			// Turn off CCB backplane
+//            wr_data = wr_data | 0x0040;			// Fire ccb L1A oneshot
+//            status  = vme_write(adr,wr_data);
+//            wr_data = wr_data & 0xFFBF;			// Clear previous l1a	
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Check alct fifo status
+//            for (i=1; i<=100; ++i) {			// cheap readout delay 
+//                adr    = alct_fifo_adr+base_adr;
+//                status = vme_read(adr,rd_data);
+//                alct_raw_busy = (rd_data>>0) & 0x0001;
+//                alct_raw_done = (rd_data>>1) & 0x0001;
+//                if (alct_raw_busy==0) goto L23620;
+//            }
+//            err_alct_fifo_busy++;				// alct fifo stuck busy
+//        
+//        L23620:
+//            dprintf(stdout,"\tALCT L1A alct_raw_done waits=%5i\n",i);
+//            if (alct_raw_done!=1) err_alct_fifo_ndone++;	 // alct fifo not done
+//        
+//            // Check TMBs firmware CRC result
+//            adr     = base_adr+cnt_ctrl_adr;
+//            wr_data = 0x0022;					// snap
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0020;					// unsnap
+//            status  = vme_write(adr,wr_data);
+//            wr_data = (0<<8) | 0x0020;			// crc is counter adr 0
+//            status  = vme_write(adr,wr_data);
+//            adr     = base_adr+cnt_rdata_adr;
+//            status  = vme_read(adr,rd_data);	// counter LSB is sufficient
+//            if (rd_data!=0) err_firmware_crc++;
+//        
+//            // Check TMBs firmware ALCT LCT error counter
+//            adr     = base_adr+cnt_ctrl_adr;
+//            wr_data = 0x0022;					// snap
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0020;					// unsnap
+//            status  = vme_write(adr,wr_data);
+//            wr_data = (4<<8) | 0x0020;			// alct lct is counter adr 4
+//            status  = vme_write(adr,wr_data);
+//            adr     = base_adr+cnt_rdata_adr;
+//            status  = vme_read(adr,rd_data);	// counter LSB is sufficient
+//            if (rd_data!=0) printf("\talct_lct_err=%10i\n",rd_data);
+//        
+//            // Get alct word count
+//            adr    = alct_fifo_adr+base_adr;	// alct word count
+//            status = vme_read(adr,rd_data);
+//            alct_raw_nwords = (rd_data>>2) & 0x07FF;
+//        
+//            if (alct_raw_nwords!=0x018C) {
+//                err_alct_raw_nwords++;
+//                goto L23630;						// skip readout analysis if word count wrong
+//            }
+//        
+//            // Read alct fifo data
+//            for (i=0; i<=max(alct_raw_nwords-1,0); ++i) {
+//                adr     = alctfifo1_adr+base_adr;
+//                wr_data = (i<<1);					// ram read address
+//                status  = vme_write(adr,wr_data);
+//        
+//                adr=alctfifo2_adr+base_adr;			// alct raw data lsbs
+//                status = vme_read(adr,rd_data);
+//                dprintf(log_file,"adr=%4i alct raw lsbs=%4.4X\n",rd_data);
+//                alct_raw_data = rd_data;
+//        
+//                adr     = alct_fifo_adr+base_adr;	// alct raw data msbs
+//                status  = vme_read(adr,rd_data);
+//                dprintf(log_file,"adr=%4i alct raw msbs=%4.4X\n",rd_data);
+//                rd_data = (rd_data>>13) & 0x0003;
+//                alct_raw_data = alct_raw_data | (rd_data<<16);
+//                if (i<mxframe)vf_data[i]=alct_raw_data;
+//            }
+//        
+//            // Calculate CRC for data stream
+//            dmb_wdcnt=alct_raw_nwords;
+//        
+//            for (iframe=0; iframe<=dmb_wdcnt-1-4; ++iframe) {	// dont include last 4 frames
+//                din = vf_data[iframe];
+//                if (iframe==0) crc22a(din,crc,1);					// reset crc
+//                crc22a(din,crc,0);
+//            }
+//        
+//            // Compare our computed CRC to what TMB computed
+//            tmb_crc_lsb = vf_data[dmb_wdcnt-1-3] & 0x07FF;		// 11 crc bits per frame
+//            tmb_crc_msb = vf_data[dmb_wdcnt-1-2] & 0x07FF;		// 11 crc bits per frame
+//            tmb_crc     = tmb_crc_lsb | (tmb_crc_msb<<11);		// full 22 bit crc
+//            crc_match   = crc==tmb_crc;
+//            if (!crc_match) err_alct_crc++; // ALCT crc error, WTF!
+//        
+//            // Compare data stream ALCTs to trigger path ALCTs
+//            alct0_raw_lsb = vf_data[5] & 0x00FF;	// alct0[7:0]
+//            alct0_raw_msb = vf_data[6] & 0x00FF;	// alct0[15:8]
+//            alct0_raw     = alct0_raw_lsb | (alct0_raw_msb<<8);
+//        
+//            alct1_raw_lsb = vf_data[7] & 0x00FF;	// alct1[7:0]
+//            alct1_raw_msb = vf_data[8] & 0x00FF;	// alct1[15:8]
+//            alct1_raw     = alct1_raw_lsb | (alct1_raw_msb<<8);
+//        
+//            if (alct0_rd!=alct0_raw) err_lct++;
+//            if (alct1_rd!=alct1_raw) err_lct++;
+//        
+//            // Decompose trigger path ALCTs
+//            alct0_vpf	= (alct0_rd >> 0) & 0x0001;	//  Valid pattern flag
+//            alct0_qual	= (alct0_rd >> 1) & 0x0003;	//  Pattern quality
+//            alct0_amu	= (alct0_rd >> 3) & 0x0001;	//  Accelerator muon
+//            alct0_key	= (alct0_rd >> 4) & 0x007F;	//  Wire group ID number
+//            alct0_bxn	= (alct0_rd >>11) & 0x0003;	//  Bunch crossing number
+//        
+//            alct1_vpf	= (alct1_rd >> 0) & 0x0001;	//  Valid pattern flag
+//            alct1_qual	= (alct1_rd >> 1) & 0x0003;	//  Pattern quality
+//            alct1_amu	= (alct1_rd >> 3) & 0x0001;	//  Accelerator muon
+//            alct1_key	= (alct1_rd >> 4) & 0x007F;	//  Wire group ID number
+//            alct1_bxn	= (alct1_rd >>11) & 0x0003;	//  Bunch crossing number
+//        
+//            alct0_keya  = alct0_key & 0x000F;
+//            alct1_keya  = alct1_key & 0x000F;
+//        
+//            alct0_keyb  = alct0_key & 0x0070;
+//            alct1_keyb  = alct1_key & 0x0070;
+//        
+//            alct1_amu	= ~alct1_amu  & 0x0001;
+//            alct1_qual	= ~alct1_qual & 0x0003;
+//            alct1_keyb	= ~alct1_keyb & 0x0070;
+//        
+//            // Compare trigger path ALCTs to each other, alct debug firmware inverts some alct1 bits
+//            err_lct_cmp = 0;
+//        
+//            if (alct0_vpf  != alct1_vpf ) err_lct_cmp++;	
+//            if (alct0_qual != alct1_qual) err_lct_cmp++;
+//            if (alct0_amu  != alct1_amu ) err_lct_cmp++;
+//            if (alct0_keya != alct1_keya) err_lct_cmp++;
+//            if (alct0_keyb != alct1_keyb) err_lct_cmp++;
+//            if (alct0_bxn  != alct1_bxn ) err_lct_cmp++;
+//        
+//            // Next event
+//        L23630:
+//            err_sum=
+//                err_alct_fifo_clr
+//                + err_alct_lct0
+//                + err_alct_lct1
+//                + err_alct_fifo_busy
+//                + err_alct_fifo_ndone
+//                + err_alct_raw_nwords
+//                + err_firmware_crc
+//                + err_alct_crc
+//                + err_lct
+//                + err_lct_cmp;
+//        
+//            if (err_sum!=0) {
+//                printf("\terr_alct_fifo_clr   %9i\n",err_alct_fifo_clr);
+//                printf("\terr_alct_lct0       %9i\n",err_alct_lct0);
+//                printf("\terr_alct_lct1       %9i\n",err_alct_lct1);
+//                printf("\terr_alct_fifo_busy  %9i\n",err_alct_fifo_busy);
+//                printf("\terr_alct_fifo_ndone %9i\n",err_alct_fifo_ndone);
+//                printf("\terr_alct_raw_nwords %9i\n",err_alct_raw_nwords);
+//                printf("\terr_firmware_crc    %9i\n",err_firmware_crc);
+//                printf("\terr_alct_crc        %9i\n",err_alct_crc);
+//                printf("\terr_lct             %9i\n",err_lct);
+//                printf("\terr_lct_cmp         %9i\n",err_lct_cmp);
+//                pause("<cr> to continue");
+//            }
+//        
+//            goto L23610;	// endless loop, stops on error
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT Hardware ext_trig ALCT, check for CRC errors',ALCT Debug Firmware 
+//            //------------------------------------------------------------------------------
+//        L23700:
+//            printf("\tMake sure you set alct_txd_delay and alct_rxd_delay");
+//        
+//            inquire("\tUse alct_ext_trig from GTLPulser[0] or Firmware[1] cr=%2i", minv=-1, maxv= 1, radix=10, itrig_src );
+//            inquire("\tALCT PipelineDelay wrtCLCT?                        cr=%2i", minv=-1, maxv=15, radix=10, alct_delay);
+//        
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig, enable l1a emulator
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            //  wr_data = rd_data & 0xFFB6;		// Clear previous l1a
+//            wr_data = rd_data & 0xFFBA;		// Clear previous l1a
+//            wr_data = wr_data | 0x0001;		// Turn off CCB backplane
+//            wr_data = wr_data | 0x0004;		// Enable L1A emulator
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Enable GTL ccb_clct_ext_trig
+//            adr = ccb_trig_adr+base_adr;
+//            wr_data = 0;
+//            wr_data = wr_data | 0x0001;		// request ccb l1a on alct_ext_trig
+//            if (itrig_src==0) wr_data = wr_data | 0x0040;	// ccb_allow_ext_bypass to input GTL pulser
+//            wr_data = wr_data | (132<<8);	// set emulator delay for alct ext_trig timing
+//            status = vme_write(adr,wr_data);
+//        
+//            // Select ALCT cable port:
+//            adr     = vme_loopbk_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x000C;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take TMB firmware out of sync_mode, enable alct ext_trig from ccb
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);		// get current state
+//            wr_data = rd_data & 0xFF8F;				// clear bits[6:4] alct_seq_cmd[2:0]
+//            wr_data = wr_data | 0x0001;				// set bit[0] to enable alct_ext_trig from ccb
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take ALCT debug firmware out of sync_mode
+//            //	ichain = 0x0003;						// ALCT VirtexE
+//            //	adr    = boot_adr;						// Boot register address
+//            //	vme_jtag_anystate_to_rti(adr,ichain);	// Take TAP to RTI
+//        
+//            //	chip_id = 0;
+//            //	opcode  = 0x03;							// VirtexE USER2 opcode
+//            //	reg_len = 8;							// Register length
+//            //	i4_to_tdi('6C'x,tdi,reg_len,0)			// sync mode + marker
+//            //	vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            //	vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//        
+//            // Turn off CFEB cable inputs
+//            adr     = cfeb_inj_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFE0;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn on CFEB enables to over-ride mask_all
+//            adr     = seq_trig_en_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x03FF;				// clear old cfeb_en and source
+//            wr_data = wr_data | 0x7C00;				// ceb_en_source=0,cfeb_en=1F
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select sequencer to take clct ext or alct ext trig
+//            adr     = seq_trig_en_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFF00;
+//            wr_data = wr_data | 0x0060;				// Select alct or clct ext trig mode
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Set ALCT delay for TMB matching
+//            adr     = tmbtim_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFF0;
+//            wr_data = wr_data | alct_delay;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Adjust trigger timing and L1A timing to account for cable and alct delays
+//            adr     = seq_trig_dly1_adr+base_adr;	// 6C ALCT ext trig delay, delays cfeb wrt alct, cuz we are using alct gtl trigger input
+//            wr_data = 0x0B71;
+//            status  = vme_write(adr,wr_data);
+//        
+//            adr     = seq_l1a_adr+base_adr;			// 74 L1A delay
+//            wr_data = 0x037E;
+//            status  = vme_write(adr,wr_data);
+//        
+//            adr = tmbtim_adr+base_adr;				// B2 delay alct_vpf wrt clct_vpf
+//            wr_data = 0x0030;
+//            status = vme_write(adr,wr_data);
+//        
+//            // Set start_trigger state for FMM
+//            ttc_cmd = 6;
+//            adr     = base_adr+ccb_cmd_adr;
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0003 | (ttc_cmd<<8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            ttc_cmd = 1;
+//            wr_data = 0x0003 | (ttc_cmd<<8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Fire CCB external clct trigger with pulse generator
+//            if (itrig_src==0)
+//                printf("\tConnect GTL pulse +1.5V/0V to TMB P2A E10 (RAT E16),monitor TP382-7\n");
+//        
+//            // Clear TMB firmware counters, enable alct debug lct error counter
+//            adr     = base_adr+cnt_ctrl_adr;
+//            wr_data = 0x0021;					// clear + enable alct err
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0020;					// unclear + enable alct err
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Event loop: Arm scope trigger, taking sample of 1 event, pulser free runs at MHz speeds
+//        L23710:
+//            rdscope        = true;
+//            scp_arm        = true;
+//            scp_readout    = false;
+//            scp_raw_decode = false;
+//            scp_silent     = false;
+//            scp_playback   = false;
+//        
+//            if (rdscope)
+//                scope160c(base_adr,scp_ctrl_adr,scp_rdata_adr,scp_arm,scp_readout,scp_raw_decode,scp_silent,scp_playback,scp_raw_data);
+//        
+//            msec=1000;
+//            sleep_ms(msec);						// duration in i*4 milliseconds
+//        
+//            // Fake-fire ext_trig to test software without using pulser, eh
+//            if (itrig_src==1)
+//            {
+//                adr     = ccb_trig_adr+base_adr;
+//                status  = vme_read(adr,rd_data);	// get current state
+//                wr_data = rd_data & 0xFFF7;			// clear bit[3] alct_ext_trig_vme
+//                status  = vme_write(adr,wr_data);
+//                wr_data = rd_data | 0x008;			// set bit[3] alct_ext_trig_vme
+//                status  = vme_write(adr,wr_data);
+//                wr_data = rd_data & 0xFFF7;			// clear bit[3] alct_ext_trig_vme
+//                status  = vme_read(adr,rd_data);	// get current state
+//            }
+//        
+//            // Read back embedded scope data
+//            scp_arm        = false;
+//            scp_readout    = true;
+//            scp_raw_decode = false;
+//            scp_silent     = true;
+//            scp_playback   = false;
+//        
+//            if (rdscope)
+//                scope160c(base_adr,scp_ctrl_adr,scp_rdata_adr,scp_arm,scp_readout,scp_raw_decode,scp_silent,scp_playback,scp_raw_data);
+//        
+//            // Take snapshot of current counter state
+//            adr = base_adr+cnt_ctrl_adr;
+//            wr_data=0x0022;	//snap
+//            status = vme_write(adr,wr_data);
+//            wr_data=0x0020;	//unsnap
+//            status = vme_write(adr,wr_data);
+//        
+//            // Read counters
+//            for (i=0; i<mxcounter; ++i) {
+//                for (j=0; j<=1; ++j) {
+//                    adr = base_adr+cnt_ctrl_adr;
+//                    wr_data=(i << 9) | 0x0020 | (j << 8);
+//                    status = vme_write(adr,wr_data);
+//                    adr = base_adr+cnt_rdata_adr;
+//                    status = vme_read(adr,rd_data);
+//        
+//                    // Combine lsbs+msbs
+//                    if (j==0)			// Even addresses contain counter LSBs
+//                        cnt_lsb=rd_data;
+//                    else {				// Odd addresses contain counter MSBs
+//                        cnt_msb=rd_data;
+//                        cnt_full=cnt_lsb | (cnt_msb << 16);
+//                        cnt[i]=cnt_full;	// Assembled counter MSB,LSB
+//                    }
+//                }}	//close j,i
+//        
+//            // Read buffer status
+//            adr    = buf_stat0_adr+base_adr;
+//            status = vme_read(adr,rd_data);
+//        
+//            wr_buf_ready	= (rd_data >>  0) & 0x1;		// Write buffer is ready
+//            buf_stalled		= (rd_data >>  1) & 0x1;		// Buffer write pointer hit a fence and stalled
+//            buf_q_full		= (rd_data >>  2) & 0x1;		// All raw hits ram in use, ram writing must stop
+//            buf_q_empty		= (rd_data >>  3) & 0x1;		// No fences remain on buffer stack
+//            buf_q_ovf_err	= (rd_data >>  4) & 0x1;		// Tried to push when stack full
+//            buf_q_udf_err	= (rd_data >>  5) & 0x1;		// Tried to pop when stack empty
+//            buf_q_adr_err	= (rd_data >>  6) & 0x1;		// Fence adr popped from stack doesnt match rls adr
+//            buf_display		= (rd_data >>  8) & 0xFF;		// Buffer fraction in use display
+//        
+//            adr    = buf_stat1_adr+base_adr;
+//            status = vme_read(adr,rd_data);
+//            wr_buf_adr = (rd_data >> 0) & 0x7FF;			// Current ddress of header write buffer
+//        
+//            adr    = buf_stat2_adr+base_adr;
+//            status = vme_read(adr,rd_data);
+//            buf_fence_dist = (rd_data >> 0) & 0x7FF;		// Distance to 1st fence address
+//            buf_free_space  = int(100.*float(buf_fence_dist)/2047.);
+//        
+//            adr    = buf_stat3_adr+base_adr;
+//            status = vme_read(adr,rd_data);
+//            buf_fence_cnt = (rd_data >> 0) & 0x7FF;			// Number of fences in fence RAM currently
+//        
+//            adr    = buf_stat4_adr+base_adr;
+//            status = vme_read(adr,rd_data);
+//            buf_fence_cnt_peak=(rd_data >> 0) & 0xFFF;		// Peak number of fences in fence RAM
+//        
+//            // Get current FMM state
+//            adr    = base_adr+ccb_cmd_adr;
+//            status = vme_read(adr,rd_data);
+//            fmm_state = (rd_data >> 4) & 0x0007;
+//        
+//            // Get current Sequencer state and L1A queue status
+//            adr     = base_adr+seqsm_adr;
+//            status  = vme_read(adr,rd_data);
+//            clct_sm = (rd_data >> 0) & 0x7;
+//            read_sm = (rd_data >> 3) & 0x1F;
+//        
+//            queue_full = (rd_data >>  8) & 0x1;
+//            queue_empty= (rd_data >>  9) & 0x1;
+//            queue_ovf  = (rd_data >> 10) & 0x1;
+//            queue_udf  = (rd_data >> 11) & 0x1;
+//        
+//            // Errors since last update
+//            crc_err =cnt[11]-crc_err_old;						// cnt[11]=alct crc daq errors
+//            crc_err =int(float(crc_err)/(float(msec)/1000.));	// errors per second
+//            crc_err_old = cnt[11];
+//        
+//            // Dislay counters
+//            printf("\n");
+//            printf("\t%2.2i %10i %s\n",0,crc_err,"ALCT: CRC errors/second");
+//        
+//            printf("\n\tCounters:\n");
+//            for (i=0; i<mxcounter; ++i) {
+//                printf("\t%2.2i %10i %s\n",i,cnt[i],scnt[i].c_str());
+//            }
+//        
+//            printf("\n\tRaw hits buffer:\n");
+//            printf("\twr_buf_ready   %4i\n",wr_buf_ready);
+//            printf("\tbuf_stalled    %4i\n",buf_stalled);
+//            printf("\tbuf_q_full     %4i\n",buf_q_full);
+//            printf("\tbuf_q_empty    %4i\n",buf_q_empty);
+//            printf("\tbuf_q_ovf_err  %4i\n",buf_q_ovf_err);
+//            printf("\tbuf_q_udf_err  %4i\n",buf_q_udf_err);
+//            printf("\tbuf_q_adr_err  %4i\n",buf_q_adr_err);
+//            printf("\tbuf_display    %4i\n",buf_display);
+//            printf("\twr_buf_adr     %4i\n",wr_buf_adr);
+//            printf("\tbuf_fence_dist %4i\n",buf_fence_dist);
+//            printf("\tbuf_fence_cnt  %4i\n",buf_fence_cnt);
+//            printf("\tbuf_fence_peak %4i\n",buf_fence_cnt_peak);
+//            printf("\tbuf_free_space %4i\n",buf_free_space);
+//        
+//            printf("\n\tTrigger status:\n");
+//            printf("\tFMM state      %4i %s\n",fmm_state,sfmm_state[fmm_state%5].c_str());
+//            printf("\tclct_sm  state %4i %s\n",clct_sm,sclct_sm[clct_sm%6].c_str());
+//            printf("\tread_sm  state %4i %s\n",read_sm,sread_sm[read_sm%21].c_str());
+//        
+//            printf("\n\tReadout queue:\n");
+//            printf("\tqueue_full     %4i\n",queue_full);
+//            printf("\tqueue_empty    %4i\n",queue_empty);
+//            printf("\tqueue_ovf      %4i\n",queue_ovf);
+//            printf("\tqueue_udf      %4i\n",queue_udf);
+//        
+//            goto L23710;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT JTAG read/write: Debug firmware
+//            //------------------------------------------------------------------------------
+//        L23800:
+//            printf("\tMake sure you removed the JTAG cable!\n");
+//            printf("\tinfinite loop anystate to rti on chain 3\n");
+//        
+//        L23810:
+//            ichain = 0x0002;							// ALCT User
+//            adr    = boot_adr;							// Boot register address
+//            vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//            sleep_ms(1);
+//        
+//            // Read Virtex-E FPGA (5-bit opcode) and XC18V04 PROM IDcodes (8-bit opcode)
+//            chip_id = 0;
+//            opcode  = 0x09;								// FPGA IDcode opcode, expect v0A30093
+//            reg_len = 32;								// IDcode length
+//            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//            vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+//            sleep_ms(1);
+//        
+//            if (ifunc>0) goto L23810;
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT: Check CRC errors caused by ALCT trigger bits
+//            //------------------------------------------------------------------------------
+//        L23900:
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig, enable l1a emulator
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFB6;			// Clear previous l1a
+//            wr_data = wr_data | 0x0001;			// Turn off CCB backplane
+//            wr_data = wr_data | 0x0004;			// Enable L1A emulator
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Enable GTL ccb_clct_ext_trig
+//            adr     = ccb_trig_adr+base_adr;
+//            wr_data = 0;
+//            wr_data = wr_data | 0x0001;			// request ccb l1a on alct_ext_trig
+//            wr_data = wr_data | 0x0040;			// ccb_allow_ext_bypass to input GTL pulser
+//            wr_data = wr_data | (132<<8);		// set emulator delay for alct ext_trig timing
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select ALCT cable port:
+//            adr     = vme_loopbk_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x000C;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Take TMB firmware out of sync_mode, enable alct ext_trig from ccb
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);	// get current state
+//            wr_data = rd_data & 0xFF8F;			// clear bits[6:4] alct_seq_cmd[2:0]
+//            wr_data = wr_data | 0x0001;			// set bit[0] to enable alct_ext_trig from ccb
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn off CFEB cable inputs
+//            adr     = cfeb_inj_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFE0;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn on CFEB enables to over-ride mask_all
+//            adr     = seq_trig_en_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x03FF;			// clear old cfeb_en and source
+//            wr_data = wr_data | 0x7C00;			// ceb_en_source=0,cfeb_en=1F
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Select sequencer to take clct ext or alct ext trig
+//            adr     = seq_trig_en_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFF00;
+//            wr_data = wr_data | 0x0060;			// Select alct or clct ext trig mode
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Set start_trigger state for FMM
+//            ttc_cmd = 6;
+//            adr     = base_adr+ccb_cmd_adr;
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0003 | (ttc_cmd<<8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            ttc_cmd = 1;
+//            wr_data = 0x0003 | (ttc_cmd<<8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Fire CCB external clct trigger with pulse generator
+//            printf("\tConnect GTL pulse +1.5V/0V to TMB P2A E10 (RAT E16),monitor TP382-7\n");
+//        
+//            // Clear TMB firmware counters, enable alct debug lct error counter
+//            adr     = base_adr+cnt_ctrl_adr;
+//            wr_data = 0x0021;					// clear + enable alct err
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0020;					// unclear + enable alct err
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Event loop:
+//            crc_err_old=0;
+//        
+//            for (ibit=0; ibit<=31; ++ibit) {
+//        
+//                // Set new ALCT USER2 bits to enable specified alct trigger path bits
+//                rsd[0]=1;	// rsd[3:0)='D'x
+//                rsd[1]=0;
+//                rsd[2]=1;
+//                rsd[3]=1;
+//                rsd[4]=0;	// sync mode
+//                rsd[5]=1;	// enable l1a
+//                rsd[6]=1;	// enable extrig
+//                rsd[7]=0;	// dummy
+//        
+//                for (i=8; i<=39; ++i)
+//                {
+//                    rsd[i]=0x1;
+//                    if (i==(ibit+8)) rsd[i]=0;
+//                }
+//        
+//                // Write ALCT USER2 register (5 bit opcode)
+//                ichain = 0x0003;							// ALCT VirtexE
+//                adr    = boot_adr;							// Boot register address
+//                vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
+//        
+//                chip_id = 0;
+//                opcode  = 0x03;								// VirtexE USER2 opcode
+//                reg_len = 40;								// Register length
+//                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
+//                vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);	// Write data
+//                dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+//                //	pause("<cr> to continue");
+//        
+//                // Accumulate hardware triggers
+//                sleep_ms(1000);								// duration in i*4 milliseconds
+//        
+//                // Take snapshot of current counter state
+//                adr = base_adr+cnt_ctrl_adr;
+//                wr_data=0x0022;	//snap
+//                status = vme_write(adr,wr_data);
+//                wr_data=0x0020;	//unsnap
+//                status = vme_write(adr,wr_data);
+//        
+//                // Read counters
+//                for (i=0; i<mxcounter; ++i) {
+//                    for (j=0; j<=1; ++j) {
+//                        adr = base_adr+cnt_ctrl_adr;
+//                        wr_data=(i << 9) | 0x0020 | (j << 8);
+//                        status = vme_write(adr,wr_data);
+//                        adr = base_adr+cnt_rdata_adr;
+//                        status = vme_read(adr,rd_data);
+//        
+//                        // Combine lsbs+msbs
+//                        if (j==0)			// Even addresses contain counter LSBs
+//                            cnt_lsb=rd_data;
+//                        else {				// Odd addresses contain counter MSBs
+//                            cnt_msb=rd_data;
+//                            cnt_full=cnt_lsb | (cnt_msb << 16);
+//                            cnt[i]=cnt_full;	// Assembled counter MSB,LSB
+//                        }
+//                    }}	//close j,i
+//        
+//                // Display daq crc errors
+//                crc_err=cnt[11]-crc_err_old;	// cnt[0]=alct crc daq errors
+//                crc_err_old=cnt[11];
+//        
+//                printf("\tibit=%2i ALCT daq CRC errors/sec=%10i\n",crc_err);
+//        
+//                // Close liio
+//            } // close for ibit
+//        
+//            goto L2300;
+//        
+//            //------------------------------------------------------------------------------
+//            //	ALCT rxd clock delay scan: ALCT-to-TMB Teven|Todd
+//            //------------------------------------------------------------------------------
+//        L231000:
+//            //	unit  = stdout;
+//            unit  = log_file;
+//            debug = false;
+//        
+//            fprintf(unit,"ALCT rxd clock delay scan: ALCT-to-TMB Teven|Todd\n");
+//        
+//            // Get current 3D3444 + phaser delays
+//            alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
+//            alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
+//            alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
+//        
+//            // Get current posnegs
+//            alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
+//            alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
+//        
+//            // Inquire
+//            alct_rxd_posneg = alct_rxd_posneg_default;
+//            alct_txd_posneg = alct_txd_posneg_default;
+//            alct_rxd_delay	= alct_rxd_default;
+//            alct_txd_delay	= alct_txd_default;
+//            alct_tof_delay  = alct_tof_default;
+//        
+//            inquire("Set alct_rxd_posneg? -1=scan, cr=%2i", minv=-1, maxv= 1, radix=10, alct_rxd_posneg);
+//            inquire("Set alct_tof_delay ? -1=scan, cr=%2i", minv=-1, maxv=12, radix=10, alct_tof_delay );
+//        
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//            wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put ALCT into xmit Teven|Todd pattern, seq_cmd[0],[2] share same wire pair
+//            seq_cmd_bit[0]=1;	seq_cmd_bit[2]=1;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//            seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven|Todd pattern
+//        
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// Get current state
+//            wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//            wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//            wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//            wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//            wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Scan tof and rxd_posneg, or use input values
+//            alct_tof_delay_min	= (alct_tof_delay  < 0) ?  0 : alct_tof_delay;
+//            alct_tof_delay_max	= (alct_tof_delay  < 0) ? 12 : alct_tof_delay;
+//            alct_rxd_posneg_min	= (alct_rxd_posneg < 0) ?  0 : alct_rxd_posneg;
+//            alct_rxd_posneg_max	= (alct_rxd_posneg < 0) ?  1 : alct_rxd_posneg;
+//        
+//            for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//                for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//        
+//                    // Set scanned delays and posnegs
+//                    ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//                    posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//                    posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//                    // Clear error accumulators
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                        for (ibit=0; ibit<=27; ++ibit) {
+//                            alct_rxd_bad[alct_rxd_delay][ibit]=0;
+//                        }}
+//        
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                        alct_sync_1st_err_ff[alct_rxd_delay] = 0;
+//                        alct_sync_2nd_err_ff[alct_rxd_delay] = 0;
+//                    }
+//        
+//                    // Step alct rxd clock delay
+//                    fprintf(unit,"\n");	
+//                    fprintf(unit,"Checking 80MHz Teven|Todd data TMB receives from ALCT\n");
+//                    fprintf(unit,"Setting  alct_tof_delay  =%2i\n",alct_tof_delay);
+//                    fprintf(unit,"Setting  alct_rxd_posneg =%2i\n",alct_rxd_posneg);
+//                    fprintf(unit,"Using    dps_max         =%2i\n",dps_max);
+//                    fprintf(unit,"Using    dps_delta       =%2i\n",dps_delta);
+//                    fprintf(unit,"\n");	
+//                    fprintf(unit,"Stepping alct_rxd_delay...\n\n");
+//                    if (unit!=stdout) fprintf(stdout,"Scanning alct_tof_delay=%2i alct_rxd_posneg=%1i...wait",alct_tof_delay,alct_rxd_posneg);
+//        
+//                    npasses = 1000;
+//                    for (ipass=1; ipass<=npasses; ++ipass) {							// L231015
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {	// L231010
+//        
+//                            // Set alct_rxd_delay
+//                            phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        
+//                            // Clear TMB data check flipflops for this delay value, set transmitted data delay depth
+//                            alct_sync_rxdata_dly = 0;
+//                            alct_sync_tx_random  = 0;
+//                            alct_sync_clr_err    = 1;
+//        
+//                            adr     = alct_sync_ctrl_adr+base_adr;		// get current
+//                            status	= vme_read(adr,rd_data);
+//                            alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
+//        
+//                            wr_data = (alct_sync_rxdata_dly <<  0) |	// Set delay depth, clear error FFs
+//                                (alct_sync_tx_random  <<  4) |
+//                                (alct_sync_clr_err    <<  5) |
+//                                (alct_sync_rxdata_pre << 12);
+//                            status	= vme_write(adr,wr_data);
+//        
+//                            wr_data = wr_data & ~(1 << 5);				// un-clear error FFs
+//                            status	= vme_write(adr,wr_data);
+//        
+//                            // Read TMB received demux data
+//                            for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+//                                adr     = alctfifo1_adr+base_adr;
+//                                wr_data = 0x2000;				// select alct_loopback mode addressing
+//                                wr_data = wr_data | (i << 1);
+//                                status	= vme_write(adr,wr_data);
+//        
+//                                adr     = alctfifo2_adr+base_adr;
+//                                status  = vme_read(adr,rd_data);
+//                                alct_demux_rd[i]=rd_data;
+//                            }
+//        
+//                            alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+//                            alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+//                            alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+//                            alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+//        
+//                            //	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
+//                            //	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
+//        
+//                            // Read TMB data check flipflops
+//                            adr     = alct_sync_ctrl_adr+base_adr;
+//                            status  = vme_read(adr,rd_data);
+//        
+//                            alct_sync_1st_err[alct_rxd_delay]    = ((rd_data >> 6) & 0x1);
+//                            alct_sync_2nd_err[alct_rxd_delay]    = ((rd_data >> 7) & 0x1);
+//                            alct_sync_1st_err_ff[alct_rxd_delay] = ((rd_data >> 8) & 0x1) | alct_sync_1st_err_ff[alct_rxd_delay];
+//                            alct_sync_2nd_err_ff[alct_rxd_delay] = ((rd_data >> 9) & 0x1) | alct_sync_1st_err_ff[alct_rxd_delay];
+//        
+//                            if (ipass==1) {
+//                                fprintf(unit,"Teven|Todd: rxd_delay=%2i ",alct_rxd_delay);
+//                                fprintf(unit,"rxdata_1st=%8.8X rxdata_2nd=%8.8X ",alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//                                fprintf(unit,"1st_err=%1i/%1i 2nd_err=%1i/%1i\n",
+//                                        alct_sync_1st_err[alct_rxd_delay],alct_sync_1st_err_ff[alct_rxd_delay],
+//                                        alct_sync_2nd_err[alct_rxd_delay],alct_sync_2nd_err_ff[alct_rxd_delay]);
+//                                //	fprintf(unit,"\t\t expect_1st=%8.8X expect_2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
+//                            }
+//        
+//                            // Compare received bits to expected pattern
+//                            alct_1st_expect = 0xAAAAAAA;	// Teven
+//                            alct_2nd_expect = 0x5555555;	// Todd 
+//        
+//                            if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_sync_expect_1st %8.8X %8.8X",alct_1st_expect,alct_sync_expect_1st); pause("WTF!?");}
+//                            if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_sync_expect_2nd %8.8X %8.8X",alct_2nd_expect,alct_sync_expect_2nd); pause("WTF!?");}
+//        
+//                            for (ibit=0; ibit<=27; ++ibit) {
+//                                ibit_1st_expected = (alct_1st_expect		>> ibit) & 0x1;
+//                                ibit_2nd_expected = (alct_2nd_expect		>> ibit) & 0x1;
+//                                ibit_1st_received = (alct_sync_rxdata_1st	>> ibit) & 0x1;
+//                                ibit_2nd_received = (alct_sync_rxdata_2nd	>> ibit) & 0x1;
+//                                if ((ibit_1st_expected !=  ibit_1st_received) ||
+//                                        (ibit_2nd_expected !=  ibit_2nd_received)) alct_rxd_bad[alct_rxd_delay][ibit]++;
+//                            }	// Close ibit
+//        
+//                        }	// Close ipass L23101:
+//                        if (ipass==1) fprintf(unit,"\nAccumulating statistics...\n\n");
+//                        if ((ipass%10==0) && (unit==stdout)) fprintf(unit,"%4i\r",npasses-ipass);
+//                    }	// Close alct_rxd_delay L231015:
+//        
+//                    // Find good spots window width and center in alct_rxd_delay for this alct_tof_delay and alct_rxd_posneg
+//                    ngood		=  0;
+//                    ngood_max	=  0;
+//                    ngood_edge	=  0;
+//                    ngood_center=  0;
+//        
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                        good_spot= !(alct_sync_1st_err_ff[alct_rxd_delay] || alct_sync_2nd_err_ff[alct_rxd_delay]);
+//                        good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=good_spot;
+//                        fprintf(unit,"alct_rxd_delay=%2i good_spot=%1i\n",alct_rxd_delay,good_spot);
+//                    }
+//        
+//                    for (i=0; i<(dps_max*2); ++i) {	// scan delays 0 to 25 twice to span the awkward 25 to 0 wrap around
+//                        alct_rxd_delay=i%(dps_max+1);
+//                        good_spot=good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                        //	printf("alct_rxd_delay=%2i good_spot=%1i\n",alct_rxd_delay,good_spot);
+//                        //	printf("i             =%2i good_spot=%1i\n",i,good_spot);
+//        
+//                        if  (good_spot==1) ngood++;			// this is a good spot
+//                        if ((good_spot==0) && (ngood>0)) {	// good spot just went away, so window preceeds it
+//                            ngood_max  = ngood;
+//                            ngood_edge = i;
+//                            ngood      = 0;
+//                        }	// close if
+//                    }	// close for i
+//        
+//                    if (ngood_max>0) ngood_center=(dps_max+ngood_edge-(ngood_max/2))%(dps_max+1);
+//        
+//                    window_width[alct_rxd_posneg][alct_tof_delay]  = ngood_max;
+//                    window_center[alct_rxd_posneg][alct_tof_delay] = ngood_center;
+//        
+//                    fprintf(unit,"Window width  = %2i at tof=%2i posneg=%1i\n",window_width[alct_rxd_posneg][alct_tof_delay],alct_tof_delay,alct_rxd_posneg);
+//                    fprintf(unit,"Window center = %2i at tof=%2i posneg=%1i\n",window_center[alct_rxd_posneg][alct_tof_delay],alct_tof_delay,alct_rxd_posneg);
+//                    fprintf(unit,"\n");	
+//        
+//                    if (unit!=stdout)
+//                        fprintf(stdout," width=%2i center=%2i\n",
+//                                window_width[alct_rxd_posneg][alct_tof_delay],
+//                                window_center[alct_rxd_posneg][alct_tof_delay]);
+//        
+//                    // Display timing window twice in case good area is near 0 or 25ns
+//                    fprintf(unit,"Rxd    \n");	
+//                    fprintf(unit,"Step   Berrs Average 12 01234567890123456789012345678  %5i samples\n",npasses);	
+//        
+//                    for (j=0; j<=1; ++j) {
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                            nbad=0;
+//                            for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_rxd_bad[alct_rxd_delay][ibit];}
+//                            avgbad=double(nbad)/double(npasses);
+//                            nx=int(avgbad);
+//                            if ((nx==0) && (nbad != 0)) nx=1;
+//                            fprintf(unit,"%2i  %8i %7.4f %c%c |",alct_rxd_delay,nbad,avgbad,passfail[alct_sync_1st_err_ff[alct_rxd_delay]],passfail[alct_sync_2nd_err_ff[alct_rxd_delay]]);
+//                            if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
+//                            if (alct_rxd_delay==window_center[alct_rxd_posneg][alct_tof_delay]) fprintf(unit,"\t\t\t\t<--Center");
+//                            fprintf(unit,"\n");
+//                        }}
+//        
+//                    // Display bad bits vs delay
+//                    fprintf(unit,"\nCable Pair Errors vs alct_rxd_clock Delay Step\n");
+//        
+//                    fprintf(unit," delay ");
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {fprintf(unit,"%5i",alct_rxd_delay);}	// display delay values header
+//                    fprintf(unit,"\n");
+//        
+//                    fprintf(unit,"pair   ");
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {fprintf(unit," ----");}
+//                    fprintf(unit,"\n");
+//        
+//                    for (ibit=0; ibit<=27; ++ibit) {
+//                        fprintf(unit,"rx[%2i] ",ibit);
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {fprintf(unit,"%5i",alct_rxd_bad[alct_rxd_delay][ibit]);}
+//                        fprintf(unit,"\n");
+//                    }
+//        
+//                    // Close scan loops
+//                }	// alct_tof_delay
+//            }	// alct_rxd_posneg
+//        
+//        // Display window center and width vs tof and posneg
+//        if ((alct_rxd_posneg_min != alct_rxd_posneg_max) && alct_tof_delay_min != alct_tof_delay_max) alct_rxd_scan_done=true;
+//        
+//        fprintf(unit,"\n");
+//        for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//            for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//        
+//                fprintf(unit,"Tof=%2i Posneg=%1i Window center=%2i  width=%2i\n",
+//                        alct_tof_delay,alct_rxd_posneg,
+//                        window_center[alct_rxd_posneg][alct_tof_delay],
+//                        window_width[alct_rxd_posneg][alct_tof_delay]);
+//        
+//                newcenter=window_center[alct_rxd_posneg][alct_tof_delay];
+//            }
+//            fprintf(unit,"\n");
+//        }
+//        
+//        // Make a new default rxd delay table that can be imported to c++, need it for txd tof scan
+//        if (alct_rxd_scan_done) {
+//            fprintf(log_file,"\nWindow Center vs ToF Look-up Table\n");
+//            fprintf(log_file,"int window_center_rxd[2][16]={");
+//            for (alct_rxd_posneg=0; alct_rxd_posneg<=1;  ++alct_rxd_posneg) {
+//                for (alct_tof_delay=0;  alct_tof_delay<=15;  ++alct_tof_delay ) {
+//                    if (alct_tof_delay<=12)fprintf(log_file,"%3i",window_center[alct_rxd_posneg][alct_tof_delay]);
+//                    if (alct_tof_delay> 12)fprintf(log_file,"%3i",0);
+//                    if (!((alct_rxd_posneg==1) && (alct_tof_delay==15))) fprintf(log_file,",");
+//                }}
+//            fprintf(log_file,"};\n");
+//        }
+//        
+//        // Set alct rxd delay and posneg to new value or restore default
+//        alct_rxd_default=newcenter;
+//        
+//        inquire("\nDefault alct_rxd_delay  =%3i, change? ", minv=0, maxv=dps_max, radix=10, alct_rxd_default);
+//        inquire(  "Default alct_rxd_posneg =%3i, change? ", minv=0, maxv=1,       radix=10, alct_rxd_posneg_default);
+//        
+//        printf("Setting alct_rxd_delay  =%3i\n",alct_rxd_default);
+//        printf("Setting alct_rxd_posneg =%3i\n",alct_rxd_posneg_default);
+//        
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay	= alct_tof_default;
+//        
+//        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg_default);
+//        posneg_wr(base_adr,"alct_txd",alct_txd_posneg_default);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);				// Get current state
+//        wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        //	ALCT txd clock delay scan: TMB-to-ALCT Teven|Todd Loopback
+//        //------------------------------------------------------------------------------
+//        L231100:
+//        //	unit = stdout;
+//        unit = log_file;
+//        
+//        fprintf(unit,"ALCT txd clock delay scan: ALCT-to-TMB Teven|Todd Loopback\n");
+//        
+//        // Get current 3D3444 + phaser delays
+//        alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
+//        alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
+//        alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
+//        
+//        // Get current posnegs
+//        alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
+//        alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
+//        
+//        // Inquire
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay  = alct_tof_default;
+//        alct_rxd_posneg = alct_rxd_posneg_default;
+//        alct_txd_posneg = alct_txd_posneg_default;
+//        
+//        inquire("Set alct_rxd_delay ?          cr=%2i", minv= 0, maxv= dps_max, radix=10, alct_rxd_delay);
+//        inquire("Set alct_rxd_posneg?          cr=%2i", minv= 0, maxv= 1,       radix=10, alct_rxd_posneg);
+//        inquire("Set alct_txd_posneg? -1=scan, cr=%2i", minv=-1, maxv= 1,       radix=10, alct_txd_posneg);
+//        inquire("Set alct_tof_delay ? -1=scan, cr=%2i", minv=-1, maxv=12,       radix=10, alct_tof_delay );
+//        
+//        alct_rxd_default = alct_rxd_delay;
+//        
+//        // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//        adr     = ccb_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//        wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
+//        seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);			// Get current state
+//        wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Scan tof and txd_posneg, or use input values
+//        alct_tof_delay_min	= (alct_tof_delay  < 0) ?  0 : alct_tof_delay;
+//        alct_tof_delay_max	= (alct_tof_delay  < 0) ? 12 : alct_tof_delay;
+//        alct_txd_posneg_min	= (alct_txd_posneg < 0) ?  0 : alct_txd_posneg;
+//        alct_txd_posneg_max	= (alct_txd_posneg < 0) ?  1 : alct_txd_posneg;
+//        alct_tof_scan		= (alct_tof_delay  < 0) ?  true : false;
+//        
+//        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//            for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//        
+//                // Set scanned delays
+//                ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//                // Shift rxd to track moving tof, use a scan table if it exists, else use default table
+//                if (alct_tof_scan) {
+//                    if (alct_rxd_scan_done) {
+//                        alct_rxd_delay = window_center[alct_rxd_posneg][alct_tof_delay];
+//                        fprintf(unit,"Setting alct_rxd_delay=%2i for alct_rxd_posneg=%1i tof=%2i, ",alct_rxd_delay,alct_rxd_posneg,alct_tof_delay);
+//                        fprintf(unit,"using alct_rxd_delay scan table\n");}
+//                    else {
+//                        alct_rxd_delay = window_center_rxd[alct_rxd_posneg][alct_tof_delay];
+//                        fprintf(unit,"Setting alct_rxd_delay=%2i for alct_rxd_posneg=%1i tof=%2i, ",alct_rxd_delay,alct_rxd_posneg,alct_tof_delay);
+//                        fprintf(unit,"using default table\n");
+//                    }
+//                    phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//                }	// close if alct_tof_scan
+//        
+//                // Set scanned posnegs
+//                posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//                posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//                // Clear error accumulators
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    for (ibit=0; ibit<=27; ++ibit) {
+//                        alct_txd_bad[alct_txd_delay][ibit]=0;
+//                    }}
+//        
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    alct_sync_1st_err_ff[alct_txd_delay] = 0;
+//                    alct_sync_2nd_err_ff[alct_txd_delay] = 0;
+//                }
+//        
+//                // Step alct txd clock delay
+//                fprintf(unit,"\n");	
+//                fprintf(unit,"Checking 80MHz Teven|Todd data ALCT looped back from TMB\n");
+//                fprintf(unit,"Holding  alct_rxd_delay  =%2i\n",alct_rxd_delay);
+//                fprintf(unit,"Setting  alct_tof_delay  =%2i\n",alct_tof_delay);
+//                fprintf(unit,"Setting  alct_txd_posneg =%2i\n",alct_txd_posneg);
+//                fprintf(unit,"Using    dps_max         =%2i\n",dps_max);
+//                fprintf(unit,"Using    dps_delta       =%2i\n",dps_delta);
+//                fprintf(unit,"\n");	
+//                fprintf(unit,"Stepping alct_txd_delay...\n\n");
+//                if (unit!=stdout) fprintf(stdout,"Scanning alct_tof_delay=%2i alct_txd_posneg=%1i...wait",alct_tof_delay,alct_txd_posneg);
+//        
+//                npasses = 1000;
+//                for (ipass=1; ipass<=npasses; ++ipass) {								// L231115
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++ alct_txd_delay) {	// L231110
+//        
+//                        // Set scanned delays
+//                        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//                        // Write Teven|Todd into ALCT loopback bank 0, writes 0s to banks 1,2
+//                        alct_1st_bank[0] = 0x2AA;	alct_2nd_bank[0] = 0x155;	//1st-in-time: Teven = 10'b10 1010 1010, 2nd-in-time: Todd  = 10'b01 0101 0101
+//                        alct_1st_bank[1] = 0;		alct_2nd_bank[1] = 0;
+//                        alct_1st_bank[2] = 0;		alct_2nd_bank[2] = 0;
+//                        seq_cmd_bit[0]   = 1;		seq_cmd_bit[2]   = 0;		// (seq_cmd[0] | seq_cmd[2] == 1) keeps ALCT in loopback mode
+//        
+//                        for (ibank=0; ibank<=2; ++ibank) {
+//                            adr     = alct_cfg_adr+base_adr;
+//                            status  = vme_read(adr,rd_data);				// Get current seq_cmd[3:0] state
+//        
+//                            seq_cmd_bit[1] = (ibank >> 0) & 0x1;
+//                            seq_cmd_bit[3] = (ibank >> 1) & 0x1;			// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+//        
+//                            wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+//                            wr_data = wr_data | (seq_cmd_bit[0] << 4);
+//                            wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//                            wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//                            wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//                            status  = vme_write(adr,wr_data);				// Write new seq_cmd to select ibank
+//        
+//                            adr		= alct_sync_txdata_1st+base_adr;
+//                            wr_data = alct_1st_bank[ibank];					// Write 1st-in-time data for this bank
+//                            status  = vme_write(adr,wr_data);	
+//        
+//                            adr		= alct_sync_txdata_2nd+base_adr;
+//                            wr_data = alct_2nd_bank[ibank];					// Write 2nd-in-time data for this bank
+//                            status  = vme_write(adr,wr_data);
+//                        }
+//        
+//                        // Clear TMB data check flipflops for this delay value, set transmitted data delay depth
+//                        alct_sync_rxdata_dly = 0;
+//                        alct_sync_tx_random  = 0;
+//                        alct_sync_clr_err    = 1;
+//        
+//                        adr     = alct_sync_ctrl_adr+base_adr;			// Set delay depth, clear error FFs
+//                        status	= vme_read(adr,rd_data);				// get current
+//                        alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
+//        
+//                        wr_data = (alct_sync_rxdata_dly <<  0) |
+//                            (alct_sync_tx_random  <<  4) |
+//                            (alct_sync_clr_err    <<  5) |
+//                            (alct_sync_rxdata_pre << 12);
+//                        status	= vme_write(adr,wr_data);
+//        
+//                        wr_data = wr_data & ~(1 << 5);					// un-clear error FFs
+//                        status	= vme_write(adr,wr_data);	
+//        
+//                        // Read TMB received demux data
+//                        for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+//                            adr     = alctfifo1_adr+base_adr;
+//                            wr_data = 0x2000;				// select alct_loopback mode addressing
+//                            wr_data = wr_data | (i << 1);
+//                            status	= vme_write(adr,wr_data);
+//        
+//                            adr     = alctfifo2_adr+base_adr;
+//                            status  = vme_read(adr,rd_data);
+//                            alct_demux_rd[i]=rd_data;
+//                        }
+//        
+//                        alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+//                        alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+//                        alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+//                        alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+//        
+//                        //	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
+//                        //	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
+//        
+//                        // Read TMB data check flipflops
+//                        adr     = alct_sync_ctrl_adr+base_adr;
+//                        status  = vme_read(adr,rd_data);
+//        
+//                        alct_sync_1st_err[alct_txd_delay]    = ((rd_data >> 6) & 0x1);
+//                        alct_sync_2nd_err[alct_txd_delay]    = ((rd_data >> 7) & 0x1);
+//                        alct_sync_1st_err_ff[alct_txd_delay] = ((rd_data >> 8) & 0x1) | alct_sync_1st_err_ff[alct_txd_delay];
+//                        alct_sync_2nd_err_ff[alct_txd_delay] = ((rd_data >> 9) & 0x1) | alct_sync_1st_err_ff[alct_txd_delay];
+//        
+//                        if (ipass==1) {
+//                            fprintf(unit,"Teven|Todd: alct_txd_delay=%2i 1st=%8.8X 2nd=%8.8X ",alct_txd_delay,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//                            fprintf(unit,"1st_err=%1i/%1i 2nd_err=%1i/%1i\n",alct_sync_1st_err[alct_txd_delay],alct_sync_1st_err_ff[alct_txd_delay],alct_sync_2nd_err[alct_txd_delay],alct_sync_2nd_err_ff[alct_txd_delay]);
+//                        }
+//        
+//                        // Compare received bits to expected pattern
+//                        alct_1st_expect = 0x2AA;	// Teven
+//                        alct_2nd_expect = 0x155;	// Todd 
+//        
+//                        if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_1st_expect=%8.8X alct_sync_expect_1st=%8.8X\n",alct_1st_expect,alct_sync_expect_1st);}
+//                        if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_2nd_expect=%8.8X alct_sync_expect_2nd %8.8X\n",alct_2nd_expect,alct_sync_expect_2nd);}
+//        
+//                        for (ibit=0; ibit<=27; ++ibit) {
+//                            ibit_1st_expected = (alct_1st_expect		>> ibit) & 0x1;
+//                            ibit_2nd_expected = (alct_2nd_expect		>> ibit) & 0x1;
+//                            ibit_1st_received = (alct_sync_rxdata_1st	>> ibit) & 0x1;
+//                            ibit_2nd_received = (alct_sync_rxdata_2nd	>> ibit) & 0x1;
+//                            if ((ibit_1st_expected !=  ibit_1st_received) ||
+//                                    (ibit_2nd_expected !=  ibit_2nd_received)) alct_txd_bad[alct_txd_delay][ibit]++;
+//                        }	// Close ibit
+//        
+//                    }	// Close for ipass L231110
+//                    if (ipass==1   ) printf("\nAccumulating statistics...\n\n");
+//                    if (ipass%10==0) printf("%4i\r",npasses-ipass);
+//                }	// Close for alct_txd_delay L231115:
+//        
+//                // Find good spots window width and center in alct_txd_delay for this alct_tof_delay and alct_txd_posneg
+//                ngood		=  0;
+//                ngood_max	=  0;
+//                ngood_edge	=  0;
+//                ngood_center=  0;
+//        
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    good_spot= !(alct_sync_1st_err_ff[alct_txd_delay] || alct_sync_2nd_err_ff[alct_txd_delay]);
+//                    good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=good_spot;
+//                    //	printf("alct_txd_delay=%2i good_spot=%1i\n",alct_txd_delay,good_spot);
+//                }
+//        
+//                for (i=0; i<=(dps_max*2); ++i) {	// scan delays 0 to 25 twice to span the awkward 25 to 0 wrap around
+//                    alct_txd_delay=i%(dps_max+1);
+//                    good_spot=good_spots[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                    //	printf("alct_txd_delay=%2i good_spot=%1i\n",alct_txd_delay,good_spot);
+//                    //	printf("i             =%2i good_spot=%1i\n",i,good_spot);
+//        
+//                    if  (good_spot==1) ngood++;			// this is a good spot
+//                    if ((good_spot==0) && (ngood>0)) {	// good spot just went away, so window preceeds it
+//                        ngood_max  = ngood;
+//                        ngood_edge = i;
+//                        ngood      = 0;
+//                    }	// close if
+//                }	// close for i
+//        
+//                if (ngood_max>0) ngood_center=(dps_max+ngood_edge-(ngood_max/2))%(dps_max+1);
+//        
+//                window_width[alct_txd_posneg][alct_tof_delay]  = ngood_max;
+//                window_center[alct_txd_posneg][alct_tof_delay] = ngood_center;
+//        
+//                fprintf(unit,"Window width  = %2i at tof=%2i posneg=%1i\n",window_width[alct_txd_posneg][alct_tof_delay],alct_tof_delay,alct_txd_posneg);
+//                fprintf(unit,"Window center = %2i at tof=%2i posneg=%1i\n",window_center[alct_txd_posneg][alct_tof_delay],alct_tof_delay,alct_txd_posneg);
+//                fprintf(unit,"\n");	
+//        
+//                if (unit!=stdout)
+//                    fprintf(stdout," width=%2i center=%2i\n",
+//                            window_width[alct_txd_posneg][alct_tof_delay],
+//                            window_center[alct_txd_posneg][alct_tof_delay]);
+//        
+//                // Display timing window twice in case good area is near 0 or 25ns
+//                fprintf(unit,"Txd    \n");	
+//                fprintf(unit,"Step   Berrs Average 12 01234567890123456789012345678  %5i samples\n",npasses);	
+//        
+//                for (j=0; j<=1; ++j) {
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                        nbad=0;
+//                        for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_txd_bad[alct_txd_delay][ibit];}
+//                        avgbad=double(nbad)/double(npasses);
+//                        nx=int(avgbad);
+//                        if ((nx==0) && (nbad != 0)) nx=1;
+//                        fprintf(unit,"%2i  %8i %7.4f %c%c |",alct_txd_delay,nbad,avgbad,passfail[alct_sync_1st_err_ff[alct_txd_delay]],passfail[alct_sync_2nd_err_ff[alct_txd_delay]]);
+//                        if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
+//                        if (alct_txd_delay==window_center[alct_txd_posneg][alct_tof_delay]) fprintf(unit,"\t\t\t\t<--Center");
+//                        fprintf(unit,"\n");
+//                    }}
+//        
+//                // Display bad bits vs delay
+//                fprintf(unit,"\nCable Pair Errors vs alct_txd_clock Delay Step\n");
+//        
+//                fprintf(unit," delay ");
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {fprintf(unit,"%5i",alct_txd_delay);}	// display delay values header
+//                fprintf(unit,"\n");
+//        
+//                fprintf(unit,"pair   ");
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {fprintf(unit," ----");}
+//                fprintf(unit,"\n");
+//        
+//                for (ibit=0; ibit<=27; ++ibit) {
+//                    fprintf(unit,"tx[%2i] ",ibit);
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {fprintf(unit,"%5i",alct_txd_bad[alct_txd_delay][ibit]);}
+//                    fprintf(unit,"\n");
+//                }
+//        
+//                // Close scan loops
+//            }	// alct_tof_delay
+//        }	// alct_txd_posneg
+//        
+//        // Display window center and width vs tof and posneg
+//        fprintf(unit,"\n");
+//        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//            for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//        
+//                fprintf(unit,"Tof=%2i Posneg=%1i Window center=%2i  width=%2i\n",
+//                        alct_tof_delay,alct_txd_posneg,
+//                        window_center[alct_txd_posneg][alct_tof_delay],
+//                        window_width[alct_txd_posneg][alct_tof_delay]);
+//        
+//                newcenter=window_center[alct_txd_posneg][alct_tof_delay];
+//            }
+//            fprintf(unit,"\n");
+//        }
+//        
+//        // Set alct txd delay and posneg to new value or restore default
+//        alct_txd_default=newcenter;
+//        
+//        inquire("\nDefault alct_txd_delay  =%2i, change? ", minv=0, maxv=dps_max, radix=10, alct_txd_default);
+//        inquire(  "Default alct_txd_posneg =%2i, change? ", minv=0, maxv= 1,      radix=10, alct_txd_posneg_default);
+//        
+//        printf("Setting alct_txd_delay  =%2i\n",alct_txd_default);
+//        printf("Setting alct_txd_posneg =%2i\n",alct_txd_posneg_default);
+//        
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay	= alct_tof_default;
+//        alct_rxd_posneg	= alct_rxd_posneg_default;
+//        alct_txd_posneg	= alct_txd_posneg_default;
+//        
+//        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg_default);
+//        posneg_wr(base_adr,"alct_txd",alct_txd_posneg_default);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);				// Get current state
+//        wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        //	ALCT Tx|Rx default delays TMB-to-ALCT Walking 1 Loopback
+//        //------------------------------------------------------------------------------
+//        L231200:
+//        //	unit  = stdout;
+//        unit  = log_file;
+//        debug = false;
+//        
+//        fprintf(unit,"\nALCT tx+rx default delays TMB-to-ALCT Walking 1 Loopback\n");
+//        
+//        // Get current 3D3444 + phaser delays
+//        alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
+//        alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
+//        alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
+//        
+//        // Get current posnegs
+//        alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
+//        alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
+//        
+//        // Inquire
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay  = alct_tof_default;
+//        alct_rxd_posneg = alct_rxd_posneg_default;
+//        alct_txd_posneg = alct_txd_posneg_default;
+//        
+//        inquire("Set alct_rxd_delay ? cr=%2i", minv=0, maxv=dps_max, radix=10, alct_rxd_delay );
+//        inquire("Set alct_txd_delay ? cr=%2i", minv=0, maxv=dps_max, radix=10, alct_txd_delay );
+//        inquire("Set alct_tof_delay ? cr=%2i", minv=0, maxv=12,      radix=10, alct_tof_delay );
+//        inquire("Set alct_rxd_posneg? cr=%2i", minv=0, maxv= 1,      radix=10, alct_rxd_posneg);
+//        inquire("Set alct_txd_posneg? cr=%2i", minv=0, maxv= 1,      radix=10, alct_txd_posneg);
+//        
+//        // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//        adr     = ccb_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//        wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
+//        seq_cmd_bit[0]=1;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);			// Get current state
+//        wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Set non-scanned posnegs
+//        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//        posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//        // Set non-scanned delays
+//        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//        // Clear error accumulators
+//        for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+//            for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+//                for (ibit=0; ibit<=27; ++ibit) {
+//                    alct_walking1_err[itx][ifs][ibit]=0;
+//                    alct_walking1_hit[itx][ifs][ibit][0]=0;
+//                    alct_walking1_hit[itx][ifs][ibit][1]=0;
+//                }}}
+//        
+//        // Step walking 1 bit
+//        fprintf(unit,"\nChecking 80MHz walking 1 data ALCT looped back from TMB\n\n");
+//        fprintf(unit,"        ");
+//        fprintf(unit,"1st 0123456789012345678901234567 2nd 0123456789012345678901234567 \n");
+//        
+//        npasses = 1000;
+//        for (ipass=1; ipass<=npasses; ++ipass) {			// L231205
+//            for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+//                for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+//        
+//                    // Write walking 1 into ALCT loopback bank 0,1,2
+//                    ibank = itx/10;		// 0-9 in bank 0, 10-19 in bank 1, 20-27 in bank 2
+//                    ibit  = itx%10;		// bit position within a bank
+//        
+//                    alct_1st_bank[0] = 0;
+//                    alct_1st_bank[1] = 0;
+//                    alct_1st_bank[2] = 0;
+//                    alct_1st_bank[ibank] = (1 << ibit) * (ifs==0);
+//        
+//                    alct_2nd_bank[0] = 0;
+//                    alct_2nd_bank[1] = 0;
+//                    alct_2nd_bank[2] = 0;
+//                    alct_2nd_bank[ibank] = (1 << ibit) * (ifs==1);
+//        
+//                    seq_cmd_bit[0]=1; seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) keeps ALCT in loopback mode
+//        
+//                    for (ibank=0; ibank<=2; ++ibank) {
+//                        adr     = alct_cfg_adr+base_adr;
+//                        status  = vme_read(adr,rd_data);				// Get current seq_cmd[3:0] state
+//        
+//                        seq_cmd_bit[1] = (ibank >> 0) & 0x1;
+//                        seq_cmd_bit[3] = (ibank >> 1) & 0x1;			// (seq_cmd[1] , seq_cmd[3]) selects alct storage bank 0,1,2
+//        
+//                        wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+//                        wr_data = wr_data | (seq_cmd_bit[0] << 4);
+//                        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//                        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//                        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//                        status  = vme_write(adr,wr_data);				// Write new seq_cmd to select ibank
+//        
+//                        adr		= alct_sync_txdata_1st+base_adr;
+//                        wr_data = alct_1st_bank[ibank];					// Write 1st-in-time data for this bank
+//                        status  = vme_write(adr,wr_data);	
+//        
+//                        adr		= alct_sync_txdata_2nd+base_adr;
+//                        wr_data = alct_2nd_bank[ibank];					// Write 2nd-in-time data for this bank
+//                        status  = vme_write(adr,wr_data);
+//                    }
+//        
+//                    // Read TMB received demux data
+//                    for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+//                        adr     = alctfifo1_adr+base_adr;
+//                        wr_data = 0x2000;				// select alct_loopback mode addressing
+//                        wr_data = wr_data | (i << 1);
+//                        status	= vme_write(adr,wr_data);
+//        
+//                        adr     = alctfifo2_adr+base_adr;
+//                        status  = vme_read(adr,rd_data);
+//                        alct_demux_rd[i]=rd_data;
+//                    }
+//        
+//                    alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+//                    alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+//                    alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+//                    alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+//        
+//                    //	alct_sync_rxdata_1st = alct_sync_rxdata_1st | (1 << 5);	// Set rx bit lvds high to test bad bit detection and satisfy nattering nabob
+//                    //	alct_sync_rxdata_2nd = alct_sync_rxdata_2nd | (1 << 5);
+//                    //	if (ipass==1) fprintf(unit,"Teven|Todd: 1st=%8.8X 2nd=%8.8X\n",alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//                    //	fprintf(unit,"Walking 1: 1st/2nd=%1i tx bit=%2i 1st=%8.8X 2nd=%8.8X\n",ifs,itx,alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//        
+//                    // Display tx bits vs received bits
+//                    if (ipass==1) {
+//                        fprintf(unit,"%1i %2i tx",ifs,itx);
+//                        fprintf(unit," 1st "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(i==itx)*(ifs==0)]);
+//                        fprintf(unit," 2nd "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(i==itx)*(ifs==1)]);
+//                        fprintf(unit,"\n");
+//                        fprintf(unit,"     rx");
+//                        fprintf(unit," 1st "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(alct_sync_rxdata_1st >> i) & 0x1]);
+//                        fprintf(unit," 2nd "); for (i=0; i<=27; ++i) fprintf(unit,"%1c",dash1[(alct_sync_rxdata_2nd >> i) & 0x1]);
+//                        fprintf(unit,"\n");
+//                    }
+//        
+//                    // Compare received bits to expected pattern
+//                    alct_1st_expect = (1 << itx) * (ifs==0);
+//                    alct_2nd_expect = (1 << itx) * (ifs==1); 
+//        
+//                    if (alct_1st_expect != alct_sync_expect_1st) {fprintf(unit,"TMB internal error: alct_sync_expect_1st %8.8X %8.8X",alct_1st_expect,alct_sync_expect_1st); pause("WTF!?");}
+//                    if (alct_2nd_expect != alct_sync_expect_2nd) {fprintf(unit,"TMB internal error: alct_sync_expect_2nd %8.8X %8.8X",alct_2nd_expect,alct_sync_expect_2nd); pause("WTF!?");}
+//        
+//                    for (ibit=0; ibit<=27; ++ibit) {
+//                        ibit_1st_expected = (alct_1st_expect >> ibit) & 0x1;
+//                        ibit_2nd_expected = (alct_2nd_expect >> ibit) & 0x1;
+//                        ibit_1st_received = (alct_sync_rxdata_1st  >> ibit) & 0x1;
+//                        ibit_2nd_received = (alct_sync_rxdata_2nd  >> ibit) & 0x1;
+//        
+//                        if ((ibit_1st_expected !=  ibit_1st_received) ||
+//                                (ibit_2nd_expected !=  ibit_2nd_received)) alct_walking1_err[itx][ifs][ibit]++;
+//        
+//                        alct_walking1_hit[itx][ifs][ibit][0]=alct_walking1_hit[itx][ifs][ibit][0]+ibit_1st_received;
+//                        alct_walking1_hit[itx][ifs][ibit][1]=alct_walking1_hit[itx][ifs][ibit][1]+ibit_2nd_received;
+//                    }	// Close ibit
+//        
+//                    // Close bit, first, passes
+//                }	// close itx bit loop
+//            }	// close ifs first/second loop
+//            if (ipass==1   ) printf("\nAccumulating statistics...\n\n");
+//            if (ipass%10==0) printf("%4i\r",npasses-ipass);
+//        
+//        }	// Close for ipass L231205
+//        
+//        // Display hit bits
+//        if (debug) {
+//            fprintf(unit,"\nALCT Sync-mode Walking 1: Errors\n"); 
+//            for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+//                for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+//                    fprintf(unit,"ifs=%1i itx=%2i ",ifs,itx);
+//                    for (ibit=0; ibit<=27; ++ibit) {
+//                        fprintf(unit,"%5i",alct_walking1_err[itx][ifs][ibit]);
+//                    }
+//                    fprintf(unit,"\n");
+//                }}
+//        }
+//        
+//        // Display summary
+//        fprintf(unit,"ALCT Sync-mode Walking 1 Loopback: Any bit hit displays a 1\n"); 
+//        fprintf(unit,"                            1         2         3         4         5\n"); 
+//        fprintf(unit,"1st|2nd TxBit  Rx=01234567890123456789012345678901234567890123456789012345\n"); 
+//        for (ifs=0; ifs<=1;  ++ifs) {	// loop over 1st-in-time, 2nd-in-time
+//            for (itx=0; itx<=27; ++itx) {	// loop over 28 bits
+//                fprintf(unit,"ifs=%2i  itx=%2i    ",ifs,itx);
+//                nbad=0;
+//                for (ibit=0; ibit<=27; ++ibit) {fprintf(unit,"%c",dash1[(alct_walking1_hit[itx][ifs][ibit][0]!=0)]);}
+//                for (ibit=0; ibit<=27; ++ibit) {fprintf(unit,"%c",dash1[(alct_walking1_hit[itx][ifs][ibit][1]!=0)]);}
+//                for (ibit=0; ibit<=27; ++ibit) {nbad=nbad+alct_walking1_err[itx][ifs][ibit];}
+//                fprintf(unit," %c",(passfail[nbad!=0]));
+//                fprintf(unit,"\n");
+//            }}
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);				// Get current state
+//        wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        //	ALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback
+//        //------------------------------------------------------------------------------
+//        L231300:
+//        //	unit  = stdout;
+//        unit  = log_file;
+//        debug = false;
+//        
+//        fprintf(unit,"\nALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback\n");
+//        
+//        // Get current 3D3444 + phaser delays
+//        alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
+//        alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
+//        alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
+//        
+//        // Get current posnegs
+//        alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
+//        alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
+//        
+//        // Inquire
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay  = alct_tof_default;
+//        alct_rxd_posneg = alct_rxd_posneg_default;
+//        alct_txd_posneg = alct_txd_posneg_default;
+//        msec            = 1000;
+//        
+//        inquire("Set alct_rxd_posneg? -1=scan, cr=%3i", minv=-1, maxv= 1, radix=10, alct_rxd_posneg);
+//        inquire("Set alct_txd_posneg? -1=scan, cr=%3i", minv=-1, maxv= 1, radix=10, alct_txd_posneg);
+//        inquire("Set alct_tof_delay ? -1=scan, cr=%3i", minv=-1, maxv=12, radix=10, alct_tof_delay );
+//        inquire("Millisecs per spot ?          cr=%3i", minv= 0, maxv=1000000, radix=10, msec);
+//        
+//        // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//        adr     = ccb_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//        wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=1;		// (seq_cmd[2] &!seq_cmd[0]) puts ALCT into loopback randoms mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[3] , seq_cmd[1]) selects alct storage bank 0,1,2
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);			// Get current state
+//        wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Scan tof and posnegs, or use input values
+//        alct_tof_delay_min  = (alct_tof_delay  >= 0) ? alct_tof_delay :  0;
+//        alct_tof_delay_max  = (alct_tof_delay  >= 0) ? alct_tof_delay : 12;
+//        
+//        alct_rxd_posneg_min = (alct_rxd_posneg >= 0) ? alct_rxd_posneg : 0;
+//        alct_rxd_posneg_max = (alct_rxd_posneg >= 0) ? alct_rxd_posneg : 1;
+//        
+//        alct_txd_posneg_min = (alct_txd_posneg >= 0) ? alct_txd_posneg : 0;
+//        alct_txd_posneg_max = (alct_txd_posneg >= 0) ? alct_txd_posneg : 1;
+//        
+//        for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//            for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//                for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//        
+//                    // Set scanned delays and posnegs
+//                    ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//                    posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//                    posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//                    // Display scanned parameters
+//                    fprintf(unit,"\n");
+//                    fprintf(unit,"Scan Setting:\n");
+//                    fprintf(unit,"alct_tof_delay  = %2i\n", alct_tof_delay );
+//                    fprintf(unit,"alct_rxd_posneg = %2i\n", alct_rxd_posneg);
+//                    fprintf(unit,"alct_txd_posneg = %2i\n", alct_txd_posneg);
+//                    fprintf(unit,"\n");
+//        
+//                    // Step alct rxd and txd clock delays, and transmitter pipeline depth
+//                    fprintf(unit,"Checking 80MHz Random numbers ALCT looped back from TMB\n");
+//        
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                            phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        
+//                            printf("tof=%2i txd_posneg=%1i rxd_posneg=%1i txd_delay=%2i rxd_delay=%2i\r",
+//                                    alct_tof_delay,alct_txd_posneg,alct_rxd_posneg,alct_txd_delay,alct_rxd_delay);
+//        
+//                            for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+//                                alct_sync_rxdata_dly = pipe_depth;
+//        
+//                                // Set pipe depth, clear data check flip-flops
+//                                alct_sync_tx_random  = 1;
+//                                alct_sync_clr_err    = 1;
+//        
+//                                adr      = alct_sync_ctrl_adr+base_adr;					// Set pipe depth, clear error FFs
+//                                status   = vme_read(adr,rd_data);						// get current
+//                                alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
+//        
+//                                wr_data = (alct_sync_rxdata_dly <<  0) |
+//                                    (alct_sync_tx_random  <<  4) |
+//                                    (alct_sync_clr_err    <<  5) |
+//                                    (alct_sync_rxdata_pre << 12);
+//                                status	= vme_write(adr,wr_data);
+//        
+//                                wr_data = wr_data & ~(1 << 5);							// un-clear error FFs, hammer it a few times while system settles from delay changes
+//                                for (i=0; i<=100; ++i) {
+//                                    status	= vme_write(adr,wr_data);	
+//                                }
+//        
+//                                // Wait for error stats to accumulate
+//                                ibad=0;
+//                                for (i=0; i<=msec; i=i+100) {							// 0 msec first time thru for quick reject of  bad spots
+//                                    sleep_ms(i);
+//        
+//                                    // See if TMB data check flipflops are OK
+//                                    adr     = alct_sync_ctrl_adr+base_adr;
+//                                    status  = vme_read(adr,rd_data);
+//        
+//                                    alct_sync_1st_err_ff[0] = (rd_data >> 8) & 0x1;
+//                                    alct_sync_2nd_err_ff[0] = (rd_data >> 9) & 0x1;
+//        
+//                                    ibad = alct_sync_1st_err_ff[0] | alct_sync_2nd_err_ff[0];
+//                                    alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth]=ibad;
+//        
+//                                    //	fprintf(unit,"alct_txd_delay=%1X alct_rxd_delay=%1X pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
+//                                    if (ibad != 0) break;			// TMB data check already went bad, so done with this rx tx pair
+//                                }	// close for msec
+//        
+//                                // Read TMB received demux data just to see whats going on
+//                                if (debug) {
+//                                    for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+//                                        adr     = alctfifo1_adr+base_adr;
+//                                        wr_data = 0x2000;				// select alct_loopback mode addressing
+//                                        wr_data = wr_data | (i << 1);
+//                                        status	= vme_write(adr,wr_data);
+//        
+//                                        adr     = alctfifo2_adr+base_adr;
+//                                        status  = vme_read(adr,rd_data);
+//                                        alct_demux_rd[i]=rd_data;
+//                                    }
+//        
+//                                    alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+//                                    alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+//                                    alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+//                                    alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+//        
+//                                    fprintf(unit,"Random Loopback: alct_txd_delay=%2i alct_rxd_delay=%2i", alct_txd_delay,alct_rxd_delay);
+//                                    fprintf(unit,"  read 1st=%8.8X 2nd=%8.8X ", alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//                                    fprintf(unit,"expect 1st=%8.8X 2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
+//                                }
+//        
+//                                // Close txd,rxd,depth loops...we are still inside posnegs and ToF loops
+//                            }}}
+//        
+//                    // Find correct depth in the transmitter delay pipeline, and count good spots
+//                    ngood_spots=0;
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                            ngood_depths=0;
+//                            good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=-1;
+//                            for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+//                                ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
+//                                if (ibad==0) {
+//                                    ngood_depths++;
+//                                    good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=pipe_depth;
+//                                    ngood_spots++;
+//                                    fprintf(log_file,"alct_txd_delay=%3i alct_rxd_delay=%3i pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
+//                                }	// close ibad
+//                            }	// close pipe
+//                            if (ngood_depths >1) printf("Warning: data match found at >1 pipeline depths, should not happen tx=%2i rx=%2i ngood_depths=%2i\n",alct_txd_delay,alct_rxd_delay,ngood_depths);
+//                        }}	// close txt rxd
+//        
+//                    good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay]=ngood_spots;
+//                    fprintf(unit,"\n\ntof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
+//        
+//                    // Display good depths vs rxd txd
+//                    fprintf(unit,"\nPipeline depth adr bit where RxData=TxData vs alct_txd_delay vs alct_rxd_delay  %3imsec=%ibx\n",msec,msec*int(40e3));
+//                    fprintf(unit," rxd_step=");	
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%5i",alct_rxd_delay);
+//                    fprintf(unit,"\n");
+//        
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                        fprintf(unit,"txd_step=%2i ",alct_txd_delay);
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                            good_depths=0;
+//                            for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+//                                ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
+//                                if (ibad==0) good_depths=good_depths | (1 << pipe_depth);
+//                            }	// close pipe_depth
+//                            fprintf(unit,"%5.4X",good_depths);
+//                        }	// close rxd
+//                        fprintf(unit,"\n");
+//                    }	// close tx
+//        
+//                    // Display timing matrix twice in case good area is near an edge
+//                    fprintf(unit,"\n\nRandom loopback good_spots at Tof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i, \n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg);
+//                    fprintf(unit,"scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
+//                    fprintf(unit,"    rxd_step=");
+//                    for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
+//                    fprintf(unit,"\n");
+//        
+//                    for (i=0; i<=1; ++i) {
+//                        for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                            fprintf(unit,"txd_step=%3i ",alct_txd_delay);
+//                            for (j=0; j<=1; ++j) {
+//                                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                                    pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                                    symbol = (pipe_depth >= 0) ? '0'+pipe_depth : '-';	// display "-" for bad data, display ascii-hex pipe depth for good data
+//                                    fprintf(unit,"%c",symbol);
+//                                }}	// close rx 1st pass, rx 2nd pass
+//                            fprintf(unit,"\n");
+//                        }}	// close tx 1st pass, tx 2nd pass
+//        
+//                    // Close posneg scan loops
+//                }}
+//            fprintf(unit,"\nClosed posneg loops");
+//        
+//            // Display good spots pipe depth at this ToF for all combinations of posnegs
+//            fprintf(unit,"\n\nRandom loopback good_spots pipe depth at Tof=%2i for ALL alct_rxd_posneg | alct_txd_posneg combinations\n",alct_tof_delay);
+//            fprintf(unit,"Scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
+//            fprintf(unit,"    rxd_step=");
+//            for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
+//            fprintf(unit,"\n");
+//        
+//            for (i=0; i<=1; ++i) {
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    fprintf(unit,"txd_step=%3i ",alct_txd_delay);
+//                    for (j=0; j<=1; ++j) {
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//        
+//                            symbol='-';
+//                            for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//                                for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//                                    pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                                    if (pipe_depth >= 0) symbol='0'+pipe_depth;	// display "-" for bad data, display ascii-hex pipe depth for good data at ANY posneg
+//                                }}	// close posneg local loops
+//        
+//                            fprintf(unit,"%c",symbol);
+//                        }}	// close rx 1st pass, rx 2nd pass
+//                    fprintf(unit,"\n");
+//                }}	// close tx 1st pass, tx 2nd pass
+//        
+//            // Display good spots posnegs at this ToF for all combinations of posnegs
+//            fprintf(unit,"\n\nRandom loopback good_spots posneg code at Tof=%2i for ALL alct_rxd_posneg | alct_txd_posneg combinations\n",alct_tof_delay);
+//            fprintf(unit,"Scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
+//            fprintf(unit,"Posneg code = {rxd_posneg,txd_posneg}\n");	
+//            fprintf(unit,"    rxd_step=");
+//            for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
+//            fprintf(unit,"\n");
+//        
+//            good_spots_tof[alct_tof_delay]=0;
+//        
+//            for (i=0; i<=1; ++i) {
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    fprintf(unit,"txd_step=%3i ",alct_txd_delay);
+//                    for (j=0; j<=1; ++j) {
+//                        for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//        
+//                            ngood_depths=0;
+//                            posneg_code =0;
+//        
+//                            for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//                                for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//                                    pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                                    if (pipe_depth >= 0) {
+//                                        ngood_depths++;
+//                                        posneg_code=posneg_code | (alct_rxd_posneg << 1) | (alct_txd_posneg << 0);
+//                                    }
+//                                }}	// close posneg local loops
+//        
+//                            symbol = (ngood_depths > 0) ? '0'+posneg_code : '-';	// display "-" for bad data, display ascii-hex code for good data
+//                            fprintf(unit,"%c",symbol);
+//                            if (ngood_depths > 0) good_spots_tof[alct_tof_delay]++;
+//                        }}	// close rx 1st pass, rx 2nd pass
+//                    fprintf(unit,"\n");
+//                }}	// close tx 1st pass, tx 2nd pass
+//        
+//            good_spots_tof[alct_tof_delay]=good_spots_tof[alct_tof_delay]/4;	// correct for having counting 2x in rx and 2x in tx
+//        
+//            // Close ToF scan loop
+//        }
+//        
+//        // Display good spots vs tof and posnegs
+//        fprintf(unit,"\nEnd of ToF scan------------------------------------------------------------------------------------\n");
+//        fprintf(unit,"\nRandom Loopback Scan Summary\n");
+//        for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//            for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//                for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//                    ngood_spots=good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay];
+//                    fprintf(unit,"tof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
+//                }}
+//            fprintf(unit,"\n");
+//        }
+//        
+//        // Display good spots vs tof at ALL posnegs
+//        fprintf(unit,"\n\n");
+//        for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//            ngood_spots=good_spots_tof[alct_tof_delay];
+//            fprintf(unit,"ToF=%2i good_spots for ALL posnegs = %3i\n",alct_tof_delay,ngood_spots);
+//        }
+//        
+//        // Display good depths vs tof at ALL posnegs
+//        fprintf(unit,"\n\n");
+//        
+//        for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//        
+//            for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                    depth_code  =0;
+//                    ngood_depths=0;
+//                    i=0;
+//        
+//                    for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//                        for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//        
+//                            pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                            if (pipe_depth >= 0) {
+//                                depth_code=depth_code | (pipe_depth << i*4);
+//                                ngood_depths++;
+//                            }
+//                            i++;
+//                        }}
+//                    if (ngood_depths > 0)
+//                        fprintf(unit,"ToF=%2i good depths for ALL posnegs rxd=%3i txd=%3i depth_code= %4.4X\n",alct_tof_delay,alct_rxd_delay,alct_txd_delay,depth_code);
+//                }}}
+//        
+//        // Restore default delays and posnegs
+//        fprintf(unit,"\n");
+//        fprintf(unit,"Restoring default alct_tof_delay  = %2i\n",alct_tof_default);
+//        fprintf(unit,"Restoring default alct_rxd_delay  = %2i\n",alct_rxd_default);
+//        fprintf(unit,"Restoring default alct_txd_delay  = %2i\n",alct_txd_default);
+//        fprintf(unit,"Restoring default alct_rxd_posneg = %2i\n",alct_rxd_posneg_default);
+//        fprintf(unit,"Restoring default alct_txd_posneg = %2i\n",alct_txd_posneg_default);
+//        
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay	= alct_tof_default;
+//        alct_rxd_posneg	= alct_rxd_posneg_default;
+//        alct_txd_posneg	= alct_txd_posneg_default;
+//        
+//        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//        posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);					// Get current state
+//        wr_data = rd_data & 0xFF0F;							// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);			// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        //	ALCT-TMB Quick Test Series
+//        //------------------------------------------------------------------------------
+//        L231400:
+//        printf("\tQuick test series removed 5.20.2010\n");
+//        pause("\tReturn to sub-menu <cr> ");
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        //	CFEB rxd clock delay scan: ALCT|CFEB-to-TMB Teven|Todd
+//        //------------------------------------------------------------------------------
+//        L231500:
+//        //	unit  = stdout;
+//        unit  = log_file;
+//        debug = false;
+//        display_cfeb=true;
+//        //	display_cfeb=false;
+//        
+//        fprintf(unit,"CFEB rxd clock delay scan using ALCT as a CFEB:  Teven|Todd\n");
+//        
+//        // Get current 3D3444 + phaser delays + posnegs
+//        for (icfeb=0; icfeb<=4; ++icfeb) {
+//            sprintf(ccfeb, "%1i",icfeb);	// Convert icfeb to string
+//            scfeb=string(ccfeb);
+//            cfeb_rxd_delay_default[icfeb]  = phaser_rd(base_adr,string("cfeb_rxd_").append(scfeb),dps_delta);
+//            cfeb_rxd_posneg_default[icfeb] = posneg_rd(base_adr,string("cfeb_rxd_").append(scfeb));
+//            cfeb_nbx_delay_default[icfeb]  = cfebbx_rd(base_adr,string("cfeb_nbx_").append(scfeb));
+//            cfeb_txc_delay_default[icfeb]  = dddstr_rd(base_adr,string("cfeb_txc_").append(scfeb));
+//        }
+//        cfeb_tof_delay_default         = dddstr_rd(base_adr,string("cfeb_tof"));
+//        
+//        // Inquire
+//        icfeb=0;
+//        inquire("Select CFEB[0-4]   ?          cr=%3i", minv= 0, maxv=  4, radix=10, icfeb);
+//        
+//        cfeb_tof_delay  = cfeb_tof_delay_default;
+//        cfeb_rxd_delay	= cfeb_rxd_delay_default[icfeb];
+//        cfeb_rxd_posneg = cfeb_rxd_posneg_default[icfeb];
+//        cfeb_nbx_delay  = cfeb_nbx_delay_default[icfeb];
+//        
+//        inquire("Set cfeb_tof_delay ? -1=scan, cr=%3i", minv=-1, maxv= 12, radix=10, cfeb_tof_delay );
+//        inquire("Set cfeb_rxd_posneg? -1=scan, cr=%3i", minv=-1, maxv=  1, radix=10, cfeb_rxd_posneg);
+//        inquire("Set cfeb_nbx_delay ?          cr=%3i", minv=-1, maxv= 15, radix=10, cfeb_nbx_delay );
+//        
+//        // Set CFEB fifo tbins, each one is an independent rx data sample
+//        adr    = base_adr+seq_fifo_adr;
+//        status = vme_read(adr,rd_data);
+//        
+//        fifo_mode		= (rd_data >> 0) & 0x07;	// 3 bits
+//        fifo_tbins		= (rd_data >> 3) & 0x1F;	// 5 bits
+//        fifo_pretrig	= (rd_data >> 8) & 0x1F;	// 5 bits
+//        
+//        fifo_tbins      = 31;
+//        
+//        wr_data = rd_data & 0xF000;			// clear lower bits
+//            wr_data = wr_data
+//            | ((fifo_mode    & 0x07) << 0)		// [2:0]
+//        | ((fifo_tbins   & 0x1F) << 3)		// [7:3]
+//            | ((fifo_pretrig & 0x1F) << 8);		// [12:8]
+//        
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn off CCB backplane inputs, turn on L1A emulator
+//            adr     = ccb_cfg_adr+base_adr;
+//            wr_data = 0x003D;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Enable l1a on sequencer trigger, turn off dmb trigger, set internal l1a delay
+//            adr     = ccb_trig_adr+base_adr;
+//            wr_data = 0x0004;
+//            wr_data = wr_data | (l1a_delay << 8);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn off ALCT cable inputs, enable synchronized alct+clct triggers
+//            adr     = alct_inj_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x0000;
+//            wr_data = wr_data | 0x0005;
+//            wr_data = wr_data | (alct_injector_delay << 5);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Set ALCT delay for TMB matching
+//            adr     = tmbtim_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFF0;
+//            wr_data = wr_data | 0x0003;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn on all CFEB inputs so we can check for crosstalk
+//            adr     = cfeb_inj_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFE0;
+//            wr_data = wr_data | 0x001F;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn on CFEB enables to over-ride mask_all
+//            adr     = seq_trig_en_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x03FF;		// clear old cfeb_en and source
+//            wr_data = wr_data | 0x7C00;		// ceb_en_source=0,cfeb_en=1F
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn off internal level 1 accept for sequencer, set l1a window width
+//            adr     = seq_l1a_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0x00FF;
+//            wr_data = wr_data | 0x0300;		// l1a window width
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Turn off CLCT pattern trigger
+//            adr     = seq_trig_en_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFF00;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Clear previous ALCT inject
+//            adr     = alct_inj_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFFD;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Set start_trigger state for FMM
+//            ttc_cmd = 6;			// start_trigger
+//            adr     = base_adr+ccb_cmd_adr;
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0003 | (ttc_cmd << 8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            ttc_cmd = 1;			// bx0
+//            wr_data = 0x0003 | (ttc_cmd << 8);
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0001;
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Clear DMB RAM write-address
+//            adr     = dmb_ram_adr+base_adr;
+//            wr_data = 0x2000;	//reset RAM write address
+//            status  = vme_write(adr,wr_data);
+//            wr_data = 0x0000;	// unreset
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Set CFEB nbx delay
+//            adr     = delay0_int_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// Get current cfeb0-3
+//            cfeb_delay_is[0]= (rd_data >>  0) & 0xF;
+//            cfeb_delay_is[1]= (rd_data >>  4) & 0xF;
+//            cfeb_delay_is[2]= (rd_data >>  8) & 0xF;
+//            cfeb_delay_is[3]= (rd_data >> 12) & 0xF;
+//        
+//            adr     = delay1_int_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// Get current cfeb4
+//            cfeb_delay_is[4]= (rd_data >>  0) & 0xF;
+//        
+//            cfeb_delay_is[icfeb]=cfeb_nbx_delay;		// Set new delay for selected cfeb
+//        
+//            adr     = delay0_int_adr+base_adr;			// Write new cfeb0-3
+//            wr_data = 0;
+//            wr_data = wr_data | (cfeb_delay_is[0] <<  0);
+//            wr_data = wr_data | (cfeb_delay_is[1] <<  4);
+//            wr_data = wr_data | (cfeb_delay_is[2] <<  8);
+//            wr_data = wr_data | (cfeb_delay_is[3] << 12);
+//            status  = vme_write(adr,wr_data);
+//        
+//            adr     = delay1_int_adr+base_adr;			// Write new cfeb 4
+//            wr_data = rd_data & 0xFFF0;
+//            wr_data = wr_data | (cfeb_delay_is[4] <<   0);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put ALCT into xmit Teven|Todd pattern, seq_cmd[0],[2] share same wire pair
+//            seq_cmd_bit[0]=1;	seq_cmd_bit[2]=1;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//            seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[0] & seq_cmd[2] == 1} tells ALCT to send Teven|Todd pattern
+//        
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// Get current state
+//            wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//            wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//            wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//            wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//            wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Scan tof and rxd_posneg, or use input values
+//            cfeb_tof_delay_min	= (cfeb_tof_delay  < 0) ?  0 : cfeb_tof_delay;
+//            cfeb_tof_delay_max	= (cfeb_tof_delay  < 0) ? 12 : cfeb_tof_delay;
+//            cfeb_rxd_posneg_min	= (cfeb_rxd_posneg < 0) ?  0 : cfeb_rxd_posneg;
+//            cfeb_rxd_posneg_max	= (cfeb_rxd_posneg < 0) ?  1 : cfeb_rxd_posneg;
+//        
+//            for (cfeb_rxd_posneg = cfeb_rxd_posneg_min; cfeb_rxd_posneg <= cfeb_rxd_posneg_max; ++cfeb_rxd_posneg) {
+//                for (cfeb_tof_delay  = cfeb_tof_delay_min;  cfeb_tof_delay  <= cfeb_tof_delay_max;  ++cfeb_tof_delay ) {
+//        
+//                    // Set scanned delays and posnegs
+//                    alct_tof_delay=cfeb_tof_delay;									// ALCT is acting as a cfeb, so use it to delay tof
+//                    ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//                    sprintf(ccfeb, "%1i",icfeb);	// Convert icfeb to string
+//                    scfeb=string(ccfeb);
+//                    posneg_wr(base_adr,string("cfeb_rxd_").append(scfeb),cfeb_rxd_posneg);
+//        
+//                    // Clear error accumulators
+//                    for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
+//                        for (ibit=0; ibit<=23; ++ibit) {
+//                            cfeb_rxd_bad[cfeb_rxd_delay][ibit]=0;
+//                        }}
+//        
+//                    for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
+//                        cfeb_sync_1st_err[cfeb_rxd_delay] = 0;
+//                        cfeb_sync_2nd_err[cfeb_rxd_delay] = 0;
+//                    }
+//        
+//                    // Step alct rxd clock delay
+//                    fprintf(unit,"\n");	
+//                    fprintf(unit,"Checking 80MHz Teven|Todd data ALCT sends into CFEB%1i\n",icfeb);
+//                    fprintf(unit,"Setting  cfeb_tof_delay  =%2i\n",cfeb_tof_delay);
+//                    fprintf(unit,"Setting  cfeb_rxd_posneg =%2i\n",cfeb_rxd_posneg);
+//                    fprintf(unit,"Using    dps_max         =%2i\n",dps_max);
+//                    fprintf(unit,"Using    dps_delta       =%2i\n",dps_delta);
+//                    fprintf(unit,"\n");	
+//                    fprintf(unit,"Stepping cfeb_rxd_delay...\n");
+//                    //	if (unit!=stdout) fprintf(stdout,"Scanning cfeb_tof_delay=%2i cfeb_rxd_posneg=%1i...wait",cfeb_tof_delay,cfeb_rxd_posneg);
+//                    printf("Scanning cfeb_tof_delay=%2i cfeb_rxd_posneg=%1i...wait\n\n",cfeb_tof_delay,cfeb_rxd_posneg);
+//        
+//                    npasses=33;
+//                    for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) { if(debug) fprintf(log_file,"cfeb_rxd_delay=%2i\n",cfeb_rxd_delay);
+//                        for (ipass=1; ipass<=npasses; ++ipass) {
+//        
+//                            // Set cfeb_rxd_delay
+//                            phaser_wr(base_adr,string("cfeb_rxd_").append(scfeb),cfeb_rxd_delay,dps_delta);
+//        
+//                            // Wait >51 usec for raw hits RAM to write all 2048 addresses
+//                            sleep_ms(1);
+//        
+//                            // Fire VME trigger
+//                            adr     = seq_trig_en_adr+base_adr;
+//                            status  = vme_read(adr,rd_data);
+//                            wr_data = rd_data & 0xFF00;
+//                            wr_data	= wr_data | (1 << 7);	// fire vme trigger
+//                            status  = vme_write(adr,wr_data);
+//                            wr_data = rd_data & 0xFF00;		// unfire vme trigger
+//                            status  = vme_write(adr,wr_data);
+//        
+//                            // Wait for TMB to read out to DMB
+//                            sleep_ms(1);
+//        
+//                            // Get DMB RAM word count and busy bit
+//                            adr       = dmb_wdcnt_adr+base_adr;
+//                            status    = vme_read(adr,rd_data);
+//                            dmb_wdcnt = rd_data & 0x0FFF;
+//                            dmb_busy  = (rd_data >> 14) & 0x0001;
+//        
+//                            if (debug) {	
+//                                fprintf(log_file,"\tdmb word count = %4i\n",dmb_wdcnt);
+//                                fprintf(log_file,"\tdmb busy       = %4i\n",dmb_busy);
+//                            }
+//        
+//                            if (dmb_busy  != 0) pause ("Can not read RAM: dmb reports busy");
+//                            if (dmb_wdcnt <= 0) pause ("Can not read RAM: dmb reports word count <=0");
+//        
+//                            // Write RAM read address to TMB
+//                            for (iadr=0; iadr<=dmb_wdcnt-1; ++iadr) {
+//                                adr     = dmb_ram_adr+base_adr;
+//                                wr_data = iadr & 0xFFFF;
+//                                status  = vme_write(adr,wr_data);
+//        
+//                                // Read RAM data from TMB
+//                                adr    = dmb_rdata_adr+base_adr;
+//                                status = vme_read(adr,rd_data);			// read lsbs
+//                                dmb_rdata_lsb=rd_data;
+//        
+//                                adr    = dmb_wdcnt_adr+base_adr;
+//                                status = vme_read(adr,rd_data);			// read msbs
+//                                dmb_rdata_msb = (rd_data >> 12) & 0x3;	// rdata msbs
+//        
+//                                dmb_rdata = dmb_rdata_lsb | (dmb_rdata_msb << 16);
+//                                vf_data[iadr]=dmb_rdata;
+//        
+//                                if (debug) fprintf(log_file,"Adr=%4i Data=%5.5X\n",iadr,dmb_rdata);
+//                            }	// close iadr
+//        
+//                            // Clear RAM address for next event
+//                            adr     = dmb_ram_adr+base_adr;
+//                            wr_data = 0x2000;	// reset RAM write address
+//                            status  = vme_write(adr,wr_data);
+//                            wr_data = 0x0000;	// unreset
+//                            status  = vme_write(adr,wr_data);
+//        
+//                            // Point to start of CFEB data
+//                            iframe     = 5;
+//                            r_nheaders = vf_data[iframe] & 0x3F;					// Number of header words
+//                            adr_e0b    = r_nheaders;
+//        
+//                            if (debug) fprintf(log_file,"r_nheaders=%i\n",r_nheaders);
+//                            if (adr_e0b <=0) pause ("Unreasonable nheaders");
+//        
+//                            iframe=19;
+//                            r_ncfebs=			(vf_data[iframe] >>  0) & 0x7;		// Number of CFEBs read out
+//                            r_fifo_tbins=		(vf_data[iframe] >>  3) & 0x1F;		// Number of time bins per CFEB in dump
+//        
+//                            if (debug) fprintf(log_file,"r_fifo_tbins=%i\n",r_fifo_tbins);
+//                            if (r_fifo_tbins<=0) pause ("Unreasonable ntbins");
+//        
+//                            // Copy triad bits to a holding array
+//                            iframe = adr_e0b+1;										// First raw hits frame for cfeb0
+//        
+//                            for (jcfeb  = 0; jcfeb  <= r_ncfebs-1;     ++jcfeb ) {	// Loop over all cfebs so we can see crosstalk
+//                                for (itbin  = 0; itbin  <= r_fifo_tbins-1; ++itbin ) {	// Loop over time bins
+//                                    for (ilayer = 0; ilayer <= mxly-1;         ++ilayer) {	// Loop over layers
+//        
+//                                        rdcid  = (vf_data[iframe] >> 12) & 0x7;					// CFEB ID in the dump
+//                                        rdtbin = (vf_data[iframe] >>  8) & 0xF;					// Tbin number in the dump
+//                                        hits8  =  vf_data[iframe]        & 0xFF;				// 8 triad block
+//        
+//                                        for (ids=0; ids< mxds; ++ids) {							// Loop over hits per block
+//                                            hits1=(hits8 >> ids) & 0x1;								// Extract 1 hit
+//                                            ids_abs=ids+jcfeb*8;									// Absolute distrip id
+//                                            read_pat[itbin][ilayer][ids_abs]=hits1;					// hit this distrip
+//                                            if (hits1 != 0) nonzero_triads++;						// Count nonzero triads
+//                                            dprintf(log_file,"iframe=%4i vf_data=%5.5X hits8=%i jcfeb=%i itbin=%i ids_abs=%i hits1=%i\n",iframe,vf_data[iframe],hits8,jcfeb,itbin,ids_abs,hits1);
+//                                        }														// Close ids
+//                                        iframe++;												// Next frame
+//                                    }														// Close for ilayer
+//                                }														// Close for itbin
+//                            }														// Close for jcfeb
+//        
+//                            // Display cfeb and ids column markers
+//                            if (display_cfeb) {
+//                                fprintf(log_file,"\n");
+//                                fprintf(log_file,"     Raw Hits Triads\n");
+//        
+//                                fprintf(log_file,"Cfeb-");
+//                                for (jcfeb=0; jcfeb < mxcfeb; ++jcfeb) { fprintf(log_file,"%|");	// display cfeb columms
+//                                    for (ids=0;   ids   < mxds;   ++ids  )   fprintf(log_file,"%1.1i",jcfeb);}
+//                                fprintf(log_file,"|\n");
+//        
+//                                fprintf(log_file,"Ds---");
+//                                for (jcfeb=0; jcfeb < mxcfeb; ++jcfeb) { fprintf(log_file,"%|",x);	// display ids columns
+//                                    for (ids=0;   ids   < mxds;   ++ids  )   fprintf(log_file,"%1.1i",ids%10);}
+//                                fprintf(log_file,"|\n");
+//                                fprintf(log_file,"Ly Tb\n");
+//        
+//                                // Display CFEB raw hits
+//                                for (ilayer=0; ilayer <= mxly-1;         ++ilayer)        {
+//                                    for (itbin=0;  itbin  <= r_fifo_tbins-1; ++itbin ) { fprintf(log_file,"%1i %2i ",ilayer,itbin);
+//        
+//                                        for (ids_abs=0;ids_abs<=39;++ids_abs) {
+//                                            if (ids_abs%8==0) {fprintf(log_file,"|");}
+//                                            fprintf(log_file,"%1.1i",read_pat[itbin][ilayer][ids_abs]);
+//                                        }	// close for ids_abs
+//                                        fprintf(log_file,"|\n");
+//                                    }	// close itbin
+//                                    fprintf(log_file,"\n");
+//                                }	// close ilayer
+//                            }	// close display cfeb
+//        
+//                            // Map CFEB Signal names into Triad names, use BFA150/CED243 for simulator check
+//                            //	ALCT	Pins	1st Cy 	2nd Cy	Triad_ff	CFEB
+//                            //	rx0		1+	2-	Ly0Tr0	Ly3Tr0	0	24		rx0
+//                            //	rx1		49+	50-	Ly0Tr1	Ly3Tr1	1	25		rx23
+//                            //	rx2		3+	4-	Ly0Tr2	Ly3Tr2	2	26		rx1
+//                            //	rx3		47+	48-	Ly0Tr3	Ly3Tr3	3	27		rx22
+//                            //	rx4		5+	6-	Ly5Tr0	Ly4Tr0	4	28		rx2
+//                            //	rx5		45+	46-	Ly5Tr1	Ly4Tr1	5	29		rx21
+//                            //	rx6		7+	8-	Ly5Tr2	Ly4Tr2	6	30		rx3
+//                            //	rx7		43+	44-	Ly5Tr3	Ly4Tr3	7	31		rx20
+//                            //	rx8		9+	10-	Ly1Tr0	Ly2Tr0	8	32		rx4
+//                            //	rx9		41+	42-	Ly1Tr1	Ly2Tr1	9	33		rx19
+//                            //	rx10	11+	12-	Ly1Tr2	Ly2Tr2	10	34		rx5
+//                            //	rx11	39+	40-	Ly1Tr3	Ly2Tr3	11	35		rx18
+//                            //	rx12	13+	14-	Ly0Tr4	Ly3Tr4	12	36		rx6
+//                            //	rx13	37+	38-	Ly0Tr5	Ly3Tr5	13	37		rx17
+//                            //	rx14	15+	16-	Ly0Tr6	Ly3Tr6	14	38		rx7
+//                            //	rx15	35+	36-	Ly0Tr7	Ly3Tr7	15	39		rx16
+//                            //	rx16	17+	18-	Ly5Tr4	Ly4Tr4	16	40		rx8
+//                            //	rx17	33+	34-	Ly5Tr5	Ly4Tr5	17	41		rx15
+//                            //	rx18	19+	20-	Ly5Tr6	Ly4Tr6	18	42		rx9
+//                            //	rx19	31+	32-	Ly5Tr7	Ly4Tr7	19	43		rx14
+//                            //	rx20	21+	22-	Ly1Tr4	Ly2Tr4	20	44		rx10
+//                            //	rx21	29+	30-	Ly1Tr5	Ly2Tr5	21	45		rx13
+//                            //	rx22	23+	24-	Ly1Tr6	Ly2Tr6	22	46		rx11
+//                            //	rx23	27+	28-	Ly1Tr7	Ly2Tr7	23	47		rx12
+//        
+//                            // Each tbin is an independent rx data measurement
+//                            ids_abs=icfeb*8;
+//        
+//                            for (itbin=0; itbin<=r_fifo_tbins-1; ++itbin) {
+//        
+//                                // First in time map
+//                                cfeb_rxdata_1st[ 0] = read_pat[itbin][0][0+ids_abs];
+//                                cfeb_rxdata_1st[ 1] = read_pat[itbin][0][1+ids_abs];
+//                                cfeb_rxdata_1st[ 2] = read_pat[itbin][0][2+ids_abs];
+//                                cfeb_rxdata_1st[ 3] = read_pat[itbin][0][3+ids_abs];
+//        
+//                                cfeb_rxdata_1st[ 4] = read_pat[itbin][5][0+ids_abs];
+//                                cfeb_rxdata_1st[ 5] = read_pat[itbin][5][1+ids_abs];
+//                                cfeb_rxdata_1st[ 6] = read_pat[itbin][5][2+ids_abs];
+//                                cfeb_rxdata_1st[ 7] = read_pat[itbin][5][3+ids_abs];
+//        
+//                                cfeb_rxdata_1st[ 8] = read_pat[itbin][1][0+ids_abs];
+//                                cfeb_rxdata_1st[ 9] = read_pat[itbin][1][1+ids_abs];
+//                                cfeb_rxdata_1st[10] = read_pat[itbin][1][2+ids_abs];
+//                                cfeb_rxdata_1st[11] = read_pat[itbin][1][3+ids_abs];
+//        
+//                                cfeb_rxdata_1st[12] = read_pat[itbin][0][4+ids_abs];
+//                                cfeb_rxdata_1st[13] = read_pat[itbin][0][5+ids_abs];
+//                                cfeb_rxdata_1st[14] = read_pat[itbin][0][6+ids_abs];
+//                                cfeb_rxdata_1st[15] = read_pat[itbin][0][7+ids_abs];
+//        
+//                                cfeb_rxdata_1st[16] = read_pat[itbin][5][4+ids_abs];
+//                                cfeb_rxdata_1st[17] = read_pat[itbin][5][5+ids_abs];
+//                                cfeb_rxdata_1st[18] = read_pat[itbin][5][6+ids_abs];
+//                                cfeb_rxdata_1st[19] = read_pat[itbin][5][7+ids_abs];
+//        
+//                                cfeb_rxdata_1st[20] = read_pat[itbin][1][4+ids_abs];
+//                                cfeb_rxdata_1st[21] = read_pat[itbin][1][5+ids_abs];
+//                                cfeb_rxdata_1st[22] = read_pat[itbin][1][6+ids_abs];
+//                                cfeb_rxdata_1st[23] = read_pat[itbin][1][7+ids_abs];
+//        
+//                                // Second in time map
+//                                cfeb_rxdata_2nd[ 0] = read_pat[itbin][3][0+ids_abs];
+//                                cfeb_rxdata_2nd[ 1] = read_pat[itbin][3][1+ids_abs];
+//                                cfeb_rxdata_2nd[ 2] = read_pat[itbin][3][2+ids_abs];
+//                                cfeb_rxdata_2nd[ 3] = read_pat[itbin][3][3+ids_abs];
+//        
+//                                cfeb_rxdata_2nd[ 4] = read_pat[itbin][4][0+ids_abs];
+//                                cfeb_rxdata_2nd[ 5] = read_pat[itbin][4][1+ids_abs];
+//                                cfeb_rxdata_2nd[ 6] = read_pat[itbin][4][2+ids_abs];
+//                                cfeb_rxdata_2nd[ 7] = read_pat[itbin][4][3+ids_abs];
+//        
+//                                cfeb_rxdata_2nd[ 8] = read_pat[itbin][2][0+ids_abs];
+//                                cfeb_rxdata_2nd[ 9] = read_pat[itbin][2][1+ids_abs];
+//                                cfeb_rxdata_2nd[10] = read_pat[itbin][2][2+ids_abs];
+//                                cfeb_rxdata_2nd[11] = read_pat[itbin][2][3+ids_abs];
+//        
+//                                cfeb_rxdata_2nd[12] = read_pat[itbin][3][4+ids_abs];
+//                                cfeb_rxdata_2nd[13] = read_pat[itbin][3][5+ids_abs];
+//                                cfeb_rxdata_2nd[14] = read_pat[itbin][3][6+ids_abs];
+//                                cfeb_rxdata_2nd[15] = read_pat[itbin][3][7+ids_abs];
+//        
+//                                cfeb_rxdata_2nd[16] = read_pat[itbin][4][4+ids_abs];
+//                                cfeb_rxdata_2nd[17] = read_pat[itbin][4][5+ids_abs];
+//                                cfeb_rxdata_2nd[18] = read_pat[itbin][4][6+ids_abs];
+//                                cfeb_rxdata_2nd[19] = read_pat[itbin][4][7+ids_abs];
+//        
+//                                cfeb_rxdata_2nd[20] = read_pat[itbin][2][4+ids_abs];
+//                                cfeb_rxdata_2nd[21] = read_pat[itbin][2][5+ids_abs];
+//                                cfeb_rxdata_2nd[22] = read_pat[itbin][2][6+ids_abs];
+//                                cfeb_rxdata_2nd[23] = read_pat[itbin][2][7+ids_abs];
+//        
+//                                // Remap CFEB bits to correct for stupid ALCT signal order and inversion
+//                                cfeb_rxdata_1st_remap[ 0] = cfeb_rxdata_1st[ 0] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[ 1] = cfeb_rxdata_1st[23];
+//                                cfeb_rxdata_1st_remap[ 2] = cfeb_rxdata_1st[ 1] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[ 3] = cfeb_rxdata_1st[22];
+//        
+//                                cfeb_rxdata_1st_remap[ 4] = cfeb_rxdata_1st[ 2] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[ 5] = cfeb_rxdata_1st[21];
+//                                cfeb_rxdata_1st_remap[ 6] = cfeb_rxdata_1st[ 3] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[ 7] = cfeb_rxdata_1st[20];
+//        
+//                                cfeb_rxdata_1st_remap[ 8] = cfeb_rxdata_1st[ 4] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[ 9] = cfeb_rxdata_1st[19];
+//                                cfeb_rxdata_1st_remap[10] = cfeb_rxdata_1st[ 5] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[11] = cfeb_rxdata_1st[18];
+//        
+//                                cfeb_rxdata_1st_remap[12] = cfeb_rxdata_1st[ 6] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[13] = cfeb_rxdata_1st[17];
+//                                cfeb_rxdata_1st_remap[14] = cfeb_rxdata_1st[ 7] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[15] = cfeb_rxdata_1st[16];
+//        
+//                                cfeb_rxdata_1st_remap[16] = cfeb_rxdata_1st[ 8] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[17] = cfeb_rxdata_1st[15];
+//                                cfeb_rxdata_1st_remap[18] = cfeb_rxdata_1st[ 9] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[19] = cfeb_rxdata_1st[14];
+//        
+//                                cfeb_rxdata_1st_remap[20] = cfeb_rxdata_1st[10] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[21] = cfeb_rxdata_1st[13];
+//                                cfeb_rxdata_1st_remap[22] = cfeb_rxdata_1st[11] ^ 0x1;
+//                                cfeb_rxdata_1st_remap[23] = cfeb_rxdata_1st[12];
+//        
+//                                cfeb_rxdata_2nd_remap[ 0] = cfeb_rxdata_2nd[ 0] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[ 1] = cfeb_rxdata_2nd[23];
+//                                cfeb_rxdata_2nd_remap[ 2] = cfeb_rxdata_2nd[ 1] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[ 3] = cfeb_rxdata_2nd[22];
+//        
+//                                cfeb_rxdata_2nd_remap[ 4] = cfeb_rxdata_2nd[ 2] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[ 5] = cfeb_rxdata_2nd[21];
+//                                cfeb_rxdata_2nd_remap[ 6] = cfeb_rxdata_2nd[ 3] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[ 7] = cfeb_rxdata_2nd[20];
+//        
+//                                cfeb_rxdata_2nd_remap[ 8] = cfeb_rxdata_2nd[ 4] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[ 9] = cfeb_rxdata_2nd[19];
+//                                cfeb_rxdata_2nd_remap[10] = cfeb_rxdata_2nd[ 5] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[11] = cfeb_rxdata_2nd[18];
+//        
+//                                cfeb_rxdata_2nd_remap[12] = cfeb_rxdata_2nd[ 6] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[13] = cfeb_rxdata_2nd[17];
+//                                cfeb_rxdata_2nd_remap[14] = cfeb_rxdata_2nd[ 7] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[15] = cfeb_rxdata_2nd[16];
+//        
+//                                cfeb_rxdata_2nd_remap[16] = cfeb_rxdata_2nd[ 8] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[17] = cfeb_rxdata_2nd[15];
+//                                cfeb_rxdata_2nd_remap[18] = cfeb_rxdata_2nd[ 9] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[19] = cfeb_rxdata_2nd[14];
+//        
+//                                cfeb_rxdata_2nd_remap[20] = cfeb_rxdata_2nd[10] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[21] = cfeb_rxdata_2nd[13];
+//                                cfeb_rxdata_2nd_remap[22] = cfeb_rxdata_2nd[11] ^ 0x1;
+//                                cfeb_rxdata_2nd_remap[23] = cfeb_rxdata_2nd[12];
+//        
+//                                // Convert to integers
+//                                cfeb_sync_rxdata_1st = 0;
+//                                cfeb_sync_rxdata_2nd = 0;
+//        
+//                                for (i=0; i<=23; ++i) {
+//                                    cfeb_sync_rxdata_1st = cfeb_sync_rxdata_1st | (cfeb_rxdata_1st_remap[i] << i);
+//                                    cfeb_sync_rxdata_2nd = cfeb_sync_rxdata_2nd | (cfeb_rxdata_2nd_remap[i] << i);	
+//                                }
+//        
+//                                if (debug) {
+//                                    fprintf(log_file,"rxd_1st=%8.7X\n",cfeb_sync_rxdata_1st);
+//                                    fprintf(log_file,"rxd_2nd=%8.7X\n",cfeb_sync_rxdata_2nd);
+//                                }
+//        
+//                                // Compare received bits to expected pattern
+//                                cfeb_1st_expect = 0x0AAAAAA;	// Teven
+//                                cfeb_2nd_expect = 0x0555555;	// Todd 
+//        
+//                                if (cfeb_sync_rxdata_1st != cfeb_1st_expect) cfeb_sync_1st_err[cfeb_rxd_delay]=1;
+//                                if (cfeb_sync_rxdata_2nd != cfeb_2nd_expect) cfeb_sync_2nd_err[cfeb_rxd_delay]=1;
+//        
+//                                for (ibit=0; ibit<=23; ++ibit) {
+//                                    ibit_1st_expected = (cfeb_1st_expect		>> ibit) & 0x1;
+//                                    ibit_2nd_expected = (cfeb_2nd_expect		>> ibit) & 0x1;
+//                                    ibit_1st_received = (cfeb_sync_rxdata_1st	>> ibit) & 0x1;
+//                                    ibit_2nd_received = (cfeb_sync_rxdata_2nd	>> ibit) & 0x1;
+//                                    if ((ibit_1st_expected !=  ibit_1st_received) ||
+//                                            (ibit_2nd_expected !=  ibit_2nd_received)) cfeb_rxd_bad[cfeb_rxd_delay][ibit]++;
+//                                }	// Close ibit
+//        
+//                                // Close scan loops
+//                            }	// close itbin
+//                            printf("rxd=%2i tof=%2i posneg=%1i passes left=%4i\r",cfeb_rxd_delay,cfeb_tof_delay,cfeb_rxd_posneg,npasses-ipass);
+//                        }	// Close ipass
+//                    }	// Close cfeb_rxd_delay
+//                    fprintf(unit,"\n");
+//        
+//                    // Find good spots window width and center in cfeb_rxd_delay for this cfeb_tof_delay and cfeb_rxd_posneg
+//                    ngood		=  0;
+//                    ngood_max	=  0;
+//                    ngood_edge	=  0;
+//                    ngood_center=  0;
+//        
+//                    for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
+//                        good_spot= !(cfeb_sync_1st_err[cfeb_rxd_delay] || cfeb_sync_2nd_err[cfeb_rxd_delay]);
+//                        good_spots[cfeb_rxd_delay][cfeb_rxd_posneg][0][0][cfeb_tof_delay]=good_spot;
+//                        fprintf(unit,"cfeb_rxd_delay=%2i good_spot=%1i\n",cfeb_rxd_delay,good_spot);
+//                    }
+//        
+//                    for (i=0; i<(dps_max*2); ++i) {	// scan delays 0 to 25 twice to span the awkward 25 to 0 wrap around
+//                        cfeb_rxd_delay=i%(dps_max+1);
+//                        good_spot=good_spots[cfeb_rxd_delay][cfeb_rxd_posneg][0][0][cfeb_tof_delay];
+//                        //	printf("cfeb_rxd_delay=%2i good_spot=%1i\n",cfeb_rxd_delay,good_spot);
+//                        //	printf("i             =%2i good_spot=%1i\n",i,good_spot);
+//        
+//                        if  (good_spot==1) ngood++;			// this is a good spot
+//                        if ((good_spot==0) && (ngood>0)) {	// good spot just went away, so window preceeds it
+//                            ngood_max  = ngood;
+//                            ngood_edge = i;
+//                            ngood      = 0;
+//                        }	// close if
+//                    }	// close for i
+//        
+//                    if (ngood_max>0) ngood_center=(dps_max+ngood_edge-(ngood_max/2))%(dps_max+1);
+//        
+//                    window_width[cfeb_rxd_posneg][cfeb_tof_delay]  = ngood_max;
+//                    window_center[cfeb_rxd_posneg][cfeb_tof_delay] = ngood_center;
+//        
+//                    fprintf(unit,"Window width  = %2i at tof=%2i posneg=%1i\n",window_width[cfeb_rxd_posneg][cfeb_tof_delay],cfeb_tof_delay,cfeb_rxd_posneg);
+//                    fprintf(unit,"Window center = %2i at tof=%2i posneg=%1i\n",window_center[cfeb_rxd_posneg][cfeb_tof_delay],cfeb_tof_delay,cfeb_rxd_posneg);
+//                    fprintf(unit,"\n");	
+//        
+//                    if (unit!=stdout)
+//                        fprintf(stdout,"\nwidth=%2i center=%2i\n",
+//                                window_width[cfeb_rxd_posneg][cfeb_tof_delay],
+//                                window_center[cfeb_rxd_posneg][cfeb_tof_delay]);
+//        
+//                    // Display timing window twice in case good area is near 0 or 25ns
+//                    nsamples = npasses*r_fifo_tbins;
+//                    fprintf(unit,"CFEB%1i Scan of cfeb_rxd_delay digital phase shift at ToF=%2i Posneg=%1i\n",icfeb,cfeb_tof_delay,cfeb_rxd_posneg);
+//                    fprintf(unit,"Passes  =%4i\n",npasses);	
+//                    fprintf(unit,"Tbins   =%4i\n",r_fifo_tbins);	
+//                    fprintf(unit,"Samples =%4i\n",nsamples);	
+//                    fprintf(unit,"Width   =%4i\n",ngood_max);
+//                    fprintf(unit,"Center  =%4i\n",ngood_center);
+//                    fprintf(unit,"\n");	
+//                    fprintf(unit,"Rxd\n");	
+//                    fprintf(unit,"Step   Berrs Average 12 0123456789012345678901234\n");	
+//        
+//                    for (j=0; j<=1; ++j) {
+//                        for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {
+//                            nbad=0;
+//                            for (ibit=0; ibit<=23; ++ibit) {nbad=nbad+cfeb_rxd_bad[cfeb_rxd_delay][ibit];}
+//                            avgbad=double(nbad)/double(nsamples);
+//                            nx=int(avgbad);
+//                            if ((nx==0) && (nbad != 0)) nx=1;
+//                            fprintf(unit,"%2i  %8i %7.4f %c%c |",cfeb_rxd_delay,nbad,avgbad,passfail[cfeb_sync_1st_err[cfeb_rxd_delay]],passfail[cfeb_sync_2nd_err[cfeb_rxd_delay]]);
+//                            if (nbad!=0) for(i=1; i<=nx; ++i) fprintf(unit,"x");
+//                            if (cfeb_rxd_delay==window_center[cfeb_rxd_posneg][cfeb_tof_delay]) fprintf(unit,"\t\t\t\t<--Center=%2i  Width=%2i",ngood_center,ngood_max);
+//                            fprintf(unit,"\n");
+//                        }}
+//        
+//                    // Display bad bits vs delay
+//                    fprintf(unit,"\nCFEB%1i Cable Pair Errors vs cfeb_rxd_clock Delay Step\n",icfeb);
+//        
+//                    fprintf(unit," delay ");
+//                    for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {fprintf(unit,"%5i",cfeb_rxd_delay);}	// display delay values header
+//                    fprintf(unit,"\n");
+//        
+//                    fprintf(unit,"pair   ");
+//                    for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {fprintf(unit," ----");}
+//                    fprintf(unit,"\n");
+//        
+//                    for (ibit=0; ibit<=23; ++ibit) {
+//                        fprintf(unit,"rx[%2i] ",ibit);
+//                        for (cfeb_rxd_delay=0; cfeb_rxd_delay<=dps_max; ++cfeb_rxd_delay) {fprintf(unit,"%5i",cfeb_rxd_bad[cfeb_rxd_delay][ibit]);}
+//                        fprintf(unit,"\n");
+//                    }
+//        
+//                    // Close scan loops
+//                }	// cfeb_tof_delay
+//            }	// cfeb_rxd_posneg
+//        
+//        // Display window center and width vs tof and posneg for plotting
+//        if ((cfeb_rxd_posneg_min != cfeb_rxd_posneg_max) && cfeb_tof_delay_min != cfeb_tof_delay_max) cfeb_rxd_scan_done=true;
+//        
+//        fprintf(unit,"\n");
+//        fprintf(unit,"CFEB%1i Scan summary:\n\n",icfeb);
+//        for (cfeb_rxd_posneg = cfeb_rxd_posneg_min; cfeb_rxd_posneg <= cfeb_rxd_posneg_max; ++cfeb_rxd_posneg) {
+//            for (cfeb_tof_delay  = cfeb_tof_delay_min;  cfeb_tof_delay  <= cfeb_tof_delay_max;  ++cfeb_tof_delay ) {
+//        
+//                fprintf(unit,"Tof=%2i Posneg=%1i Window center=%2i  width=%2i\n",
+//                        cfeb_tof_delay,cfeb_rxd_posneg,
+//                        window_center[cfeb_rxd_posneg][cfeb_tof_delay],
+//                        window_width[cfeb_rxd_posneg][cfeb_tof_delay]);
+//        
+//                newcenter=window_center[cfeb_rxd_posneg][cfeb_tof_delay];
+//            }
+//            fprintf(unit,"\n");
+//        }
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;			// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);				// Get current state
+//        wr_data = rd_data & 0xFF0F;						// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);		// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        //	ALCT effect of alct_tof_delay and posneg on bx0 arrival
+//        //------------------------------------------------------------------------------
+//        L231600:
+//        unit  = stdout;
+//        //	unit  = log_file;
+//        debug = false;
+//        
+//        fprintf(unit,"ALCT effect of alct_tof_delay and posneg on bx0 arrival\n");
+//        
+//        // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//        adr     = ccb_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//        wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn off CFEB cable inputs
+//        adr     = cfeb_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFE0;					// mask_all=5'b00000
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);			// Get current state
+//        wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Select TMB bx0 instead of default TTC bx0
+//        adr     = tmb_trig_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & !(1 << 13);				// turn off [13] mpc_sel_ttc_bx0
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Step through alct_tof_delay using table of known alct_rxd_delay, alct_txd_delay values
+//        for (alct_tof_delay=0; alct_tof_delay<=12; ++alct_tof_delay) {
+//        
+//            ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//            // Set best delay and posneg for ths tof
+//            if (alct_tof_delay == 0) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 3; alct_txd_delay=15;}
+//            if (alct_tof_delay == 1) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 5; alct_txd_delay=18;}
+//            if (alct_tof_delay == 2) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 6; alct_txd_delay=19;}
+//            if (alct_tof_delay == 3) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 9; alct_txd_delay=22;}
+//            if (alct_tof_delay == 4) {alct_rxd_posneg=0; alct_txd_posneg=1; alct_rxd_delay=12; alct_txd_delay=24;}
+//            if (alct_tof_delay == 5) {alct_rxd_posneg=0; alct_txd_posneg=1; alct_rxd_delay=13; alct_txd_delay= 0;}
+//            if (alct_tof_delay == 6) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=15; alct_txd_delay= 2;}
+//            if (alct_tof_delay == 7) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=18; alct_txd_delay= 4;}
+//            if (alct_tof_delay == 8) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=19; alct_txd_delay= 6;}
+//            if (alct_tof_delay == 9) {alct_rxd_posneg=1; alct_txd_posneg=1; alct_rxd_delay=22; alct_txd_delay= 8;}
+//            if (alct_tof_delay ==10) {alct_rxd_posneg=1; alct_txd_posneg=0; alct_rxd_delay=23; alct_txd_delay=10;}
+//            if (alct_tof_delay ==11) {alct_rxd_posneg=1; alct_txd_posneg=0; alct_rxd_delay=25; alct_txd_delay=12;}
+//            if (alct_tof_delay ==12) {alct_rxd_posneg=0; alct_txd_posneg=0; alct_rxd_delay= 1; alct_txd_delay=13;}
+//        
+//            fprintf(unit,"ToF=%2i: Setting alct_rxd_posneg=%1i alct_txd_posneg=%1i alct_rxd_delay=%2i alct_txd_delay=%2i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,alct_rxd_delay,alct_txd_delay);
+//        
+//            // Adjust phasers and posnegs for this tof
+//            posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//            posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//            phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//            phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//            // Scan bx0 offset delays looking for alct*tmb bx0 match
+//            for (i=0; i<=64; ++i) {		// scan bx0+-32
+//                if (i<32) bxn_offset_pretrig = (3563-i) & 0xFFF;
+//                else      bxn_offset_pretrig = (i-32  ) & 0xFFF;
+//        
+//                //	for (bxn_offset_pretrig=0; bxn_offset_pretrig<=3563; ++bxn_offset_pretrig) {
+//                adr     = seq_offset0_adr+base_adr;
+//                status  = vme_read(adr,rd_data);
+//                wr_data = rd_data & 0x000F;						// clear old offset
+//                wr_data = wr_data | (bxn_offset_pretrig << 4);	// set   new offset
+//                status  = vme_write(adr,wr_data);
+//        
+//                // Resync ALCT and TMB bxns
+//                adr     = base_adr+ccb_cmd_adr;
+//        
+//                ttc_cmd = 3;		// ttc_resync
+//                wr_data = 0x0003 | (ttc_cmd << 8);
+//                status  = vme_write(adr,wr_data);
+//                wr_data = 0x0001;
+//                status  = vme_write(adr,wr_data);
+//        
+//                ttc_cmd=1;			// bx0
+//                wr_data = 0x0003 | (ttc_cmd << 8);
+//                status  = vme_write(adr,wr_data);
+//                wr_data = 0x0001;
+//                status  = vme_write(adr,wr_data);
+//        
+//                // Wait at least an LHC orbit for bxn to wrap around to 0 again
+//                sleep_ms(1);
+//        
+//                // Check for alct_bx0==clct_bx0
+//                adr     = bx0_delay_adr+base_adr;
+//                status  = vme_read(adr,rd_data);
+//                bx0_match = (rd_data >> 10) & 0x1;
+//        
+//                if (bx0_match==1) fprintf(unit,"ToF=%2i bx0_match=%1i at bx0_offset=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig);
+//                //	if (bx0_match==0) fprintf(unit,"ToF=%2i bx0_match=%1i at bx0_offset=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig);
+//        
+//                // Close scan loops
+//            }	// close bxn_offset
+//            }	// close alct_tof_delay
+//        
+//            goto L2300;
+//        
+//            //----------------------------------------------------------------------------------
+//            //	ALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback using posneg table
+//            //----------------------------------------------------------------------------------
+//        L231700:
+//            //	unit  = stdout;
+//            unit  = log_file;
+//            debug = false;
+//        
+//            fprintf(unit,"\nALCT Txd|Rxd clock delay scan TMB-to-ALCT TMB Random Loopback, using posneg table\n");
+//        
+//            // Get current 3D3444 + phaser delays
+//            alct_tof_default = ddd_rd(base_adr, 0, 0);	// alct_tof_delay is chip0 ch0
+//            alct_txd_default = phaser_rd(base_adr,"alct_txd",dps_delta);
+//            alct_rxd_default = phaser_rd(base_adr,"alct_rxd",dps_delta);
+//        
+//            // Get current posnegs
+//            alct_rxd_posneg_default = posneg_rd(base_adr,"alct_rxd");
+//            alct_txd_posneg_default = posneg_rd(base_adr,"alct_txd");
+//        
+//            // Inquire
+//            alct_tof_delay  = alct_tof_default;
+//            msec            = 1000;
+//        
+//            inquire("Set alct_tof_delay ? -1=scan, cr=%3i", minv=-1, maxv=12, radix=10, alct_tof_delay );
+//            inquire("Millisecs per spot ?          cr=%3i", minv= 0, maxv=1000000, radix=10, msec);
+//        
+//            // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//            adr     = ccb_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//            wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Put ALCT into loopback mode, turn off Teven|Todd xmit, seq_cmd[0],[2] share same wire pair
+//            seq_cmd_bit[0]=0;	seq_cmd_bit[2]=1;		// (seq_cmd[2] &!seq_cmd[0]) puts ALCT into loopback randoms mode
+//            seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;		// (seq_cmd[3] , seq_cmd[1]) selects alct storage bank 0,1,2
+//        
+//            adr     = alct_cfg_adr+base_adr;
+//            status  = vme_read(adr,rd_data);			// Get current state
+//            wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//            wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//            wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//            wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//            wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Scan tof and posnegs, or use input values
+//            alct_tof_delay_min  = (alct_tof_delay  >= 0) ? alct_tof_delay :  0;
+//            alct_tof_delay_max  = (alct_tof_delay  >= 0) ? alct_tof_delay : 12;
+//        
+//            for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//        
+//                // Set tof delay
+//                ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//                // Display scanned parameters
+//                fprintf(unit,"\n");
+//                fprintf(unit,"Scan Setting:\n");
+//                fprintf(unit,"alct_tof_delay  = %2i\n", alct_tof_delay);
+//                fprintf(unit,"\n");
+//        
+//                // Step alct rxd and txd clock delays, and transmitter pipeline depth
+//                fprintf(unit,"Checking 80MHz Random numbers ALCT looped back from TMB\n");
+//        
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        
+//                        // Look up posnegs and integer delays
+//                        if (alct_rxd_delay > 25) stop ("alct_rxd_delay>25, posneg table requires 0-25");
+//                        if (alct_txd_delay > 25) stop ("alct_txd_delay>25, posneg table requires 0-25");
+//        
+//                        alct_rxd_posneg    = alct_rxd_posneg_table[alct_rxd_delay];
+//                        alct_txd_posneg    = alct_txd_posneg_table[alct_txd_delay];
+//                        alct_txd_int_delay = alct_txd_int_delay_table[alct_txd_delay];
+//                        alct_rxd_int_delay = alct_rxd_int_delay_table[alct_rxd_delay];
+//        
+//                        adr	    = base_adr+alct_stat_adr;
+//                        status  = vme_read(adr,rd_data);
+//                        wr_data = rd_data & 0x0FFF;								// clear old alc_txd_int_delay 
+//                        wr_data = wr_data | (alct_txd_int_delay << 12);			// set   new alc_txd_int_delay 
+//                        status  = vme_write(adr,wr_data);
+//        
+//                        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//                        posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//                        //	fprintf(unit,"alct_rxd_posneg = %2i\n", alct_rxd_posneg);
+//                        //	fprintf(unit,"alct_txd_posneg = %2i\n", alct_txd_posneg);
+//        
+//                        printf("tof=%2i txd_posneg=%1i rxd_posneg=%1i txd_delay=%2i rxd_delay=%2i txd_int=%2i\r",
+//                                alct_tof_delay,alct_txd_posneg,alct_rxd_posneg,alct_txd_delay,alct_rxd_delay,alct_txd_int_delay);
+//        
+//                        for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+//                            alct_sync_rxdata_dly = pipe_depth;
+//        
+//                            // Set pipe depth, clear data check flip-flops
+//                            alct_sync_tx_random  = 1;
+//                            alct_sync_clr_err    = 1;
+//        
+//                            adr      = alct_sync_ctrl_adr+base_adr;					// Set pipe depth, clear error FFs
+//                            status   = vme_read(adr,rd_data);						// get current
+//                            alct_sync_rxdata_pre = (rd_data >> 12) & 0xF;
+//        
+//                            wr_data = (alct_sync_rxdata_dly <<  0) |
+//                                (alct_sync_tx_random  <<  4) |
+//                                (alct_sync_clr_err    <<  5) |
+//                                (alct_sync_rxdata_pre << 12);
+//                            status	= vme_write(adr,wr_data);
+//        
+//                            wr_data = wr_data & ~(1 << 5);							// un-clear error FFs, hammer it a few times while system settles from delay changes
+//                            for (i=0; i<=100; ++i) {
+//                                status	= vme_write(adr,wr_data);	
+//                            }
+//        
+//                            // Wait for error stats to accumulate
+//                            ibad=0;
+//                            for (i=0; i<=msec; i=i+100) {							// 0 msec first time thru for quick reject of  bad spots
+//                                sleep_ms(i);
+//        
+//                                // See if TMB data check flipflops are OK
+//                                adr     = alct_sync_ctrl_adr+base_adr;
+//                                status  = vme_read(adr,rd_data);
+//        
+//                                alct_sync_1st_err_ff[0] = (rd_data >> 8) & 0x1;
+//                                alct_sync_2nd_err_ff[0] = (rd_data >> 9) & 0x1;
+//        
+//                                ibad = alct_sync_1st_err_ff[0] | alct_sync_2nd_err_ff[0];
+//                                alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth]=ibad;
+//        
+//                                //	fprintf(unit,"alct_txd_delay=%1X alct_rxd_delay=%1X pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
+//                                if (ibad != 0) break;			// TMB data check already went bad, so done with this rx tx pair
+//                            }	// close for msec
+//        
+//                            // Read TMB received demux data just to see whats going on
+//                            if (debug) {
+//                                for (i=0; i<=7; ++i) {			// loop over 1st/2nd demux words	0=1st[14:1],1=1st[28:15]
+//                                    adr     = alctfifo1_adr+base_adr;
+//                                    wr_data = 0x2000;				// select alct_loopback mode addressing
+//                                    wr_data = wr_data | (i << 1);
+//                                    status	= vme_write(adr,wr_data);
+//        
+//                                    adr     = alctfifo2_adr+base_adr;
+//                                    status  = vme_read(adr,rd_data);
+//                                    alct_demux_rd[i]=rd_data;
+//                                }
+//        
+//                                alct_sync_rxdata_1st = alct_demux_rd[0] | (alct_demux_rd[1] << 14);
+//                                alct_sync_rxdata_2nd = alct_demux_rd[2] | (alct_demux_rd[3] << 14);
+//                                alct_sync_expect_1st = alct_demux_rd[4] | (alct_demux_rd[5] << 14);
+//                                alct_sync_expect_2nd = alct_demux_rd[6] | (alct_demux_rd[7] << 14);
+//        
+//                                fprintf(unit,"Random Loopback: alct_txd_delay=%2i alct_rxd_delay=%2i", alct_txd_delay,alct_rxd_delay);
+//                                fprintf(unit,"  read 1st=%8.8X 2nd=%8.8X ", alct_sync_rxdata_1st,alct_sync_rxdata_2nd);
+//                                fprintf(unit,"expect 1st=%8.8X 2nd=%8.8X\n",alct_sync_expect_1st,alct_sync_expect_2nd);
+//                            }
+//        
+//                            // Close txd,rxd,depth loops...we are still inside ToF loop
+//                        }}}
+//        
+//                // Find correct depth in the transmitter delay pipeline, and count good spots
+//                ngood_spots=0;
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                        ngood_depths=0;
+//                        good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=-1;
+//                        for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+//                            ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
+//                            if (ibad==0) {
+//                                ngood_depths++;
+//                                good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay]=pipe_depth;
+//                                ngood_spots++;
+//                                //	fprintf(log_file,"alct_txd_delay=%3i alct_rxd_delay=%3i pipe_depth=%1X ibad=%1i\n",alct_txd_delay,alct_rxd_delay,pipe_depth,ibad);
+//                            }	// close ibad
+//                        }	// close pipe
+//                        if (ngood_depths >1) printf("Warning: data match found at >1 pipeline depths, should not happen tx=%2i rx=%2i ngood_depths=%2i\n",alct_txd_delay,alct_rxd_delay,ngood_depths);
+//                    }}	// close txt rxd
+//        
+//                //	good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay]=ngood_spots;
+//                //	fprintf(unit,"\n\ntof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
+//        
+//                good_spots_pos_tof[0][0][alct_tof_delay]=ngood_spots;
+//                fprintf(unit,"\n\ntof=%2i good_spots=%3i\n",alct_tof_delay,ngood_spots);
+//        
+//                // Display good depths vs rxd txd
+//                fprintf(unit,"\nPipeline depth adr bit where RxData=TxData vs alct_txd_delay vs alct_rxd_delay  %3imsec=%ibx\n",msec,msec*int(40e3));
+//                fprintf(unit," rxd_step=");	
+//                for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%5i",alct_rxd_delay);
+//                fprintf(unit,"\n");
+//        
+//                for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                    fprintf(unit,"txd_step=%2i ",alct_txd_delay);
+//                    for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                        good_depths=0;
+//                        for (pipe_depth=0; pipe_depth<=15; ++pipe_depth) {
+//                            ibad = alct_rxd_txd_depth[alct_rxd_delay][alct_txd_delay][pipe_depth];
+//                            if (ibad==0) good_depths=good_depths | (1 << pipe_depth);
+//                        }	// close pipe_depth
+//                        fprintf(unit,"%5.4X",good_depths);
+//                    }	// close rxd
+//                    fprintf(unit,"\n");
+//                }	// close tx
+//        
+//                // Display timing matrix twice in case good area is near an edge
+//                fprintf(unit,"\n\nRandom loopback good_spots at Tof=%2i \n",alct_tof_delay);
+//                fprintf(unit,"scan time per spot %3imsec=%ibx\n",msec,msec*int(40e3));	
+//                fprintf(unit,"    rxd_step=");
+//                for (i=0; i<=1; ++i) {for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) fprintf(unit,"%1i",(alct_rxd_delay%10));}
+//                fprintf(unit,"\n");
+//        
+//                for (i=0; i<=1; ++i) {
+//                    for (alct_txd_delay=0; alct_txd_delay<=dps_max; ++alct_txd_delay) {
+//                        fprintf(unit,"txd_step=%3i ",alct_txd_delay);
+//                        for (j=0; j<=1; ++j) {
+//                            for (alct_rxd_delay=0; alct_rxd_delay<=dps_max; ++alct_rxd_delay) {
+//                                pipe_depth=good_depth[alct_rxd_delay][alct_rxd_posneg][alct_txd_delay][alct_txd_posneg][alct_tof_delay];
+//                                //	if (pipe_depth!=0)pipe_depth=pipe_depth-alct_rxd_int_delay_table[alct_tof_delay];	// temporarily correct for missing rxd delay stages
+//                                symbol = (pipe_depth >= 0) ? '0'+pipe_depth : '-';	// display "-" for bad data, display ascii-hex pipe depth for good data
+//                                fprintf(unit,"%c",symbol);
+//                            }}	// close rx 1st pass, rx 2nd pass
+//                        fprintf(unit,"\n");
+//                    }}	// close tx 1st pass, tx 2nd pass
+//        
+//                // Close posneg scan loops
+//                //	}}
+//                //	fprintf(unit,"\nClosed posneg loops");
+//        
+//                // Close ToF scan loop
+//        }
+//        
+//        // Display good spots vs tof and posnegs
+//        fprintf(unit,"\nEnd of ToF scan------------------------------------------------------------------------------------\n");
+//        fprintf(unit,"\nRandom Loopback Scan Summary\n");
+//        for (alct_tof_delay  = alct_tof_delay_min;  alct_tof_delay  <= alct_tof_delay_max;  ++alct_tof_delay ) {
+//            //	for (alct_rxd_posneg = alct_rxd_posneg_min; alct_rxd_posneg <= alct_rxd_posneg_max; ++alct_rxd_posneg) {
+//            //	for (alct_txd_posneg = alct_txd_posneg_min; alct_txd_posneg <= alct_txd_posneg_max; ++alct_txd_posneg) {
+//            //	ngood_spots=good_spots_pos_tof[alct_rxd_posneg][alct_txd_posneg][alct_tof_delay];
+//            //	fprintf(unit,"tof=%2i alct_rxd_posneg=%1i alct_txd_posneg=%1i good_spots=%3i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,ngood_spots);
+//        
+//            ngood_spots=good_spots_pos_tof[0][0][alct_tof_delay];
+//            fprintf(unit,"tof=%2i good_spots=%3i\n",alct_tof_delay,ngood_spots);
+//        
+//            //	}}
+//            //	fprintf(unit,"\n");
+//        }
+//        
+//        // Restore default delays and posnegs
+//        fprintf(unit,"\n");
+//        fprintf(unit,"Restoring default alct_tof_delay  = %2i\n",alct_tof_default);
+//        fprintf(unit,"Restoring default alct_rxd_delay  = %2i\n",alct_rxd_default);
+//        fprintf(unit,"Restoring default alct_txd_delay  = %2i\n",alct_txd_default);
+//        fprintf(unit,"Restoring default alct_rxd_posneg = %2i\n",alct_rxd_posneg_default);
+//        fprintf(unit,"Restoring default alct_txd_posneg = %2i\n",alct_txd_posneg_default);
+//        
+//        alct_rxd_delay	= alct_rxd_default;
+//        alct_txd_delay	= alct_txd_default;
+//        alct_tof_delay	= alct_tof_default;
+//        alct_rxd_posneg	= alct_rxd_posneg_default;
+//        alct_txd_posneg	= alct_txd_posneg_default;
+//        
+//        ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//        phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//        posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//        posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;				// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);					// Get current state
+//        wr_data = rd_data & 0xFF0F;							// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);			// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        goto L2300;
+//        
+//        //----------------------------------------------------------------------------------
+//        //	CFEB bad-bits register tests
+//        //----------------------------------------------------------------------------------
+//        L231800:
+//        //	unit  = stdout;
+//        unit  = log_file;
+//        //	debug = false;
+//        debug = true;
+//        
+//        fprintf(unit,"\n\tCFEB bad-bits register tests\n\n");
+//        
+//        //----------------------------------------------------------------------------------
+//        // CFEB bad-bits register tests: See how long it takes a bit to go bad
+//        //----------------------------------------------------------------------------------
+//        // Get default nbx
+//        adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
+//        status  = vme_read(adr,rd_data);					// Get TMB current value
+//        cfeb_badbits_nbx = rd_data;
+//        
+//        // Turn on CFEB inputs
+//        adr     = cfeb_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFE0;							// mask off all cfebs
+//        wr_data = wr_data | 0x1F;							// turn on  all cfebs
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Loop over nbx wait times
+//        for (ibit=0; ibit<=15; ++ibit) {
+//            nbx=(1<<ibit);
+//        
+//            // Set nbx for bad bits to be high
+//            adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
+//            wr_data = nbx;										// Set a new nbx wait value
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Reset bad bits
+//            adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//            status  = vme_read(adr,rd_data);					// read current
+//            rd_data = rd_data & 0xFFE0;							// clean out old reset bits
+//            wr_data = rd_data | 0x001F;							// assert reset[4:0]
+//            status  = vme_write(adr,wr_data);					// write reset
+//            wr_data = rd_data;									// retrieve original register contents
+//            status  = vme_write(adr,wr_data);					// write un-reset
+//        
+//            // Loop over VME reads to cause a 16usec wait per cycle
+//            for (icycle=0; icycle<=1000; ++icycle) {
+//        
+//                // Get current bad cfeb bits register
+//                adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//                status  = vme_read(adr,rd_data);
+//        
+//                cfeb_badbits_reset   = (rd_data >>  0) & 0x1F;
+//                cfeb_badbits_block   = (rd_data >>  5) & 0x1F;
+//                cfeb_badbits_found   = (rd_data >> 10) & 0x1F;
+//                cfeb_badbits_blocked = (rd_data >> 15) & 0x1;
+//        
+//                // Check for bits gone bad
+//                if (cfeb_badbits_found!=0) {
+//                    fprintf(unit,"\tcfeb_badbits_nbx=%6i: bad bits detected at vme cycle=%6i %6ibx\n",nbx,icycle,icycle*16*40);
+//                    break;
+//                }	// close if cfeb
+//            }	// close icycle
+//        
+//            if (cfeb_badbits_found==0) pause("\tBad bits NOT detected...wtf?");
+//        
+//            //	Close loops
+//        }	// close nbx
+//        
+//        // Restore default nbx
+//        adr     = cfeb_badbits_timer_adr+base_adr;
+//        wr_data = cfeb_badbits_nbx;
+//        status  = vme_write(adr,wr_data);
+//        
+//        //----------------------------------------------------------------------------------
+//        // CFEB bad-bits register tests: Check bad bits one CFEB at a time
+//        //----------------------------------------------------------------------------------
+//        // Giant loop over CFEBs
+//        for (jcfeb=0; jcfeb<=4; ++jcfeb) {
+//            fprintf(unit,"\tEnable CFEB%1i Cable Inputs\n\n",jcfeb);
+//        
+//            // Turn off CFEB inputs
+//            adr     = cfeb_inj_adr+base_adr;
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & 0xFFE0;			// mask off all cfebs
+//            wr_data = wr_data | (1 << jcfeb);	// turn on jth cfeb
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Enable bad bit blocking
+//            adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data | (0x1F << 5);
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Reset bad bits
+//            adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//            status  = vme_read(adr,rd_data);					// read current
+//            rd_data = rd_data & 0xFFE0;							// clean out old reset bits
+//            wr_data = rd_data | 0x001F;							// assert reset[4:0]
+//            status  = vme_write(adr,wr_data);					// write reset
+//            wr_data = rd_data;									// retrieve original register contents
+//            status  = vme_write(adr,wr_data);					// restore register with resets off
+//        
+//            // Wait for the bad bit high-too-long timer to cycle, 3564bx=89usec
+//            sleep_ms(1);
+//        
+//            // Display bad cfeb bits register
+//            adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//            status  = vme_read(adr,rd_data);
+//        
+//            cfeb_badbits_reset   = (rd_data >>  0) & 0x1F;
+//            cfeb_badbits_block   = (rd_data >>  5) & 0x1F;
+//            cfeb_badbits_found   = (rd_data >> 10) & 0x1F;
+//            cfeb_badbits_blocked = (rd_data >> 15) & 0x1;
+//        
+//            adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
+//            status  = vme_read(adr,rd_data);
+//            cfeb_badbits_nbx = rd_data;
+//        
+//            fprintf(unit,"\tcfeb_badbits_reset   = %4.2X\n",cfeb_badbits_reset);
+//            fprintf(unit,"\tcfeb_badbits_block   = %4.2X\n",cfeb_badbits_block);
+//            fprintf(unit,"\tcfeb_badbits_found   = %4.2X\n",cfeb_badbits_found);
+//            fprintf(unit,"\tcfeb_badbits_blocked = %4.1X\n",cfeb_badbits_blocked);
+//            fprintf(unit,"\tcfeb_badbits_nbx     = %4.4X=%4.4d\n",cfeb_badbits_nbx,cfeb_badbits_nbx);
+//        
+//            // Read bad cfeb bits map from VME registers
+//            for (icfeb =0; icfeb <=4; ++icfeb ) {					// loop over cfebs
+//                for (ilayer=0; ilayer<=5; ++ilayer) {					// Loop over layers
+//        
+//                    adr_offset = 3*(icfeb*2) + 2*(ilayer/2); 				// Read 2 layers per VME address, 3 adrs per cfeb
+//        
+//                    if ((ilayer%2)==0) {									// Read VME for even layers
+//                        adr     = cfeb0_badbits_ly01_adr+adr_offset+base_adr;
+//                        status  = vme_read(adr,rd_data);
+//                        cfeb_badbits[icfeb][ilayer  ] = (rd_data >> 0) & 0xFF;
+//                        cfeb_badbits[icfeb][ilayer+1] = (rd_data >> 8) & 0xFF;
+//                        //	fprintf(unit,"icfeb=%1i ilayer=%1i cfeb_badbits=%4.4X\n",icfeb,ilayer,rd_data);
+//                    }	// close if ilayer
+//        
+//                }}	// close for icfeb,ilayer
+//        
+//            // Display cfeb and ids column markers
+//            fprintf(unit,"\n");
+//            fprintf(unit,"\tCFEB bad bits DiStrips\n\n");
+//        
+//            fprintf(unit,"\tCFEB----");
+//            for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|");	// display cfeb columms
+//                for (ids=0;   ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",icfeb);}
+//            fprintf(unit,"|\n");
+//        
+//            fprintf(unit,"\tDiStrip-");
+//            for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display ids columns
+//                for (ids=0;   ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",ids%10);}
+//            fprintf(unit,"|\n");
+//        
+//            fprintf(unit,"\t        ");
+//            for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display spacer columns
+//                for (ids=0;   ids   < mxds;   ++ids  )   fprintf(unit,"-");}
+//            fprintf(unit,"|\n");
+//        
+//            // Display bad cfeb bits
+//            for (ilayer=0; ilayer<=mxly-1; ++ilayer) {
+//                fprintf(unit,"\tLayer %1i ",ilayer);
+//        
+//                for (icfeb=0;  icfeb < mxcfeb; ++icfeb ) {
+//                    for (ids=0;    ids   < mxds;   ++ids   ) {
+//        
+//                        if (ids==0) {fprintf(unit,"|");}
+//                        ibadbit=(cfeb_badbits[icfeb][ilayer] >> ids) & 0x1;	// extract 1 distrip bit on this cfeb,layer
+//                        fprintf(unit,"%1.1x",ibadbit);
+//                    }}	// close ids,icfeb
+//        
+//                fprintf(unit,"|\n");
+//            }	// close ilayer
+//        
+//            // Close giant cfeb loop
+//            fprintf(unit,"\n");
+//        }	// close jcfeb
+//        
+//        //----------------------------------------------------------------------------------
+//        // CFEB bad-bits register tests: Check bad bits one CFEB bit at a time
+//        //----------------------------------------------------------------------------------
+//        // Get current thresholds
+//        adr    = seq_clct_adr+base_adr;
+//        status = vme_read(adr,rd_data);
+//        
+//        triad_persist		= (rd_data >>  0) & 0xF;	// 4 bits
+//        hit_thresh_pretrig	= (rd_data >>  4) & 0x7;	// 3 bits
+//        dmb_thresh_pretrig	= (rd_data >>  7) & 0x7;	// 3 bits
+//        hit_thresh_postdrift= (rd_data >> 10) & 0x7;	// 3 bits
+//        drift_delay			= (rd_data >> 13) & 0x3;	// 2 bits
+//        
+//        adr    = temp0_adr+base_adr;
+//        status = vme_read(adr,rd_data);
+//        
+//        pid_thresh_pretrig  = (rd_data >> 2) & 0xF;	// 4 bits
+//        pid_thresh_postdrift= (rd_data >> 6) & 0xF;	// 4 bits
+//        
+//        adr    = layer_trig_adr+base_adr;
+//        status = vme_read(adr,rd_data);
+//        lyr_thresh_pretrig = (rd_data >> 1) & 0xF;	// 4 bits
+//        
+//        // Lower thresholds to trigger on single bit hits
+//        hit_thresh_pretrig   = 1;
+//        hit_thresh_postdrift = 1;
+//        
+//        adr    = seq_clct_adr+base_adr;
+//        status = vme_read(adr,rd_data);	
+//        wr_data = rd_data;									// Current thresholds
+//        wr_data = wr_data & ~(0x7 <<  4);					// clear hit_thresh_pretrig
+//        wr_data = wr_data & ~(0x7 << 10);					// clear hit_thresh_postdrift
+//        
+//        wr_data = wr_data | (hit_thresh_pretrig   <<  4);	// set hit_thresh_pretrig
+//        wr_data = wr_data | (hit_thresh_postdrift << 10);	// set hit_thresh_postdrift
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Get L1A delay
+//        adr     = ccb_trig_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        l1a_delay = (rd_data >> 8) & 0xFF;
+//        
+//        // Turn off CFEB cable inputs
+//        adr     = cfeb_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFE0;		// mask_all=5'b00000
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn off ALCT cable inputs, enable synchronized alct+clct triggers
+//        adr     = alct_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        
+//        alct_injector_delay=13;
+//        
+//        wr_data = rd_data & 0x0000;
+//        wr_data = wr_data | 0x0005;
+//        wr_data = wr_data | (alct_injector_delay << 5);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn on CFEB enables to over-ride mask_all
+//        adr     = seq_trig_en_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0x03FF;			// clear old cfeb_en and source
+//        wr_data = wr_data | 0x7C00;			// ceb_en_source=0,cfeb_en=1F
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Enable sequencer trigger, turn off dmb trigger, set internal l1a delay
+//        adr     = ccb_trig_adr+base_adr;
+//        wr_data = 0x0004;
+//        wr_data = wr_data | (l1a_delay << 8);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn off CCB backplane inputs, turn on L1A emulator, do this after turning off cfeb and alct cable inputs
+//        adr     = ccb_cfg_adr+base_adr;
+//        wr_data = 0x0000;
+//        wr_data = wr_data | 0x0001;	// ccb_ignore_rx
+//        wr_data = wr_data | 0x0004;	// ccb_int_l1a_en
+//        wr_data = wr_data | 0x0008;	// ccb_status_oe_vme
+//        wr_data = wr_data | 0x0010;	// alct_status_en
+//        wr_data = wr_data | 0x0020;	// clct_status_en
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn off internal level 1 accept for sequencer, set l1a window width
+//        adr     = seq_l1a_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0x00FF;
+//        wr_data = wr_data | 0x0300;			//  l1a window width
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Set pid_thresh_pretrig, pid_thresh_postdrift
+//        adr    = temp0_adr+base_adr;
+//        status = vme_read(adr,rd_data);
+//        
+//        wr_data=rd_data & 0xFC03;
+//        wr_data=wr_data | (pid_thresh_pretrig   << 2);	// 4 bits
+//        wr_data=wr_data | (pid_thresh_postdrift << 6);	// 4 bits
+//        status = vme_write(adr,wr_data);
+//        
+//        // Set start_trigger state for FMM
+//        //	ttc_cmd=1	// bx0
+//        //	ttc_cmd=3	// l1reset
+//        //	ttc_cmd=6	// start_trigger
+//        //	ttc_cmd=7	// stop_trigger
+//        adr     = base_adr+ccb_cmd_adr;
+//        
+//        ttc_cmd = 3;			// l1reset
+//        wr_data = 0x0003 | (ttc_cmd << 8);
+//        status  = vme_write(adr,wr_data);
+//        wr_data = 0x0001;
+//        status  = vme_write(adr,wr_data);
+//        
+//        ttc_cmd = 6;			// start_trigger
+//        wr_data = 0x0003 | (ttc_cmd << 8);
+//        status  = vme_write(adr,wr_data);
+//        wr_data = 0x0001;
+//        status  = vme_write(adr,wr_data);
+//        
+//        ttc_cmd = 1;			// bx0
+//        wr_data = 0x0003 | (ttc_cmd << 8);
+//        status  = vme_write(adr,wr_data);
+//        wr_data =0x0001;
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Pass loop
+//        for (ipass=1; ipass<=3; ++ipass) {					// 1st pass checks individual bad bits, 2nd pass marks them all bad, 3rd pass shouldnt trigger
+//            //	for (ipass=1; ipass<=1; ++ipass) {					// 1st pass checks individual bad bits, 2nd pass marks them all bad, 3rd pass shouldnt trigger
+//        
+//            if (ipass==1) fprintf(unit,"\n1st Pass:  Check individual bad bit mapping\n");
+//            if (ipass==2) fprintf(unit,"\n2nd Pass:  Mark all bits bad\n");
+//            if (ipass==3) fprintf(unit,"\n3rd Pass:  Should not trigger on bad bits\n");
+//        
+//            if (unit!=stdout) {
+//                if (ipass==1) fprintf(stdout,"\n1st Pass:  Check individual bad bit mapping\n");
+//                if (ipass==2) fprintf(stdout,"\n2nd Pass:  Mark all bits bad\n");
+//                if (ipass==3) fprintf(stdout,"\n3rd Pass:  Should not trigger on bad bits\n");
+//            }
+//        
+//            // Set nbx for bad bits to be high
+//            nbx     = 1;
+//            adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
+//            wr_data = nbx;										// Set a new nbx wait value
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Enable bad bit blocking
+//            adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//            status  = vme_read(adr,rd_data);
+//            wr_data = rd_data & ~(0x1F << 5);					// Clear out old enables
+//            wr_data = rd_data |  (0x1F << 5);					// Turn  on  new enables
+//            status  = vme_write(adr,wr_data);
+//        
+//            // Loop over cfeb input bits
+//            for (icfeblp  = 0; icfeblp  <= 4; ++icfeblp ) {					// loop over cfebs
+//                for (ilayerlp = 0; ilayerlp <= 5; ++ilayerlp) {					// Loop over layers
+//                    for (idslp    = 0; idslp    <= 7; ++idslp   ) {
+//        
+//                        if (unit!=stdout) fprintf(unit,"\tTesting cfeb%1i layer%1i ids%1i\n",icfeblp,ilayerlp,idslp);
+//                        printf(     "\tTesting cfeb%1i layer%1i ids%1i\n",icfeblp,ilayerlp,idslp);
+//        
+//                        // Reset bad bits on 1st pass to check individual bit mapping
+//                        if ((ipass==1) || ((ipass==2) && (icfeblp==0) && (ilayerlp==0) && (idslp==0)))
+//                        {
+//                            adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//                            status  = vme_read(adr,rd_data);					// read current
+//                            rd_data = rd_data & 0xFFE0;							// clean out old reset bits
+//                            wr_data = rd_data | 0x001F;							// assert reset[4:0]
+//                            status  = vme_write(adr,wr_data);					// write reset
+//                            wr_data = rd_data;									// retrieve original register contents
+//                            status  = vme_write(adr,wr_data);					// restore register with resets off
+//                        }
+//        
+//                        // Construct triad image with just 1 hit
+//                        for (ilayer   = 0; ilayer   <=  5; ++ilayer  ) {
+//                            for (itbin    = 0; itbin    <= 31; ++itbin   ) {
+//                                for (idistrip = 0; idistrip <= 39; ++idistrip) {
+//                                    itriad[itbin][idistrip][ilayer]=0;
+//                                }}}
+//        
+//                        itbin    = 0;
+//                        idistrip = idslp+(8*icfeblp);
+//                        ilayer   = ilayerlp;
+//        
+//                        if (nbx==1)
+//                            itriad[0][idistrip][ilayer]=1;
+//        
+//                        if (nbx!=1) {
+//                            itriad[1][idistrip][ilayer]=1;
+//                            itriad[2][idistrip][ilayer]=1;
+//                            itriad[3][idistrip][ilayer]=1;
+//                            itriad[4][idistrip][ilayer]=1;
+//                        }
+//        
+//                        // Display triad image
+//                        if (debug) {
+//                            fprintf(unit,"\n\tTriad image tbin0\n");
+//                            itbin=0;
+//                            for (ilayer   = 0; ilayer   <=  5; ++ilayer  ) {
+//                                fprintf(unit,"\tilayer%1i ",ilayer);
+//                                for (idistrip = 0; idistrip <= 39; ++idistrip) {
+//                                    ibit=itriad[itbin][idistrip][ilayer];
+//                                    fprintf(unit,"%1i",ibit);
+//                                }	// close idistrip
+//                                fprintf(unit,"\n");
+//                            }	// close ilayer
+//                        }	// close if debug
+//        
+//                        // Pack triads into pattern RAM
+//                        wr_data=0;
+//        
+//                        for (ilayer=0; ilayer<=5; ilayer=ilayer+2) {
+//                            iram=ilayer/2;
+//                            for (itbin=0; itbin<=31; ++itbin) {
+//                                for (idistrip=0; idistrip<=39; ++idistrip) {
+//                                    icfeb=idistrip/8;
+//                                    idslocal=idistrip%8;
+//                                    if (idslocal==0) wr_data=0; 		// clear for each cfeb
+//        
+//                                    ibit=itriad[itbin][idistrip][ilayer];
+//                                    wr_data=wr_data | (ibit << idslocal);
+//        
+//                                    ibit=itriad[itbin][idistrip][ilayer+1];
+//                                    wr_data=wr_data | (ibit << (idslocal+8));
+//        
+//                                    pat_ram[itbin][iram][icfeb]=wr_data;
+//                                    dprintf(log_file,"pat_ram tbin=%2i ram=%1i wr_data=%4.4X\n",itbin,iram,wr_data);
+//                                }	// close ilayer
+//                            }	// close itbin
+//                        }	// close idistrip
+//        
+//                        // Write muon RAM data
+//                        for (icfeb = 0; icfeb <= 4;  ++icfeb) {
+//                            for (iram  = 0; iram  <= 2;  ++iram ) {
+//                                for (itbin = 0; itbin <= 31; ++itbin) {
+//        
+//                                    wadr   = itbin;
+//                                    adr    = cfeb_inj_adr+base_adr;					// Select injector RAM
+//                                    status = vme_read(adr,rd_data);					// Get current data
+//        
+//                                    wr_data = rd_data & 0xFC1F;						// Zero FEB select
+//                                    febsel  = (1 << icfeb);							// Select FEB
+//                                    wr_data = wr_data | (febsel << 5) | 0x7C00;		// Set febsel, enable injectors
+//                                    status  = vme_write(adr,wr_data);				// Select FEB
+//        
+//                                    adr     = cfeb_inj_adr_adr+base_adr;
+//                                    ren     = 0;
+//                                    wen     = 0;
+//                                    wr_data = wen | (ren << 2) | (wadr << 6);
+//                                    status  = vme_write(adr,wr_data);				// Set RAM Address + No write
+//        
+//                                    adr     = cfeb_inj_wdata_adr+base_adr;
+//                                    wr_data = pat_ram[itbin][iram][icfeb];
+//                                    wr_data_mem = wr_data;
+//                                    status  = vme_write(adr,wr_data);				// Store RAM Data
+//        
+//                                    adr     = cfeb_inj_adr_adr+base_adr;
+//                                    wen     = iram;
+//                                    wr_data = wen | (ren << 2) | (wadr << 6);
+//                                    status  = vme_write(adr,wr_data);				// Set RAM Address + Assert write
+//        
+//                                    wen     = 0;
+//                                    wr_data = wen | (ren << 2) | (wadr << 6);
+//                                    status  = vme_write(adr,wr_data);				// Set RAM Address + No write
+//        
+//                                    ren     = iram;
+//                                    wr_data = wen | (ren << 2) | (wadr << 6);
+//                                    status  = vme_write(adr,wr_data);				// Set RAM Address + Read enable
+//        
+//                                    adr     = cfeb_inj_rdata_adr+base_adr;			// Read RAM data
+//                                    status  = vme_read(adr,rd_data);
+//        
+//                                    if (rd_data != wr_data_mem) {
+//                                        printf("\tInj Err: cfeb%1i key%3i RAM%2i Tbin%2i wr=%4.4X rd=%4.4X\n",icfeb,ikey,iram,itbin,wr_data_mem,rd_data);
+//                                        pause ("borked");
+//                                    }
+//        
+//                                }	// close itbin
+//                            }	// close iram
+//                        }	// close icfeb
+//        
+//                        // Fire CLCT+ALCT Injectors
+//                        adr     = cfeb_inj_adr+base_adr;
+//                        status  = vme_read(adr,rd_data);
+//                        wr_data = rd_data | 0x8000;		// fire injector
+//                        status  = vme_write(adr,wr_data);
+//                        wr_data = rd_data & 0x7FFF;		// unfire
+//                        status  = vme_write(adr,wr_data);
+//        
+//                        // Wait for the bad bit high-too-long timer to cycle, 3564bx=89usec
+//                        sleep_ms(1);
+//        
+//                        // Display bad cfeb bits register
+//                        adr     = cfeb_badbits_ctrl_adr+base_adr;			// CFEB  Bad Bit Control/Status
+//                        status  = vme_read(adr,rd_data);
+//        
+//                        cfeb_badbits_reset   = (rd_data >>  0) & 0x1F;
+//                        cfeb_badbits_block   = (rd_data >>  5) & 0x1F;
+//                        cfeb_badbits_found   = (rd_data >> 10) & 0x1F;
+//                        cfeb_badbits_blocked = (rd_data >> 15) & 0x1;
+//        
+//                        adr     = cfeb_badbits_timer_adr+base_adr;			// CFEB  Bad Bit Check Interval
+//                        status  = vme_read(adr,rd_data);
+//                        cfeb_badbits_nbx = rd_data;
+//        
+//                        fprintf(unit,"\tcfeb_badbits_reset   = %4.2X\n",cfeb_badbits_reset);
+//                        fprintf(unit,"\tcfeb_badbits_block   = %4.2X\n",cfeb_badbits_block);
+//                        fprintf(unit,"\tcfeb_badbits_found   = %4.2X\n",cfeb_badbits_found);
+//                        fprintf(unit,"\tcfeb_badbits_blocked = %4.1X\n",cfeb_badbits_blocked);
+//                        fprintf(unit,"\tcfeb_badbits_nbx     = %4.4X=%4.4d\n",cfeb_badbits_nbx,cfeb_badbits_nbx);
+//        
+//                        // Read bad cfeb bits map from VME registers
+//                        for (icfeb  = 0; icfeb  <=4; ++icfeb ) {				// loop over cfebs
+//                            for (ilayer = 0; ilayer <=5; ++ilayer) {				// Loop over layers
+//        
+//                                adr_offset = 3*(icfeb*2) + 2*(ilayer/2); 				// Read 2 layers per VME address, 3 adrs per cfeb
+//        
+//                                if ((ilayer%2)==0) {									// Read VME for even layers
+//                                    adr     = cfeb0_badbits_ly01_adr+adr_offset+base_adr;
+//                                    status  = vme_read(adr,rd_data);
+//                                    cfeb_badbits[icfeb][ilayer  ] = (rd_data >> 0) & 0xFF;
+//                                    cfeb_badbits[icfeb][ilayer+1] = (rd_data >> 8) & 0xFF;
+//                                    //	fprintf(unit,"icfeb=%1i ilayer=%1i cfeb_badbits=%4.4X\n",icfeb,ilayer,rd_data);
+//                                }	// close if ilayer
+//        
+//                            }}	// close for icfeb,layer
+//        
+//                        // Compare bad cfeb bits map to whats expected
+//                        for (icfeb  = 0; icfeb  <= 4; ++icfeb ) {				// loop over cfebs
+//                            for (ilayer = 0; ilayer <= 5; ++ilayer) {				// Loop over layers
+//                                for (ids    = 0; ids    <= 7; ++ids   ) {				// Loop over local distrips
+//                                    iword  = cfeb_badbits[icfeb][ilayer];
+//                                    ibit   = (iword >> ids) & 0x1;
+//        
+//                                    if ((icfeb==icfeblp) && (ilayer==ilayerlp) && (ids==idslp)) {	// This is the 1 bit expected to be hit
+//                                        if (ipass==1) iword_expect=(1<<ids);			// 1st pass hits 1 bit
+//                                        if (ipass==2) iword_expect=iword | (1<<ids);	// 2nd pass accumulates bits
+//                                        if (ipass==3) iword_expect=0xFF;				// 3rd pass accumulated all bits
+//                                        if ((ibit != 1) || (iword != iword_expect)) fprintf(unit,"Bad bits error at icfeb=%1i ilayer=%1i ids=%1i iword=%4.4X expected %4.4X, ibit=%1i expected 1\n",icfeb,ilayer,ids,iword,iword_expect,ibit);
+//                                    }
+//                                    if (((icfeb!=icfeblp) || (ilayer!=ilayerlp)) && (ipass==1))	{					// This is NOT the 1 bit expected to be hit
+//                                        iword_expect=0;
+//                                        if (iword !=iword_expect) fprintf(unit,"Bad bits error at icfeb=%1i ilayer=%1i ids=%1i iword=%4.4X expected %4.4X\n",icfeb,ilayer,ids,iword,iword_expect);
+//                                    }
+//        
+//                                }}}	// close loops
+//        
+//                        // Display cfeb and ids column markers
+//                        fprintf(unit,"\n\tCFEB----");
+//                        for (icfeb=0;  icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|");	// display cfeb columms
+//                            for (ids  =0;  ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",icfeb);}
+//                        fprintf(unit,"|\n");
+//        
+//                        fprintf(unit,"\tDiStrip-");
+//                        for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display ids columns
+//                            for (ids  =0; ids   < mxds;   ++ids  )   fprintf(unit,"%1.1i",ids%10);}
+//                        fprintf(unit,"|\n");
+//        
+//                        fprintf(unit,"\t        ");
+//                        for (icfeb=0; icfeb < mxcfeb; ++icfeb) { fprintf(unit,"%|",x);	// display spacer columns
+//                            for (ids  =0; ids   < mxds;   ++ids  )   fprintf(unit,"-");}
+//                        fprintf(unit,"|\n");
+//        
+//                        // Display bad cfeb bits
+//                        for (ilayer=0; ilayer<=mxly-1; ++ilayer) {
+//                            fprintf(unit,"\tLayer %1i ",ilayer);
+//        
+//                            for (icfeb=0;  icfeb < mxcfeb; ++icfeb ) {
+//                                for (ids  =0;  ids   < mxds;   ++ids   ) {
+//        
+//                                    if (ids==0) {fprintf(unit,"|");}
+//                                    ibadbit=(cfeb_badbits[icfeb][ilayer] >> ids) & 0x1;	// extract 1 distrip bit on this cfeb,layer
+//                                    fprintf(unit,"%1.1x",ibadbit);
+//                                }}	// close ids,icfeb
+//        
+//                            fprintf(unit,"|\n");
+//                        }	// close ilayer
+//        
+//                        // Close big key-stepping loops
+//                    }	// close ids
+//                }	// close ilayer
+//            }	// close icfeb
+//        }	// close ipass
+//        // Done
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        // ALCT effect of txd,rxd,tof,posnegs on bx0 arrival at TMB
+//        //------------------------------------------------------------------------------
+//        L231900:
+//        //	unit  = stdout;
+//        unit  = log_file;
+//        debug = false;
+//        
+//        printf("\t19: ALCT effect of txd,rxd,tof,posnegs on bx0 arrival at TMB\n");
+//        
+//        // Turn off CCB inputs to zero alct_adb_sync and ext_trig
+//        adr     = ccb_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFBF;					// Clear previous l1a
+//        wr_data = wr_data | 0x1;					// Turn off CCB backplane
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn off CFEB cable inputs
+//        adr     = cfeb_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFE0;					// mask_all=5'b00000
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);			// Get current state
+//        wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Select TMB bx0 instead of default TTC bx0
+//        adr     = tmb_trig_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & !(1 << 13);				// turn off [13] mpc_sel_ttc_bx0
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Step through the entire phase space
+//        //	for (alct_tof_delay  =0; alct_tof_delay  <=12; ++alct_tof_delay ) {
+//        //	for (alct_txd_delay  =0; alct_txd_delay  <=25; ++alct_txd_delay ) {
+//        //	for (alct_rxd_delay  =0; alct_rxd_delay  <=25; ++alct_rxd_delay ) {
+//        //	for (alct_txd_posneg =0; alct_txd_posneg <= 1; ++alct_txd_posneg) {
+//        //	for (alct_rxd_posneg =0; alct_rxd_posneg <= 1; ++alct_rxd_posneg) {
+//        
+//        // Scan alct_rxd_delay and posneg
+//        for (alct_rxd_posneg =0; alct_rxd_posneg <= 1; ++alct_rxd_posneg) {
+//            for (alct_rxd_delay  =0; alct_rxd_delay  <=25; ++alct_rxd_delay ) {
+//        
+//                // Set tof and alct_txd to compensate, at tof=0 alct_txd_delay=15
+//                if      (alct_rxd_delay == 0) {alct_tof_delay = 11; alct_txd_posneg=0; alct_txd_delay=12;}	// extrapolated
+//                else if (alct_rxd_delay == 1) {alct_tof_delay = 12; alct_txd_posneg=0; alct_txd_delay=13;}
+//                else if (alct_rxd_delay == 2) {alct_tof_delay =  0; alct_txd_posneg=0; alct_txd_delay=14;}	// extrapolated
+//                else if (alct_rxd_delay == 3) {alct_tof_delay =  0; alct_txd_posneg=0; alct_txd_delay=15;}
+//                else if (alct_rxd_delay == 4) {alct_tof_delay =  1; alct_txd_posneg=0; alct_txd_delay=16;}	// extrapolated
+//                else if (alct_rxd_delay == 5) {alct_tof_delay =  1; alct_txd_posneg=0; alct_txd_delay=18;}
+//                else if (alct_rxd_delay == 6) {alct_tof_delay =  2; alct_txd_posneg=0; alct_txd_delay=19;}
+//                else if (alct_rxd_delay == 7) {alct_tof_delay =  2; alct_txd_posneg=0; alct_txd_delay=20;}	// extrapolated
+//                else if (alct_rxd_delay == 8) {alct_tof_delay =  3; alct_txd_posneg=0; alct_txd_delay=21;}	// extrapolated
+//                else if (alct_rxd_delay == 9) {alct_tof_delay =  3; alct_txd_posneg=0; alct_txd_delay=22;}
+//                else if (alct_rxd_delay ==10) {alct_tof_delay =  3; alct_txd_posneg=0; alct_txd_delay=22;}	// extrapolated
+//                else if (alct_rxd_delay ==11) {alct_tof_delay =  4; alct_txd_posneg=1; alct_txd_delay=23;}	// extrapolated
+//                else if (alct_rxd_delay ==12) {alct_tof_delay =  4; alct_txd_posneg=1; alct_txd_delay=24;}
+//                else if (alct_rxd_delay ==13) {alct_tof_delay =  5; alct_txd_posneg=1; alct_txd_delay= 0;}
+//                else if (alct_rxd_delay ==14) {alct_tof_delay =  5; alct_txd_posneg=1; alct_txd_delay= 1;}	// extrapolated
+//                else if (alct_rxd_delay ==15) {alct_tof_delay =  6; alct_txd_posneg=1; alct_txd_delay= 2;}
+//                else if (alct_rxd_delay ==16) {alct_tof_delay =  6; alct_txd_posneg=1; alct_txd_delay= 3;}	// extrapolated
+//                else if (alct_rxd_delay ==17) {alct_tof_delay =  7; alct_txd_posneg=1; alct_txd_delay= 4;}	// extrapolated
+//                else if (alct_rxd_delay ==18) {alct_tof_delay =  7; alct_txd_posneg=1; alct_txd_delay= 4;}
+//                else if (alct_rxd_delay ==19) {alct_tof_delay =  8; alct_txd_posneg=1; alct_txd_delay= 6;}
+//                else if (alct_rxd_delay ==20) {alct_tof_delay =  8; alct_txd_posneg=1; alct_txd_delay= 6;}	// extrapolated
+//                else if (alct_rxd_delay ==21) {alct_tof_delay =  9; alct_txd_posneg=1; alct_txd_delay= 7;}	// extrapolated
+//                else if (alct_rxd_delay ==22) {alct_tof_delay =  9; alct_txd_posneg=1; alct_txd_delay= 8;}
+//                else if (alct_rxd_delay ==23) {alct_tof_delay = 10; alct_txd_posneg=0; alct_txd_delay=10;}
+//                else if (alct_rxd_delay ==24) {alct_tof_delay = 11; alct_txd_posneg=0; alct_txd_delay=11;}	// extrapolated
+//                else if (alct_rxd_delay ==25) {alct_tof_delay = 11; alct_txd_posneg=0; alct_txd_delay=12;}
+//                else	stop("moron");
+//        
+//                fprintf(unit,  "ToF=%2i: Setting alct_rxd_posneg=%1i alct_txd_posneg=%1i alct_rxd_delay=%2i alct_txd_delay=%2i\n",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,alct_rxd_delay,alct_txd_delay);
+//                if (unit!=stdout)
+//                    fprintf(stdout,"ToF=%2i: Setting alct_rxd_posneg=%1i alct_txd_posneg=%1i alct_rxd_delay=%2i alct_txd_delay=%2i\r",alct_tof_delay,alct_rxd_posneg,alct_txd_posneg,alct_rxd_delay,alct_txd_delay);
+//        
+//                // Adjust phasers, posnegs, tof
+//                ddd_wr(base_adr, ddd_chip=0, ddd_channel=0, alct_tof_delay);	// alct_tof_delay is chip0 ch0
+//        
+//                posneg_wr(base_adr,"alct_rxd",alct_rxd_posneg);
+//                posneg_wr(base_adr,"alct_txd",alct_txd_posneg);
+//        
+//                phaser_wr(base_adr,"alct_rxd",alct_rxd_delay,dps_delta);
+//                phaser_wr(base_adr,"alct_txd",alct_txd_delay,dps_delta);
+//        
+//                // Scan bx0 offset delays looking for alct*tmb bx0 match
+//                nmatches = 0;
+//                bxn_offset_at_match = -99;
+//        
+//                for (i=-32; i<=31; ++i) {		// scan bx0+-32
+//                    bxn_offset_signed= i;
+//                    if (i<0) bxn_offset_pretrig = (3564+i) & 0xFFF;
+//                    else     bxn_offset_pretrig = (i     ) & 0xFFF;
+//        
+//                    adr     = seq_offset0_adr+base_adr;
+//                    status  = vme_read(adr,rd_data);
+//                    wr_data = rd_data & 0x000F;						// clear old offset
+//                    wr_data = wr_data | (bxn_offset_pretrig << 4);	// set   new offset
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Resync ALCT and TMB bxns
+//                    adr     = base_adr+ccb_cmd_adr;
+//        
+//                    ttc_cmd = 3;		// ttc_resync
+//                    wr_data = 0x0003 | (ttc_cmd << 8);
+//                    status  = vme_write(adr,wr_data);
+//                    wr_data = 0x0001;
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    ttc_cmd=1;			// bx0
+//                    wr_data = 0x0003 | (ttc_cmd << 8);
+//                    status  = vme_write(adr,wr_data);
+//                    wr_data = 0x0001;
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Wait at least an LHC orbit for bxn to wrap around to 0 again
+//                    sleep_ms(1);
+//        
+//                    // Check for alct_bx0==clct_bx0
+//                    adr     = bx0_delay_adr+base_adr;
+//                    status  = vme_read(adr,rd_data);
+//                    bx0_match = (rd_data >> 10) & 0x1;
+//        
+//                    if (bx0_match==1)
+//                    {
+//                        nmatches++;
+//                        bxn_offset_at_match=i;
+//                        fprintf(unit,  "ToF=%2i bx0_match=%1i at bxn_offset=%4i signed=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig,bxn_offset_signed);
+//                        if (unit!=stdout) {
+//                            if (nmatches==1)
+//                                fprintf(stdout,"\n");
+//                            fprintf(stdout,"ToF=%2i bx0_match=%1i at bxn_offset=%4i signed=%4i\n",alct_tof_delay,bx0_match,bxn_offset_pretrig,bxn_offset_signed);
+//                        }}
+//        
+//                    // close bxn scan
+//                }	// close bxn_offset
+//        
+//                if (nmatches==1) bx0_match_state="OK";
+//                else             bx0_match_state="BAD";
+//        
+//                fprintf(scn_file,"ToF=%2i alct_rxd_delay=%2i alct_rxd_posneg=%1i bx0_offset_at_match=%3i nmatches=%2i %3i %3i state=%s\n",alct_tof_delay,alct_rxd_delay,alct_rxd_posneg,bxn_offset_at_match,nmatches,alct_rxd_delay*10,bxn_offset_at_match+287+16,bx0_match_state.c_str());
+//                fprintf(unit,    "ToF=%2i alct_rxd_delay=%2i alct_rxd_posneg=%1i bx0_offset_at_match=%3i nmatches=%2i %3i %3i state=%s\n",alct_tof_delay,alct_rxd_delay,alct_rxd_posneg,bxn_offset_at_match,nmatches,alct_rxd_delay*10,bxn_offset_at_match+287+16,bx0_match_state.c_str());
+//                if (unit!=stdout)
+//                    fprintf(stdout,  "ToF=%2i bx0_offset_at_match=%3i nmatches=%2i state=%s\n",alct_tof_delay,bxn_offset_at_match,nmatches,bx0_match_state.c_str());
+//        
+//                // close phase space scan
+//                //	}	// close alct_tof_delay
+//                //	}	// close alct_txd_delay
+//                //	}	// close alct_txd_posneg
+//                    }	// close alct_rxd_posneg
+//        }	// close alct_rxd_delay
+//        
+//        // Done
+//        if (unit!=stdout) fprintf(stdout,"\n");
+//        goto L2300;
+//        
+//        //------------------------------------------------------------------------------
+//        // CFEB Blocked CFEB distrips walking hcm test
+//        //------------------------------------------------------------------------------
+//        L232000:
+//        //	unit  = stdout;
+//        unit  = log_file;
+//        debug = false;
+//        
+//        printf("\t20: CFEB Blocked CFEB distrips walking hcm test\n");
+//        
+//        // Turn off CCB backplane inputs, turn on L1A emulator
+//        adr     = ccb_cfg_adr+base_adr;
+//        wr_data = 0x003D;
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Enable sequencer trigger, turn off dmb trigger, set internal l1a delay
+//        l1a_delay = 119;
+//        adr     = ccb_trig_adr+base_adr;
+//        wr_data = 0x0004;
+//        wr_data = wr_data | (l1a_delay << 8);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn ON CFEB cable inputs, otherwise they fill up the blocked bits table
+//        adr     = cfeb_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFE0;					// mask_all=5'b00000
+//        wr_data = wr_data | 0x1F;
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Turn off ALCT cable inputs, enable synchronized alct+clct triggers
+//        adr     = alct_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0x0000;
+//        wr_data = wr_data | 0x0005;
+//        wr_data = wr_data | (alct_injector_delay << 5);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Take ALCT firmware out of loopback mode
+//        seq_cmd_bit[0]=0;	seq_cmd_bit[2]=0;		// (seq_cmd[0] | seq_cmd[2] == 1) puts ALCT into loopback mode
+//        seq_cmd_bit[1]=0;	seq_cmd_bit[3]=0;
+//        
+//        adr     = alct_cfg_adr+base_adr;
+//        status  = vme_read(adr,rd_data);			// Get current state
+//        wr_data = rd_data & 0xFF0F;					// Clear bits[7:4] alct_seq_cmd[3:0]
+//        wr_data = wr_data | (seq_cmd_bit[0] << 4);	// New seq_cmd
+//        wr_data = wr_data | (seq_cmd_bit[1] << 5);
+//        wr_data = wr_data | (seq_cmd_bit[2] << 6);
+//        wr_data = wr_data | (seq_cmd_bit[3] << 7);
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Enable blocked bits readout
+//        adr    = base_adr+seq_fifo_adr;
+//        status = vme_read(adr,rd_data);
+//        bcb_read_enable = (rd_data >> 15) & 0x1;	// 1 bit
+//        bcb_read_enable = 1;						// set to 1 manually until it becomes the default
+//        wr_data = rd_data | (bcb_read_enable << 15);
+//        status = vme_write(adr,wr_data);
+//        
+//        // Turn off CLCT pattern trigger
+//        adr     = seq_trig_en_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFF00;
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Clear previous ALCT inject
+//        adr     = alct_inj_adr+base_adr;
+//        status  = vme_read(adr,rd_data);
+//        wr_data = rd_data & 0xFFFD;
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Set start_trigger state for FMM
+//        ttc_cmd = 6;			// start_trigger
+//        adr     = base_adr+ccb_cmd_adr;
+//        wr_data = 0x0001;
+//        status  = vme_write(adr,wr_data);
+//        wr_data = 0x0003 | (ttc_cmd << 8);
+//        status  = vme_write(adr,wr_data);
+//        wr_data = 0x0001;
+//        status  = vme_write(adr,wr_data);
+//        
+//        ttc_cmd = 1;			// bx0
+//        wr_data = 0x0003 | (ttc_cmd << 8);
+//        status  = vme_write(adr,wr_data);
+//        wr_data = 0x0001;
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Clear DMB RAM write-address
+//        adr     = dmb_ram_adr+base_adr;
+//        wr_data = 0x2000;	//reset RAM write address
+//        status  = vme_write(adr,wr_data);
+//        wr_data = 0x0000;	// unreset
+//        status  = vme_write(adr,wr_data);
+//        
+//        // Clear HCMs, packed 2 layers per word, 3 words per cfeb, on even numbered addresses
+//        wr_data=0xFFFF;
+//        
+//        for (icfeb  = 0; icfeb  <= 4; ++icfeb        ) {
+//            for (ilayer = 0; ilayer <= 5; ilayer=ilayer+2) {
+//        
+//                hcm_adr = hcm001_adr + 2*(icfeb*3 + ilayer/2);
+//                adr     = hcm_adr+base_adr;
+//                status  = vme_write(adr,wr_data);
+//        
+//            }}
+//        
+//        // Hot channel mask walking 1, hcms packed 2 layers per word, 3 words per cfeb
+//        for (icfeb  = 0; icfeb  <= 4; ++icfeb ) {	// loop over cfebs
+//            for (ilayer = 0; ilayer <= 5; ++ilayer) {	// Loop over layers
+//                for (ids    = 0; ids    <= 7; ++ids   ) {	// Loop over local distrips
+//        
+//                    hcm_adr = hcm001_adr + 2*(icfeb*3 + ilayer/2);
+//        
+//                    if (ilayer%2==0) hcm_data = (1 << (ids+0));	// layers 0,2,4 set bit[ids]=1
+//                    else             hcm_data = (1 << (ids+8));	// layers 1,3,5
+//        
+//                    adr     = hcm_adr+base_adr;
+//                    wr_data = ~hcm_data;						// invert, hcm[ids]=0, rest of mask=1
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    printf("\tcfeb%1i layer%1i ids%1i adr=%6.6X data=%4.4X\r",icfeb,ilayer,ids,adr,wr_data);
+//        
+//                    // Fire VME trigger
+//                    adr     = seq_trig_en_adr+base_adr;
+//                    status  = vme_read(adr,rd_data);
+//                    wr_data = rd_data & 0xFF00;
+//                    wr_data	= wr_data | (1 << 7);	// fire vme trigger
+//                    status  = vme_write(adr,wr_data);
+//                    wr_data = rd_data & 0xFF00;		// unfire vme trigger
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Get DMB RAM word count and busy bit
+//                    adr       = dmb_wdcnt_adr+base_adr;
+//                    status    = vme_read(adr,rd_data);
+//                    dmb_wdcnt = rd_data & 0x0FFF;
+//                    dmb_busy  = (rd_data >> 14) & 0x0001;
+//        
+//                    fprintf(log_file,"Raw Hits Dump: ikey=%3i\n",ikey);
+//                    fprintf(log_file,"word count = %4i\n",dmb_wdcnt);
+//                    fprintf(log_file,"busy       = %4i\n",dmb_busy);
+//        
+//                    if (dmb_busy) {
+//                        fprintf(log_file,"Can not read RAM: dmb reports busy\n");
+//                        fprintf(stdout,  "Can not read RAM: dmb reports busy\n");
+//                        pause("wtf?");
+//                    }
+//        
+//                    if (dmb_wdcnt <= 0) {
+//                        fprintf(log_file,"Can not read RAM: dmb reports word count <=0\n");
+//                        fprintf(stdout,  "Can not read RAM: dmb reports word count <=0\n");
+//                        pause("wtf?");
+//                    }
+//        
+//                    // Write RAM read address to TMB
+//                    for (i=0; i<=dmb_wdcnt-1; ++i) {
+//                        adr     = dmb_ram_adr+base_adr;
+//                        wr_data = i & 0xffff;
+//                        status  = vme_write(adr,wr_data);
+//        
+//                        // Read RAM data from TMB
+//                        adr    = dmb_rdata_adr+base_adr;
+//                        status = vme_read(adr,rd_data);				// read lsbs
+//                        dmb_rdata_lsb = rd_data;
+//        
+//                        adr    = dmb_wdcnt_adr+base_adr;
+//                        status = vme_read(adr,rd_data);				// read msbs
+//                        dmb_rdata_msb = (rd_data >> 12) & 0x3;		// rdata msbs
+//                        dmb_rdata     = dmb_rdata_lsb | (dmb_rdata_msb << 16);
+//        
+//                        vf_data[i]=dmb_rdata;
+//                        fprintf(log_file,"Adr=%5i Data=%6.5X\n",i,dmb_rdata);
+//                    } // close i
+//        
+//                    // Clear RAM address for next event
+//                    adr     = dmb_ram_adr+base_adr;
+//                    wr_data = 0x2000;	// reset RAM write address
+//                    status  = vme_write(adr,wr_data);
+//                    wr_data = 0x0000;	// unreset
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Readout raw hits
+//                    decode_readout(vf_data,dmb_wdcnt,err_check=false);
+//        
+//                    // Check blocked bits match what was set
+//        
+//                    // Put HCM back to normal
+//                    adr     = hcm_adr+base_adr;
+//                    wr_data = 0xFFFF;
+//                    status  = vme_write(adr,wr_data);
+//        
+//                    // Close hcm walking 1 loops
+//                }	// close for icfeb
+//            }	// close for ilayer
+//        }	// close for ids
+//        
+//        // Done
+//        printf("\n");
+//        goto L2300;
+//        }
 //------------------------------------------------------------------------------
 //	Boot register test: Infinite loop, use scope to check
 //------------------------------------------------------------------------------
@@ -20749,10 +20759,10 @@ L2500:
     // Determine which computer we are using, superfluous since we use LCL adr for Ref TMB
     printf("\tRAT Tests Started on host %s\n",scomputer_name.c_str());
 
-    if (scomputer_name.compare("X34")==0) {	// We be on my PC, use slots 5,6
-        islot_ref = 27;							// loopback board left  slot
-        islot_dut = 6;}							// loopback board right slot
-    else {									// We be on your PC, use slots 7,8
+    if (scomputer_name.compare("X34")==0) { // We be on my PC, use slots 5,6
+        islot_ref = 27;                     // loopback board left  slot
+        islot_dut = 6;}                     // loopback board right slot
+    else {                                  // We be on your PC, use slots 7,8
         islot_ref = 27;
         islot_dut = 8;
     }
@@ -20778,7 +20788,7 @@ L2500:
     status  = vme_write(boot_adr_ref,wr_data);	// Assert hard reset
     wr_data = 0x0000;
     status  = vme_write(boot_adr_ref,wr_data);	// De-assert hard reset
-    sleep(800);									// Wait for TMBs to reload, mSecs
+    sleep_ms(800);									// Wait for TMBs to reload, mSecs
 
     // Check for log file environment variable
     lenv = 81;
@@ -21311,7 +21321,7 @@ L2505:
     adr     = boot_adr;
     wr_data = boot_data & 0xDFFF;			// d[13]=0=deassert rat reset
     status  = vme_write(boot_adr,wr_data);	// De-assert hard reset
-    sleep(200);								// Wait for RAT to reload
+    sleep_ms(200);								// Wait for RAT to reload
 
     adr     = vme_gpio_adr+base_adr;
     status  = vme_read(adr,rd_data);								// Check for fpga ready
@@ -21575,7 +21585,7 @@ L2505:
             pause("<cr> to continue");
 
             // Let RAT DLL re-sync
-            sleep(200);
+            sleep_ms(200);
 
             // Check RAT 80MHz demux register
 L2506:
@@ -22568,7 +22578,7 @@ L25171:
            // Hold this delay for scope persistence
            if (ddd_delay==0) msec = 600;			// Hold at 0 delay for a moment
            else              msec = 100;
-           sleep(msec);
+           sleep_ms(msec);
 
            // Check for keyboard input
            if (!_kbhit()) goto L2560;			// Check for keyboard hit
@@ -22735,7 +22745,7 @@ L2600:
            scope160c(base_adr,scp_ctrl_adr,scp_rdata_adr,scp_arm,scp_readout,scp_raw_decode,scp_silent,scp_playback,scp_raw_data);
 
            // Wait a mo
-           sleep(100);
+           sleep_ms(100);
 
            // Read back embedded scope data
            scp_arm        = false;
@@ -22826,7 +22836,7 @@ L2800:
            adr     = boot_adr;
            wr_data = 0x0000;
            status  = vme_write(adr,wr_data);			// Assert hard reset
-           sleep(110);									// Wait at least 101msec for reboot
+           sleep_ms(110);									// Wait at least 101msec for reboot
 
            // FPGA PROMs
            ijtag_src = 1;								// use boot register jtag
@@ -22983,7 +22993,7 @@ L2800:
                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
            } // close for chip_id
 
-           sleep(110);
+           sleep_ms(110);
 
            // Pulse boot register hard reset
            printf("\tFiring hard reset\n");
@@ -22992,13 +23002,13 @@ L2800:
            wr_data = 0x0200;
            status  = vme_write(boot_adr,wr_data);		 // Assert hard reset
 
-           sleep(110);
+           sleep_ms(110);
 
            adr     = boot_adr;
            wr_data = 0x0000;
            status  = vme_write(adr,wr_data);			// Deassert
 
-           sleep(500);									// Wait for TMB to reload
+           sleep_ms(500);									// Wait for TMB to reload
 
            //	Go again
            printf("\tTry again? <cr=no>: ");
@@ -23966,7 +23976,7 @@ L30720:
            if (ifunc>0) printf("\tjtagsm machine finished, ncycles=%4i\n",i);
 
            if (ifunc<=0) {
-               sleep(1);
+               sleep_ms(1);
                goto L30710; // bang mode
            }
 
@@ -24705,7 +24715,7 @@ L31520:
 
            // Bang mode
            if (ifunc<=0) {
-               sleep(1);
+               sleep_ms(1);
                goto L31510;	// bang
            }
            goto L31500;	// menu
@@ -24930,7 +24940,7 @@ L3220:
                status  = vme_write(boot_adr,wr_data);					// Assert hard reset
                wr_data = 0x0000; 
                status  = vme_write(boot_adr,wr_data);					// De-assert hard reset
-               sleep(500);												// Wait for TMBs to reload, mSecs (TMB takes 100ms, V6 375ms)
+               sleep_ms(500);												// Wait for TMBs to reload, mSecs (TMB takes 100ms, V6 375ms)
 
                // Read back U76
                if (firmware_type==firmware_normal) {
@@ -25342,7 +25352,7 @@ L3800:
 
            status = vme_sysreset();						// Assert sysreset*
 
-           sleep(150);										// Wait for VME to reset
+           sleep_ms(150);										// Wait for VME to reset
            if (ifunc <0 ) goto L3800;						// Bang mode
            return;											// Get latest firmware type
        }
@@ -27928,7 +27938,7 @@ sc_opcode_31:
                         vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
                         vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write tdi, read tdo
 
-                        Sleep(1);
+                        sleep_ms(1);
 
                         // Determine ADC channel for this ithr
                         switch (ithr)
@@ -27977,7 +27987,7 @@ sc_opcode_31:
 
                         // Read ADC again to shift out current data
                         vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-                        Sleep(1);
+                        sleep_ms(1);
                         vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write tdi, read tdo
                         vme_jtag_write_ir(adr,ichain,chip_id,opcode0);			// Deassert /CS + wait > 21us for previous conversion to complete 
 
@@ -28335,7 +28345,7 @@ test_pulse_loop:
                 vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write tdi, read tdo
 
                 // Next gain setting
-                //!	Sleep (100);
+                //!	sleep_ms (100);
                 goto test_pulse_loop;
 
                 // Switch back to Slow Control JTAG chain
@@ -28900,7 +28910,7 @@ start_sctest:
 
            opcode  = 0x00;											// Clear threshold DAC reset instruction
            vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-           Sleep(1);
+           sleep_ms(1);
 
            debug   = false;
            nerrors = 0;
@@ -28927,7 +28937,7 @@ start_sctest:
                    i4_to_tdi(i4=dac_word ,&tdi[0], reg_len, 1);			// SPI=1 for DACs that take MSB first
                    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
                    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write tdi, read tdo
-                   Sleep(1);
+                   sleep_ms(1);
 
                    switch (ithr)
                    {
@@ -28968,7 +28978,7 @@ start_sctest:
                    tdi_to_i4(&tdo[0],i4,reg_len,1);						// SPI=1 for DACs | ADCs that take MSB first
 
                    vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-                   Sleep(1);
+                   sleep_ms(1);
                    vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write tdi, read tdo
                    vme_jtag_write_ir(adr,ichain,chip_id,opcode0);			// Deassert /CS + wait > 21us for previous conversion to complete 
                    tdi_to_i4(&tdo[0],i4,reg_len,1);						// SPI=1 for DACs | ADCs that take MSB first
@@ -29266,7 +29276,7 @@ run_lbtest:
 
     wr_data = rd_data & ~0x0100;					        // Turn off ACLT hard reset
     status  = vme_write(boot_adr,wr_data);			        // Restore boot reg
-    sleep(1000);									        // Wait for ALCT to reload
+    sleep_ms(1000);									        // Wait for ALCT to reload
 
     adr     = boot_adr;										// Boot register address
     ichain  = 0x00;											// ALCT Mezzanine control user jtag chain
@@ -30429,7 +30439,7 @@ rx_scan:
                             // Wait for error stats to accumulate
                             ibad=0;
                             for (i=0; i<=msec; i=i+100) {							// 0 msec first time thru for quick reject of  bad spots
-                                sleep(i);
+                                sleep_ms(i);
 
                                 // See if TMB data check flipflops are OK
                                 adr     = alct_sync_ctrl_adr+base_adr;
@@ -31301,7 +31311,7 @@ L410381:
     ichain = 0x0002;							// ALCT User
     adr    = boot_adr;							// Boot register address
     vme_jtag_anystate_to_rti(adr,ichain);		// Take TAP to RTI
-    sleep(1);
+    sleep_ms(1);
 
     // Read Virtex-E FPGA (5-bit opcode) and XC18V04 PROM IDcodes (8-bit opcode)
     chip_id = 0;
@@ -31309,7 +31319,7 @@ L410381:
     reg_len = 32;								// IDcode length
     vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
     vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
-    sleep(1);
+    sleep_ms(1);
 
     if (ifunc>0) goto L410381;
     goto L410300;
@@ -31334,7 +31344,7 @@ void tok(string msg_string, double fdata_read, double fdata_expect, double toler
     double err;
     double errpct;
 
-    err    = (fdata_read-fdata_expect)/__max(fdata_expect,.01);
+    err    = (fdata_read-fdata_expect)/max(fdata_expect,.01);
     errpct = err*100.;
 
     status=0;
@@ -31515,7 +31525,7 @@ void bit_to_array(const int &idata, int iarray[], const int &n) {
 //--------------------------------------------------------------------------------
 // Wait for specified number of milliseconds, probably MS Visual Studio specific
 //--------------------------------------------------------------------------------
-void sleep(clock_t msec)
+void sleep_ms(clock_t msec)
 {
     clock_t goal;
     goal = msec + clock();

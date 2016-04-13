@@ -33,8 +33,8 @@ using namespace std;
 //	Prototypes
 //------------------------------------------------------------------------------
 void		pause		(string s);
-inline	int	or			(int array[32]);
-inline	int	*and		(int array1[32], int array2[32]);
+inline	int	arr_or			(int array[32]);
+inline	int	*arr_and		(int array1[32], int array2[32]);
 
 void pattern_unit 
 (
@@ -504,28 +504,28 @@ void pattern_finder
 
     int cfeb_layer_trigger = layer_trig && layer_trig_en;
 
-    cfeb_hit[0] = (or(hs_key_hitpid0) || cfeb_layer_trigger) && cfeb_en[0];
-    cfeb_hit[1] = (or(hs_key_hitpid1) || cfeb_layer_trigger) && cfeb_en[1];
-    cfeb_hit[2] = (or(hs_key_hitpid2) || cfeb_layer_trigger) && cfeb_en[2];
-    cfeb_hit[3] = (or(hs_key_hitpid3) || cfeb_layer_trigger) && cfeb_en[3];
-    cfeb_hit[4] = (or(hs_key_hitpid4) || cfeb_layer_trigger) && cfeb_en[4];
+    cfeb_hit[0] = (arr_or(hs_key_hitpid0) || cfeb_layer_trigger) && cfeb_en[0];
+    cfeb_hit[1] = (arr_or(hs_key_hitpid1) || cfeb_layer_trigger) && cfeb_en[1];
+    cfeb_hit[2] = (arr_or(hs_key_hitpid2) || cfeb_layer_trigger) && cfeb_en[2];
+    cfeb_hit[3] = (arr_or(hs_key_hitpid3) || cfeb_layer_trigger) && cfeb_en[3];
+    cfeb_hit[4] = (arr_or(hs_key_hitpid4) || cfeb_layer_trigger) && cfeb_en[4];
 
-    cfebnm1_hit[1]	= or(and(hs_key_hitpid1, adjcfeb_mask_nm1));
-    cfebnm1_hit[2]	= or(and(hs_key_hitpid2, adjcfeb_mask_nm1));
-    cfebnm1_hit[3]	= or(and(hs_key_hitpid3, adjcfeb_mask_nm1));
-    cfebnm1_hit[4]	= or(and(hs_key_hitpid4, adjcfeb_mask_nm1)) && !csc_me1ab;	// Turn off adjacency for me1ab
+    cfebnm1_hit[1]	= arr_or(arr_and(hs_key_hitpid1, adjcfeb_mask_nm1));
+    cfebnm1_hit[2]	= arr_or(arr_and(hs_key_hitpid2, adjcfeb_mask_nm1));
+    cfebnm1_hit[3]	= arr_or(arr_and(hs_key_hitpid3, adjcfeb_mask_nm1));
+    cfebnm1_hit[4]	= arr_or(arr_and(hs_key_hitpid4, adjcfeb_mask_nm1)) && !csc_me1ab;	// Turn off adjacency for me1ab
 
-    cfebnp1_hit[0]	= or(and(hs_key_hitpid0, adjcfeb_mask_np1));
-    cfebnp1_hit[1]	= or(and(hs_key_hitpid1, adjcfeb_mask_np1));
-    cfebnp1_hit[2]	= or(and(hs_key_hitpid2, adjcfeb_mask_np1));
-    cfebnp1_hit[3]	= or(and(hs_key_hitpid3, adjcfeb_mask_np1)) && !csc_me1ab;	// Turn off adjacency for me1ab
+    cfebnp1_hit[0]	= arr_or(arr_and(hs_key_hitpid0, adjcfeb_mask_np1));
+    cfebnp1_hit[1]	= arr_or(arr_and(hs_key_hitpid1, adjcfeb_mask_np1));
+    cfebnp1_hit[2]	= arr_or(arr_and(hs_key_hitpid2, adjcfeb_mask_np1));
+    cfebnp1_hit[3]	= arr_or(arr_and(hs_key_hitpid3, adjcfeb_mask_np1)) && !csc_me1ab;	// Turn off adjacency for me1ab
 
     // Output active FEB signal, and adjacent FEBs if hit is near board boundary
-    cfeb_active[0]	=	(cfeb_hit[0] ||                   cfebnm1_hit[1] || or(hs_key_dmb0)) && cfeb_en[0];
-    cfeb_active[1]	=	(cfeb_hit[1] || cfebnp1_hit[0] || cfebnm1_hit[2] || or(hs_key_dmb1)) && cfeb_en[1];
-    cfeb_active[2]	=	(cfeb_hit[2] || cfebnp1_hit[1] || cfebnm1_hit[3] || or(hs_key_dmb2)) && cfeb_en[2];
-    cfeb_active[3]	=	(cfeb_hit[3] || cfebnp1_hit[2] || cfebnm1_hit[4] || or(hs_key_dmb3)) && cfeb_en[3];
-    cfeb_active[4]	=	(cfeb_hit[4] || cfebnp1_hit[3]                   || or(hs_key_dmb4)) && cfeb_en[4];
+    cfeb_active[0]	=	(cfeb_hit[0] ||                   cfebnm1_hit[1] || arr_or(hs_key_dmb0)) && cfeb_en[0];
+    cfeb_active[1]	=	(cfeb_hit[1] || cfebnp1_hit[0] || cfebnm1_hit[2] || arr_or(hs_key_dmb1)) && cfeb_en[1];
+    cfeb_active[2]	=	(cfeb_hit[2] || cfebnp1_hit[1] || cfebnm1_hit[3] || arr_or(hs_key_dmb2)) && cfeb_en[2];
+    cfeb_active[3]	=	(cfeb_hit[3] || cfebnp1_hit[2] || cfebnm1_hit[4] || arr_or(hs_key_dmb3)) && cfeb_en[3];
+    cfeb_active[4]	=	(cfeb_hit[4] || cfebnp1_hit[3]                   || arr_or(hs_key_dmb4)) && cfeb_en[4];
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 5B: 1/2-Strip Priority Encoder
@@ -659,7 +659,7 @@ void pattern_finder
 //------------------------------------------------------------------------------------------
 // Logical OR returns the OR of all the array elements as a single integer
 //------------------------------------------------------------------------------------------
-int or(int array[32])
+int arr_or(int array[32])
 {
     int ior = 0;
     int	i;
@@ -671,10 +671,11 @@ int or(int array[32])
     return ior;
 
 }
+
 //------------------------------------------------------------------------------------------
 // Array AND returns an array of the AND of two arrays
 //------------------------------------------------------------------------------------------
-int *and(int array1[32], int array2[32])
+int *arr_and(int array1[32], int array2[32])
 {
     int *iand = new int[32];
     int	 i;

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "stop.h"
+#include <cstdlib>
 using namespace std;
 
 void stop (string s)

@@ -22,7 +22,11 @@ void			bit_to_array	(const int &idata, int iarray[], const int &n);
 int xsvfExecute();
 
 //	Common/TMB_VME_addresses
+#ifdef __linux__
+const unsigned long	tmb_global_slot			= 14;
+#else
 const unsigned long	tmb_global_slot			= 26;
+#endif
 const unsigned long	tmb_brcst_slot			= 27;
 const unsigned long	tmb_boot_adr			= 0x070000;
 //------------------------------------------------------------------------------

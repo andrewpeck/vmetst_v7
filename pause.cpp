@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include <stdio.h>
 #include <iostream>
+#include <cstdlib>
 #include "pause.h"
 using namespace std;
 

@@ -1,124 +1,127 @@
 #ifndef COMMON_H
 #define COMMON_H
-//------------------------------------------------------------------------------
+
+#include "wxp_compat.h"
+
 #include <stdio.h>
 #include <iostream>
 #include <time.h>
 using namespace std; 
 
-const int		mxframe	= 8192;		// Max raw hits frame number, scope adds 512*160/16=5120 frames
-const int		mxtbins	= 32;		// Highest time bin, 0 implies 32
-const int		mxly	= 6;		// # CSC Layers
-const int		mxds	= 8;		// # DiStrips per CFEB
-const int		mxdsabs	= 40;		// # DiStrips per CSC
-const int		mxcfeb	= 5;		// # CFEBs
-const int		mxbitstream=1000;	// Max # bits in a jtag cycle
+const int mxframe     = 8192; // Max raw hits frame number, scope adds 512 *160/16=5120 frames
+const int mxtbins     = 32;   // Highest time bin, 0 implies 32
+const int mxly        = 6;    // # CSC Layers
+const int mxds        = 8;    // # DiStrips per CFEB
+const int mxdsabs     = 40;   // # DiStrips per CSC
+const int mxcfeb      = 5;    // # CFEBs
+const int mxbitstream = 1000; // Max # bits in a jtag cycle
 
 //------------------------------------------------------------------------------
 
-extern FILE			    *unit;
+extern FILE        *unit;
 
-extern FILE			    *log_file;
-extern std::string			log_file_name;
+extern FILE        *log_file;
+extern std::string  log_file_name;
 
-extern FILE*			img_file;
+extern FILE        *img_file;
 
-extern FILE*			sum_file;
-extern std::string			sum_file_name;
+extern FILE        *sum_file;
+extern std::string  sum_file_name;
 
-extern FILE*			scn_file;
-extern std::string			scn_file_name;
+extern FILE        *scn_file;
+extern std::string  scn_file_name;
 
-extern FILE*			vme_file;
-extern std::string			vme_file_name;
-extern std::string			vme_file_name_default;
-extern char			    cid_rev[4+1];
-extern std::string			sid_rev;
+extern FILE        *vme_file;
+extern std::string  vme_file_name;
+extern std::string  vme_file_name_default;
+extern char         cid_rev[4+1];
+extern std::string  sid_rev;
 
-extern FILE*			dump_file;
-extern std::string			dump_file_name;
-extern std::string			dump_file_name_default;
+extern FILE        *dump_file;
+extern std::string  dump_file_name;
+extern std::string  dump_file_name_default;
 
-extern FILE*			prom_file;
-extern std::string			prom_file_name;
-extern std::string			prom_file_name_default;
+extern FILE        *prom_file;
+extern std::string  prom_file_name;
+extern std::string  prom_file_name_default;
 
-extern FILE*			test_file;
-extern std::string			test_file_name;
-extern std::string			logfolder;
-extern std::string			jtag_file_name;
+extern FILE        *test_file;
+extern std::string  test_file_name;
+extern std::string  logfolder;
+extern std::string  jtag_file_name;
 
-extern FILE*			raw_file;
-extern std::string			raw_file_name;
-extern std::string			raw_file_name_default;
+extern FILE        *raw_file;
+extern std::string  raw_file_name;
+extern std::string  raw_file_name_default;
 
-extern FILE*			ascii_file;
-extern std::string			ascii_file_name;
-extern std::string			ascii_file_name_default;
+extern FILE        *ascii_file;
+extern std::string  ascii_file_name;
+extern std::string  ascii_file_name_default;
 
-extern FILE*			mcs_file;
-extern std::string			mcs_file_name;
-extern std::string			mcs_file_name_default;
+extern FILE        *mcs_file;
+extern std::string  mcs_file_name;
+extern std::string  mcs_file_name_default;
 
-extern FILE*			compare_file;
-extern std::string			compare_file_name;
-extern std::string			compare_file_name_default;
+extern FILE        *compare_file;
+extern std::string  compare_file_name;
+extern std::string  compare_file_name_default;
 
-extern FILE*			ram_file;
-extern std::string			ram_file_name;
+extern FILE        *ram_file;
+extern std::string  ram_file_name;
 
 //------------------------------------------------------------------------------
 
 // Common/decode_readout_common/
-extern int				scp_tbins;
-extern int				scp_playback;
-extern int				fifo_tbins_mini;
-extern int				first_event;
-extern int				itriad[mxtbins][mxdsabs][mxly];
-extern int				clct0_vme;
-extern int				clct1_vme;
-extern int				clctc_vme;
-extern int				mpc0_frame0_vme;
-extern int				mpc0_frame1_vme;
-extern int				mpc1_frame0_vme;
-extern int				mpc1_frame1_vme;
-extern int				nonzero_triads;
-extern int				adjcfeb_dist;
-extern int				mpc_me1a_block;
 
-extern int				expect_zero_alct;
-extern int				expect_zero_clct;
-extern int				expect_one_alct;
-extern int				expect_one_clct;
-extern int				expect_two_alct;
-extern int				expect_two_clct;
-extern int				expect_dupe_alct;
-extern int				expect_dupe_clct;
-extern int				vme_bx0_emu_en;
-extern bool			first_scn;
+extern int  scp_tbins;
+extern int  scp_playback;
+extern int  fifo_tbins_mini;
+extern int  first_event;
+extern int  itriad[mxtbins][mxdsabs][mxly];
+extern int  clct0_vme;
+extern int  clct1_vme;
+extern int  clctc_vme;
+extern int  mpc0_frame0_vme;
+extern int  mpc0_frame1_vme;
+extern int  mpc1_frame0_vme;
+extern int  mpc1_frame1_vme;
+extern int  nonzero_triads;
+extern int  adjcfeb_dist;
+extern int  mpc_me1a_block;
+
+extern int  expect_zero_alct;
+extern int  expect_zero_clct;
+extern int  expect_one_alct;
+extern int  expect_one_clct;
+extern int  expect_two_alct;
+extern int  expect_two_clct;
+extern int  expect_dupe_alct;
+extern int  expect_dupe_clct;
+extern int  vme_bx0_emu_en;
+extern bool first_scn;
+
 //------------------------------------------------------------------------------
 
 
 // common/log file
-void			sleep			(clock_t msec);
-#define			logical(L)	((L)?'T':'F')
+void			sleep_ms		(clock_t msec);
+#define			logical(L)	    ((L)?'T':'F')
 #define			yesno(L)		((L)?'y':'n')
 
 // common/xsvf writer
-extern	FILE			*xsvf_file;
-const int		mx_bitstream=32768;			// Max # bits in a jtag cycle
-extern FILE			*debug_file;
-extern bool			wrlog;
-extern bool			erased;
-extern int				idevice;
-extern long			npush;
-extern unsigned long	npush_total;
-extern int				npush_peak;
-extern int				npop_total;
-extern int				scan_ntmbs;
-extern int				scan_islot[21+1];
-extern unsigned long	scan_boot_adr[21+1];
-extern unsigned short	wr_buf[mx_bitstream];
+extern FILE          *xsvf_file;
+const int             mx_bitstream        = 32768; // Max # bits in a jtag cycle
+extern FILE          *debug_file;
+extern bool           wrlog;
+extern bool           erased;
+extern int            idevice;
+extern long           npush;
+extern unsigned long  npush_total;
+extern int            npush_peak;
+extern int            npop_total;
+extern int            scan_ntmbs;
+extern int            scan_islot[21+1];
+extern unsigned long  scan_boot_adr[21+1];         extern unsigned short wr_buf[mx_bitstream];
 
 //common/vme_jtag_io_ops
 
@@ -281,7 +284,7 @@ extern int				nshorted;
 extern int				iexpect;
 
 // Slow control normal firmware
-extern __int64			i64;
+extern __int64		i64;
 extern long			sc_id_reg[2];
 extern long			sc_rd_standby[2];
 extern long			sc_wr_standby[2];
