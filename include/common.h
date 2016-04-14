@@ -105,6 +105,7 @@ extern bool first_scn;
 
 // common/log file
 void			sleep_ms		(clock_t msec);
+void            get_line        (char * s); 
 #define			logical(L)	    ((L)?'T':'F')
 #define			yesno(L)		((L)?'y':'n')
 

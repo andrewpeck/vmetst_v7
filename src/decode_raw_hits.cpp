@@ -1587,18 +1587,18 @@ check_types:
     // Decode CLCT1 Word
     clct1=r_clct1_tmb_lsb | (r_clct1_tmb_msb >> 15);		//Reassemble to full 16 bits
 
-    clct1_vpf=	(clct1 >>  0) & 0x1;	// Valid pattern flag
-    clct1_nhit=	(clct1 >>  1) & 0x7;	// Hits on pattern
-    clct1_pat=	(clct1 >>  4) & 0xF;	// Pattern shape 0-A
-    clct1_key=	(clct1 >>  8) & 0x1F;	// 1/2-strip ID number
-    clct1_cfeb=	(clct1 >> 13) & 0x7;
+    clct1_vpf  = (clct1 >>  0) & 0x1;  // Valid pattern flag
+    clct1_nhit = (clct1 >>  1) & 0x7;  // Hits on pattern
+    clct1_pat  = (clct1 >>  4) & 0xF;  // Pattern shape 0-A
+    clct1_key  = (clct1 >>  8) & 0x1F; // 1/2-strip ID number
+    clct1_cfeb = (clct1 >> 13) & 0x7;
 
     clct1_fullkey=clct1_key+32*clct1_cfeb;
 
     // Decode CLCT common data
     clctc=r_clctc_tmb;
     clctc_bxn=	(clctc >>   0) & 0x3;
-    clctc_sync=	(clctc >>  -2) & 0x1;	// Sync error
+    clctc_sync=	(clctc >>   2) & 0x1;	// Sync error  // was negative shifted ?? 
 
     // Decode MPC Frames
     mu0fr0=r_mpc0_frame0_lsb | (r_mpc0_frame0_msb >> 15);	//Reassemble to full 16 bits
@@ -1607,28 +1607,28 @@ check_types:
     mu1fr1=r_mpc1_frame1_lsb | (r_mpc1_frame1_msb >> 15);
 
     mpc_alct0_key		=	(mu0fr0 >>   0) & 0x007F;
-    mpc_clct0_pat		=	(mu0fr0 >> - 7) & 0x000F;
-    mpc_lct0_quality	=	(mu0fr0 >> -11) & 0x000F;
-    mpc_lct0_vpf		=	(mu0fr0 >> -15) & 0x0001;
-
-    mpc_clct0_key		=	(mu0fr1 >>   0) & 0x00FF;
-    mpc_clct0_bend		=	(mu0fr1 >> - 8) & 0x0001;
-    mpc_sync_err0		=	(mu0fr1 >> - 9) & 0x0001;
-    mpc_alct0_bxn		=	(mu0fr1 >> -10) & 0x0001;
-    mpc_bx0_clct		=	(mu0fr1 >> -11) & 0x0001;
-    mpc_csc_id0			=	(mu0fr1 >> -12) & 0x000F;
-
-    mpc_alct1_key		=	(mu1fr0 >>   0) & 0x007F;
-    mpc_clct1_pat		=	(mu1fr0 >> - 7) & 0x000F;
-    mpc_lct1_quality	=	(mu1fr0 >> -11) & 0x000F;
-    mpc_lct1_vpf		=	(mu1fr0 >> -15) & 0x0001;
-
-    mpc_clct1_key		=	(mu1fr1 >>   0) & 0x00FF;
-    mpc_clct1_bend		=	(mu1fr1 >> - 8) & 0x0001;
-    mpc_sync_err1		=	(mu1fr1 >> - 9) & 0x0001;
-    mpc_alct1_bxn		=	(mu1fr1 >> -10) & 0x0001;
-    mpc_bx0_alct		=	(mu1fr1 >> -11) & 0x0001;
-    mpc_csc_id1			=	(mu1fr1 >> -12) & 0x000F;
+    mpc_clct0_pat		=	(mu0fr0 >>   7) & 0x000F; // was negative shifted ?? 
+    mpc_lct0_quality	=	(mu0fr0 >>  11) & 0x000F; // was negative shifted ??   
+    mpc_lct0_vpf		=	(mu0fr0 >>  15) & 0x0001; // was negative shifted ??   
+                                                        
+    mpc_clct0_key		=	(mu0fr1 >>   0) & 0x00FF;   
+    mpc_clct0_bend		=	(mu0fr1 >>   8) & 0x0001; // was negative shifted ??   
+    mpc_sync_err0		=	(mu0fr1 >>   9) & 0x0001; // was negative shifted ??   
+    mpc_alct0_bxn		=	(mu0fr1 >>  10) & 0x0001; // was negative shifted ??   
+    mpc_bx0_clct		=	(mu0fr1 >>  11) & 0x0001; // was negative shifted ??   
+    mpc_csc_id0			=	(mu0fr1 >>  12) & 0x000F; // was negative shifted ??   
+                                                        
+    mpc_alct1_key		=	(mu1fr0 >>   0) & 0x007F; 
+    mpc_clct1_pat		=	(mu1fr0 >>   7) & 0x000F; // was negative shifted ??   
+    mpc_lct1_quality	=	(mu1fr0 >>  11) & 0x000F; // was negative shifted ??   
+    mpc_lct1_vpf		=	(mu1fr0 >>  15) & 0x0001; // was negative shifted ??   
+                                                        
+    mpc_clct1_key		=	(mu1fr1 >>   0) & 0x00FF; 
+    mpc_clct1_bend		=	(mu1fr1 >>   8) & 0x0001; // was negative shifted ??   
+    mpc_sync_err1		=	(mu1fr1 >>   9) & 0x0001; // was negative shifted ??   
+    mpc_alct1_bxn		=	(mu1fr1 >>  10) & 0x0001; // was negative shifted ??   
+    mpc_bx0_alct		=	(mu1fr1 >>  11) & 0x0001; // was negative shifted ??   
+    mpc_csc_id1			=	(mu1fr1 >>  12) & 0x000F; // was negative shifted ??   
 
     //------------------------------------------------------------------------------
     // Check if header LCT matches CLCT and ALCT from header

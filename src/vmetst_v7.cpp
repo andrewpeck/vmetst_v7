@@ -2690,7 +2690,7 @@ main_menu:
     printf("\t<cr> Exit\n");
     printf("       > ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) goto exit;
     sscanf(line,"%i",&ifunc);
 
@@ -2748,7 +2748,7 @@ exit:
     if (scn_file!=0) fclose(scn_file);		// Close scn file
 
     printf("\tSic transit gloria mundi");		// Say goodbye
-    gets(line);
+    get_line(line);
 
     return 0;
 }
@@ -2759,7 +2759,7 @@ void L100() {
 L100:
     printf("\tOld slot=%2.2i New slot[0-31]=",islot);
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) goto L100;
     sscanf(line,"%i",&newslot);
     if ((newslot>31) || (newslot<0)) goto L100;
@@ -2809,7 +2809,7 @@ void L200() {
     printf("\tid_rev =%4.4X=%2.2i/%2.2i/%2.2i series %1i\n",id_rev,id_rev_month,id_rev_day,id_rev_year,id_rev_fpga);
 
     printf("\n\t<cr> to continue:");
-    gets(line);
+    get_line(line);
 
     return;
 
@@ -2870,7 +2870,7 @@ L300:
     printf("\t[%2.2i]%2i  R   jtag_vme0   (tdo) vme tdo\n",				i,boot_decode[i]); i++;
 
     printf("\n\t<cr> to continue:");
-    gets(line);
+    get_line(line);
 
     return;
 }
@@ -2892,7 +2892,7 @@ L420:
     if (bang_read) goto L420;
 
     printf("\tadr=%6.6X data=%4.4X r/w/e,adr,wrdata=",adr,rd_data);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     dprintf(stdout,"length=%i\n",n);
 
@@ -3424,7 +3424,7 @@ L600:
 L610:
     ddd_delay=0;
     printf("\n\tEnter Channel,Delay <cr>=exit,ch w=write current, L=loop: ");
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%c,%X",&cch,&ddd_delay);
 
@@ -3677,7 +3677,7 @@ L1000:
     printf("\t<cr> Exit\n");
     printf("       > ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
@@ -4184,7 +4184,7 @@ L10810:
     printf("\t\tDMB passed walking 1%c\n",bell);
     printf("\t\t<cr>=exit, else send walking 1 forever: ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) goto L1000;
 
     printf("Started DMB walking 1 forever, check for shorts\n");
@@ -4255,7 +4255,7 @@ L10910:
     printf("\t\tMPC passed walking 1%c\n",bell);
     printf("\t\t<cr>=exit, else send walking 1 forever: ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) goto L1000;
 
     printf("Started MPC walking 1 forever, check for shorts\n");
@@ -4833,7 +4833,7 @@ L1115:
     }
 
     printf("\n\t<cr> to continue:");
-    gets(line);
+    get_line(line);
     return;
 }
 //------------------------------------------------------------------------------
@@ -4955,7 +4955,7 @@ L1200:
         // Close for chip_id
     }	
     fprintf(stdout,"\n");
-    if (ifunc>0) {printf("\t<cr> to continue:"); gets(line);}
+    if (ifunc>0) {printf("\t<cr> to continue:"); get_line(line);}
 
     // Read User PROM data:
     // Enable 1 prom disable the other, they share the onboard led bus
@@ -5038,7 +5038,7 @@ L1200:
     }	// close for prom_adr
 
     // Bang mode 
-    if (ifunc>0) {printf("\t<cr> to continue:"); gets(line);}
+    if (ifunc>0) {printf("\t<cr> to continue:"); get_line(line);}
     if (ifunc<0) goto L1200;
     return;
 }
@@ -5378,7 +5378,7 @@ L1600:
     if (firmware_type != firmware_normal) {
         pause("\n\tTMB has wrong firmware type for this operation. Expect firmware_type=normal\n");
         printf("\tContinue anyway? <cr>=n ");
-        gets(line);
+        get_line(line);
         if (line[0]==0) return;
     }
 
@@ -5386,7 +5386,7 @@ L1600:
     if (vme_jtag_cable_detect(base_adr)) {
         printf("\n\tJTAG cable is still connected, board status tests will fail.\n");
         printf("\tContinue anyway? <cr>=n ");
-        gets(line);
+        get_line(line);
         if (line[0]==0) return;
     }
 
@@ -5414,7 +5414,7 @@ L1600:
     printf("\t<cr> Exit\n");
     printf("       > ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
     i=abs(ifunc);
@@ -6457,7 +6457,7 @@ L16700:
     }	// close for iclct
 
     printf ("\tClct Triad 1st tbin ly5:ly0     ? cr=000000 ");
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%1i,%1i,%1i,%1i,%1i,%1i",&i,&i,&i,&i,&i,&i);
     if (n!=0) {
@@ -6480,7 +6480,7 @@ L16700:
     inquire("\tL1A  Lookback                   ? cr=%3i", minv= 0, maxv=256, radix=10, l1a_lookback);
 
     printf ("\tRPC Injector rat,tmb,sync,none  ? (r/t/s/n)");
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%c",&i);
     rat_injector_sync   = false;
@@ -6495,7 +6495,7 @@ L16700:
     inquirb("\tRPCs in readout            [y|n]? cr=%3c", rpcs_in_rdout);
 
     printf ("\tRPC list to readout             ? cr= %1i%1i",(rpc_exists>>1)&0x1,rpc_exists&0x1);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i,%i",&i,&j);
     if (n!=0) rpc_exists= (j<<1) | i; 
@@ -7214,7 +7214,7 @@ L16705:
                         if (cprr && !cprr_ignore && (rd_data_mem != wr_data_mem)){
                             printf("\tInjector Verify Err: cfeb%1i key%3i RAM%2i Tbin%2i wr=%5.5X rd=%5.5X\n",icfeblp,ikey,iram,itbin,wr_data_mem,rd_data_mem);
                             printf("\tSkip, Continue <cr> ");
-                            gets(line);
+                            get_line(line);
                             n=strlen(line);
                             sscanf(line,"%c",&i);
                             if (n==1 && (i=='S' || i=='s')) cprr_ignore=true;
@@ -9172,43 +9172,43 @@ L96400:
 
     // Inquire
     printf("\tFifo_mode           ? cr=%3i",fifo_mode);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) fifo_mode=i;
 
     printf("\tTbins               ? cr=%3i",fifo_tbins);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) fifo_tbins=i;
 
     printf("\tTbins before pretrig? cr=%3i",fifo_pretrig);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) fifo_pretrig=i;
 
     printf("\tL1A_lookback        ? cr=%3i",l1a_lookback);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) l1a_lookback=i;
 
     printf("\tHdr_wr_continuous   ? cr=%3i",hdr_wr_continuous);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) hdr_wr_continuous=i;
 
     printf("\tFire CLCT injectors ? cr=%3i",fire_injector);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) fire_injector=true;
 
     printf("\tScope tbins/64      ? cr=%3i",scp_tbins);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) scp_tbins=i; 
@@ -9850,7 +9850,7 @@ L1700:
     if (firmware_type != firmware_normal) {
         printf("\n\tTMB has wrong firmware type for this operation. Expect firmware_type=normal\n");
         printf("\tContinue anyway? <cr>=n ");
-        gets(line);
+        get_line(line);
         if (line[0]==0) return;
     }
 
@@ -9892,7 +9892,7 @@ L1700:
     printf("\t<cr> Exit\n");
     printf("       > ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
     i=abs(ifunc);
@@ -9976,7 +9976,7 @@ L17200:
     m1def=0xDDDDCCCC;
 
     printf("\tNumber frames[03:00] <cr=%3.3i> ",nfdef);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&nframes);
 
@@ -9985,13 +9985,13 @@ L17200:
 
     for (i=0; i<=nframes-1; ++i) {
         printf("Frame %3i Muon0[31:0] hex <cr=%8.8X> ",m0def);
-        gets(line);
+        get_line(line);
         n=strlen(line);
         sscanf(line,"%X",&muon0[i]);
         if (n<=0) muon0[i]=m0def;
 
         printf("Frame %3i Muon1[31:0] hex <cr=%8.8X> ",m1def);
-        gets(line);
+        get_line(line);
         n=strlen(line);
         sscanf(line,"%X",&muon1[i]);
         if (n<=0) muon1[i]=m1def;
@@ -10163,7 +10163,7 @@ L17400:
     nfdef=1;
 
     printf("\tNumber frames[03:00] <cr=%3.3i> ",nfdef);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&nframes);
 
@@ -10262,7 +10262,7 @@ L17500:
     clct_bx0_delay=(rd_data >> 4) & 0x000F;
 
     printf("\talct_bx0_delay=%2i ",alct_bx0_delay);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) alct_bx0_delay=i;
@@ -10287,7 +10287,7 @@ L17600:
     clct_bx0_delay=(rd_data >> 4) & 0x000F;
 
     printf("\tclct_bx0_delay=%2i ",clct_bx0_delay);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%i",&i);
     if (n!=0) clct_bx0_delay=i;
@@ -10456,7 +10456,7 @@ L1801:
             printf("\tTMB will not pass\n");
             printf("\tContinue anyway? <Y/N cr=no> ");
 
-            gets(line);
+            get_line(line);
             n=strlen(line);
             i=line[0];
             if ((n==0) || ((i!='Y') && (i!='y'))) return;
@@ -10470,7 +10470,7 @@ L1801:
         printf("\tTMB will not pass\n");
         printf("\tContinue anyway? <Y/N cr=no> ");
 
-        gets(line);
+        get_line(line);
         n=strlen(line);
         i=line[0];
         if ((n==0) || ((i!='Y') && (i!='y'))) return;
@@ -10529,7 +10529,7 @@ L18012:
     printf("\n");
     printf("\tEnter TMB Board ID Number [5xxx]: ");
 
-    gets(line);
+    get_line(line);
     n = strlen(line);
     sscanf(line,"%i",&i);
 
@@ -10576,7 +10576,7 @@ L18012:
         printf("\tPerhaps you did not set SH62=GEO and SW2/1=1A or board is not in slot %2i\n ",islot_dut);
         printf("\tContinue anyway? [y/n]<cr>=y ");
 
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -10685,7 +10685,7 @@ L18010:
                 tmb_nfailed[itest]=1;
 
                 printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
-                gets(line);
+                get_line(line);
                 n = strlen(line);
                 i = line[0];
 
@@ -10982,7 +10982,7 @@ L18055:
                     fprintf(test_file,"\tFailed JTAG bit=%2i wr=%8.8X rd=%8.8X src=%1i itx=%1i\n",itx, pat_expect, rd_data, ijtag_src, itx);
 
                     printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -11579,7 +11579,7 @@ L180021:
         printf("\n\tVtt out of range. Read= %5.3f Expect=%5.3f\n",v1p0,v1p0_expect);
         printf("\tTrim now, Skip or Exit (T,S,E) <cr=S>? ");
 
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -11620,7 +11620,7 @@ L18082:
         printf("\tVcore=%5.3f Target=%5.3f NoLoad=%5.3f Acore=%5.3f\n",v1p5core,vcore_expect,vcore_noload,a1p5core);
         printf("\tTrim now, Skip or Exit (T,S,E) <cr=S>? ");
 
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -11789,7 +11789,7 @@ L18086:
                         fprintf(test_file,"\t3d3444 verify failed ich=%2i ddd_delay=%3i\n",ich,ddd_delay);
                         printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
 
-                        gets(line);
+                        get_line(line);
                         n = strlen(line);
                         i = line[0];
 
@@ -11862,7 +11862,7 @@ L18086:
 L18090:
     if (skip_loopback_series) {
         printf("\tSkip Backplane Loopback Series? s=skip <cr>=do it: ");
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -11956,7 +11956,7 @@ L18100:
 
                 printf("\tSkip, Loop, Debug, Continue, Exit [s,l,d,c,e] ? ");
 
-                gets(line);
+                get_line(line);
                 n = strlen(line);
                 i = line[0];
 
@@ -12047,7 +12047,7 @@ L18120:
                     fprintf(stdout   ,"\texpect   = %8.8X\n",wr_pat);
 
                     printf("\tSkip, Loop, Debug, Continue, Exit [s,l,d,c,e] ? ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -12198,7 +12198,7 @@ L18130:
                     fprintf(stdout,   "\texpect  =%8.8X\n",wr_pat);
 
                     printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -12371,7 +12371,7 @@ L18140:
                     fprintf(stdout,   "\texpect   =%8.8X\n",wr_pat);
 
                     printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -12822,7 +12822,7 @@ L18145:
     printf("\tALCT Hard Reset Test:\n");
     printf("\tMove shunt SH105 ccb hard reset enable to 1-2:  e=exit <cr>=run");
 
-    gets(line);
+    get_line(line);
     n = strlen(line);
     i = line[0];
 
@@ -12940,7 +12940,7 @@ L18146:
                     fprintf(stdout,   "\texpect   =%8.8X pass=%5i\n",wr_pat,ipass);
 
                     printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -12996,7 +12996,7 @@ L91301:
         printf("\tTMB: CFEB SCSI Cable Loopback Test:\n");
         printf("\tConnect a 25pr cable from RAT ALCTtx to CFEB%1i S=skip <cr>=run ",icfeb+1);
 
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -13125,7 +13125,7 @@ L91361:
                     printf("\tFailed CFEB%1i bit=%2i wr=%6.6X rd=%6.6X\n",icfeb+1,itx,(1<<itx),cfeb_data);
 
                     printf("\tSkip, Loop, Debug, Continue, Retry, Exit[s,l,d,c,r,e] ? ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -13177,7 +13177,7 @@ L91361:
                 printf("\tFailed CFEB%1i clock bit wr=1 rd=%6.6X\n",icfeb+1,rd_data);
 
                 printf("\tSkip, Loop, Debug, Continue, Retry, Exit[s,l,d,c,r,e] ? ");
-                gets(line);
+                get_line(line);
                 n = strlen(line);
                 i = line[0];
 
@@ -13211,7 +13211,7 @@ L91361:
                 printf("\tFailed CFEB%1i clock bit wr=0 rd=%6.6X\n",icfeb+1,rd_data);
 
                 printf("\tSkip, Loop, Debug, Continue, Retry, Exit[s,l,d,c,r,e] ? ");
-                gets(line);
+                get_line(line);
                 n = strlen(line);
                 i = line[0];
 
@@ -13311,7 +13311,7 @@ L18172:
                        fprintf(stdout,   "\t3d3444 verify failed: ich=%1i ddd_delay=%1X\n",ich,ddd_delay);
 
                        printf("\tSkip, Loop, Debug, Continue, Exit[s,l,d,c,e] ? ");
-                       gets(line);
+                       get_line(line);
                        n = strlen(line);
                        i = line[0];
 
@@ -13500,7 +13500,7 @@ L1900:
     }
     printf("       > ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
@@ -13704,7 +13704,7 @@ L19200:
     printf("\tRAT: ALCT SCSI Cable Loopback Test:\n");
     printf("\tConnect a 25pr cable from ALCTtx to ALCTrx on RAT S=skip <cr>=run");
 
-    gets(line);
+    get_line(line);
     n = strlen(line);
     i = line[0];
 
@@ -13824,7 +13824,7 @@ L19251:
                 if (ifunc>=0) {
                     printf("\t\tFailed ALCT bit itx=%2i wr=%8.8X rd=%8.8X%c\n",itx,(1<<itx),alct_data,bell);
                     printf("\tSkip, Loop, Debug, Continue <cr> ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -13857,7 +13857,7 @@ L19300:
         printf("\tRAT: ALCT SCSI Cable Loopback Test:\n");
         printf("\tConnect a 25pr cable from RAT ALCTtx to CFEB%1i S=skip <cr>=run",icfeb);
 
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -13972,7 +13972,7 @@ L19361:
                     printf("\t\tFailed CFEB%1i bit=%2i wr=%6.6X rd=%6.6X\n",icfeb,itx,(1<<itx),cfeb_data);
 
                     printf("\tSkip, Loop, Debug, Continue <cr> ");
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -14017,7 +14017,7 @@ L19361:
                 printf("\t\tFailed CFEB%1i clock bit wr=1 rd=%6.6X\n",rd_data);
 
                 printf("\tSkip, Loop, Debug, Continue <cr> ");
-                gets(line);
+                get_line(line);
                 n = strlen(line);
                 i = line[0];
 
@@ -14047,7 +14047,7 @@ L19361:
                 printf("\t\tFailed CFEB%1i clock bit wr=0 rd=%6.6X\n",rd_data);
 
                 printf("\tSkip, Loop, Debug, Continue <cr> ");
-                gets(line);
+                get_line(line);
                 n = strlen(line);
                 i = line[0];
 
@@ -14109,7 +14109,7 @@ L19400:
         printf("\tRAT: RPC SCSI Cable Loopback Test:\n");
         printf("\tConnect a 25pr cable from RAT ALCTtx to RPC%i S=skip <cr>=run",irpc);
 
-        gets(line);
+        get_line(line);
         n = strlen(line);
         i = line[0];
 
@@ -14246,7 +14246,7 @@ L19461:
                     printf("\t\tFailed RPC%1i bit=%2i wr=%6.6X rd=%6.6X\n",irpc,itx,wr_pat_ck,rpc_word[irpc]);
                     printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -14288,7 +14288,7 @@ L19500:
     printf("\t3:   Normal running mode\n");
     printf("\t<cr> Exit to previous menu\n");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
@@ -14506,7 +14506,7 @@ L19605:
     }
 
     printf("\n\tRAT clock delay scan complete <cr>");
-    gets(line);
+    get_line(line);
 
     goto L1900;
 
@@ -14921,7 +14921,7 @@ L99000:
 L99010:
     printf("\tEnter Channel[0-3],Delay[0-15d] <cr>=exit: ");
 
-    gets(line);
+    get_line(line);
     n = strlen(line);
     sscanf(line,"%x %i",&ich,&ddd_delay);
 
@@ -15200,7 +15200,7 @@ L99200:
 
     // Inquire if want reset
     printf("\n\tClear parity error counters? y|n <cr>=n: ");
-    gets(line);
+    get_line(line);
     n = strlen(line);
     sscanf(line,"%c",&i);
 
@@ -15336,7 +15336,7 @@ L2020:
     fmm_state = (rd_data >> 4) & 0x0007;
 
     printf("\tFMM State %2.2X %s  TTC Command: ",fmm_state,sfmm_state[fmm_state%5].c_str());
-    gets(line);
+    get_line(line);
     sscanf(line,"%i",&ifunc);
 
     if (ifunc==0) return;
@@ -15505,7 +15505,7 @@ L2100:
 
     // Inquire
     printf("\texit=<cr>,else=run again:");
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     goto L2100;
 }
@@ -15535,7 +15535,7 @@ L2200:
 
     // Change MPC accept delay
     printf("\tmpc_delay     = %2i <cr>=keep: ",mpc_delay);
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&mpc_delay);	
 
@@ -15578,7 +15578,7 @@ L2200:
 //            printf("\t<cr> Exit\n");
 //            printf("       > ");
 //        
-//            gets(line);
+//            get_line(line);
 //            if (line[0]==0) return;
 //            sscanf(line,"%i",&ifunc);
 //        
@@ -15963,7 +15963,7 @@ L2200:
 //            printf("\n");
 //        
 //            printf("\n\tWrite new data? bit,len,val <cr=no> ");
-//            gets(line);
+//            get_line(line);
 //            if (line[0]==0) goto L2300;
 //            sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 //        
@@ -16184,7 +16184,7 @@ L2200:
 //        
 //            // Write new data to USER2
 //            printf("\n\tWrite new data? bit,len,val <cr=no> ");
-//            gets(line);
+//            get_line(line);
 //            if (line[0]==0) goto L23299;
 //            sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 //        
@@ -20909,7 +20909,7 @@ L2500:
 
     // Get RAT board ID
     printf("\tEnter RAT Board ID Number [5xxx] or [6xxx]: ");
-    gets(line);
+    get_line(line);
     n = strlen(line);
     sscanf(line,"%i",&i);
 
@@ -21763,7 +21763,7 @@ L2506:
     printf("\tConnect a 25pr cable from ALCTtx to ALCTrx on RAT\n");
     printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-    gets(line);
+    get_line(line);
     n = strlen(line);
     i = line[0];
 
@@ -21899,7 +21899,7 @@ L25251:
 
                     printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-                    gets(line);
+                    get_line(line);
                     n = strlen(line);
                     i = line[0];
 
@@ -22110,7 +22110,7 @@ L2580:
            printf("\tConnect a 25pr cable from RAT ALCTtx to RPC%i\n",irpc);
            printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-           gets(line);
+           get_line(line);
            n = strlen(line);
            i = line[0];
 
@@ -22273,7 +22273,7 @@ L25461:
 
                        printf("\tSkip, Loop, Debug, Continue <cr> ");
 
-                       gets(line);
+                       get_line(line);
                        n = strlen(line);
                        i = line[0];
 
@@ -22733,7 +22733,7 @@ rat_auto_done:
 L2600:
 
            printf("\t<cr> to arm scope, else exit: ");
-           gets(line);
+           get_line(line);
            if (line[0] != 0) return;
 
            // Arm scope trigger
@@ -22774,7 +22774,7 @@ L2600:
            // Offer to trim Vtt
            printf("\tVtt=%5.3f Target=%5.3f\n",v1p0,v1p0_expect);
            printf("\tTrim now or skip(T,S)<cr=S>?");
-           gets(line);
+           get_line(line);
            n = strlen(line);
            sscanf(line,"%i",&i);
            if ((n==0) || (i=='S') || (i=='s')) goto L2750;
@@ -22800,7 +22800,7 @@ L2710:
 L2750:
            printf("\tVcore=%5.3f Target=%5.3f NoLoad=%5.3f Acore=%5.3f\n",v1p5core,vcore_expect,vcore_noload,a1p5core);
            printf("\tTrim now or skip(T,S)<cr=S>?");
-           gets(line);
+           get_line(line);
            n = strlen(line);
            sscanf(line,"%i",&i);
            if ((n==0) || (i=='S') || (i=='s')) goto L2790;
@@ -23013,7 +23013,7 @@ L2800:
 
            //	Go again
            printf("\tTry again? <cr=no>: ");
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            goto L2800;
        }
@@ -23032,7 +23032,7 @@ L2900:
            printf("\t<cr> Exit\n");
            printf("       > ");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%i",&ichain);
 
@@ -23048,7 +23048,7 @@ L2900:
 L2920:
            // Get XSVF file name
            printf("\n\tXSVF File Name: <default=%s> :",xsvf_tmb_user_default.c_str());
-           gets(line);
+           get_line(line);
 
            if (line[0]==0) {
                printf("\tUsing default: %s\n",xsvf_tmb_user_default.c_str());
@@ -23141,7 +23141,7 @@ L3000:
            printf("\t<cr> Exit\n");
            printf("       > ");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%i",&ifunc);
 
@@ -23170,7 +23170,7 @@ L30100:
 
            printf("\tPROM output file name: <cr=%s>",prom_file_name_default.c_str());
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) {prom_file_name = prom_file_name_default;}
            else            {prom_file_name = string(line);}
 
@@ -23202,7 +23202,7 @@ L30200:
 
            printf("\tASCII input  file name: <cr=%s>",ascii_file_name_default.c_str());
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) {ascii_file_name = ascii_file_name_default;}
            else            {ascii_file_name = string(line);}
 
@@ -23217,7 +23217,7 @@ L30201:
            mcs_file_name_default   = "userprom256.mcs";
            printf("\tMCS   output file name: <cr=%s>",mcs_file_name_default.c_str());
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) {mcs_file_name = mcs_file_name_default;}
            else            {mcs_file_name = string(line);}
 
@@ -23395,7 +23395,7 @@ L30500:
 
            printf("\tPROM dump output file: <cr=%s>",dump_file_name_default.c_str());
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) {dump_file_name = dump_file_name_default;}
            else            {dump_file_name = string(line);}
 
@@ -23416,7 +23416,7 @@ L30501:
            {
                printf("\tCompare to input file: <cr=%s>",compare_file_name_default.c_str());
 
-               gets(line);
+              get_line(line);
                if (line[0]==0) {compare_file_name = compare_file_name_default;}
                else            {compare_file_name = string(line);}
 
@@ -23667,7 +23667,7 @@ L30600:
            // Inquire prom output file
            ilen=256;
            printf("\tPROM size 256 or 512 <cr=%3i> ",ilen);
-           gets(line);
+          get_line(line);
            if (line[0]!=0) sscanf(line,"%i",&ilen);
            if ((ilen!=256) && (ilen!=512)) goto L30600;
 
@@ -23677,7 +23677,7 @@ L30600:
 
            printf("\tPROM output file name: <cr=%s>",prom_file_name_default.c_str());
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) {prom_file_name = prom_file_name_default;}
            else            {prom_file_name = string(line);}
 
@@ -24000,7 +24000,7 @@ L3100:
            printf("\t<cr> Exit\n");
            printf("       > ");
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%i",&ifunc);
 
@@ -24020,7 +24020,7 @@ L31100:
            // Inquire prom output file
            ilen=256;
            printf("\tPROM size 256 or 512 <cr=%3i> ",ilen);
-           gets(line);
+          get_line(line);
            if (line[0]!=0) sscanf(line,"%i",&ilen);
            if ((ilen!=256) && (ilen!=512)) goto L31100;
 
@@ -24030,7 +24030,7 @@ L31100:
 
            printf("\tPROM output file name: <cr=%s>",prom_file_name_default.c_str());
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) {prom_file_name = prom_file_name_default;}
            else            {prom_file_name = string(line);}
 
@@ -24073,7 +24073,7 @@ L31100:
 
 L31120:
            printf("\tAdr, data=");
-           gets(line);
+          get_line(line);
            if (line[0]==0) goto L31180;		// <cr> = done
            sscanf(line,"%X,%X",&newadr,&wr_data);
 
@@ -24189,7 +24189,7 @@ L31200:
 
            printf("\tASCII input  file name: <cr=%s>",ascii_file_name_default.c_str());
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) {ascii_file_name = ascii_file_name_default;}
            else            {ascii_file_name = string(line);}
 
@@ -24207,7 +24207,7 @@ L31201:
            // get new MCS output file name
            printf("\tMCS   output file name: <cr=%s>",mcs_file_name_default.c_str());
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) {mcs_file_name = mcs_file_name_default;}
            else            {mcs_file_name = string(line);}
 
@@ -24336,7 +24336,7 @@ L31400:
            dump_file_name_default = string("userprom").append(cprom).append("_readback.txt");
 
            printf("\tPROM Dump output file: <cr=%s>",dump_file_name_default.c_str());
-           gets(line);
+          get_line(line);
            n = line[0];
            if (n<=0) {dump_file_name = dump_file_name_default;}
            else      {dump_file_name = string(line);}
@@ -24650,13 +24650,13 @@ L31500:
 
            // Inquire re-fire
            printf("\n\tFire VME PROM State Machine y/n? <cr=n> ");
-           gets(line);
+          get_line(line);
            n=strlen(line);
            i=line[0];
            if ((n==0) || ((i!='Y') && (i!='y'))) goto L3100;
 
            printf("\tPROM throttle[0-15]? <cr=%2i>",vsm_throttle);
-           gets(line);
+          get_line(line);
            n=strlen(line);
            sscanf(line,"%i",&i);
 
@@ -24987,7 +24987,7 @@ L3300:
            vme_file_name_default = string("tmb_vme_dump_revcode_").append(cid_rev).append(".txt");
 
            printf("\tDump output file:    <cr=%s>",vme_file_name_default.c_str());
-           gets(line);
+          get_line(line);
            n = line[0];
            if (n<=0) {vme_file_name = vme_file_name_default;}
            else      {vme_file_name = string(line);}
@@ -25021,7 +25021,7 @@ L3300:
            // Inquire compare file
 L3310:
            printf("\tCompare input file:  <cr=%s>",vme_file_name_default.c_str());
-           gets(line);
+          get_line(line);
            n = line[0];
            if (n<=0) {vme_file_name = vme_file_name_default;}
            else      {vme_file_name = string(line);}
@@ -25081,7 +25081,7 @@ L3400:
            vme_file_name_default = string("tmb_vme_dump_revcode_").append(cid_rev).append(".txt");
 
            printf("\tDump output file: <cr=%s>",vme_file_name_default.c_str());
-           gets(line);
+          get_line(line);
            n = line[0];
            if (n<=0) {vme_file_name = vme_file_name_default;}
            else      {vme_file_name = string(line);}
@@ -25168,7 +25168,7 @@ L3420:
            raw_file_name_default = "dump47344.txt";
 
            printf("\tEvent dump input file: <cr=%s>",raw_file_name_default.c_str());
-           gets(line);
+          get_line(line);
            n = line[0];
            if (n<=0) {raw_file_name = raw_file_name_default;}
            else      {raw_file_name = string(line);}
@@ -25669,7 +25669,7 @@ main_menu:
            printf("\t<cr> Exit\n");
            printf("       > ");
 
-           gets(line);
+          get_line(line);
            if (line[0]==0) goto exit;
            sscanf(line,"%i",&ifunc);
 
@@ -25716,7 +25716,7 @@ exit:
            if (log_file  != 0) fclose(log_file );	// Close log  file
            if (jtag_file != 0) fclose(jtag_file);	// Close jtag file
            printf("\tSic transit gloria mundi");		// Say goodbye
-           gets(line);
+          get_line(line);
 
        } //L4000;
 
@@ -25955,7 +25955,7 @@ L41021:
            fprintf(stdout,"\t+vref           %6.3f V\n",vref_mez);
 
            printf("\n\t<cr> to continue:");
-           gets(line);
+           get_line(line);
            return;
        }
 
@@ -26161,7 +26161,7 @@ skipxl:
            fprintf(stdout,"\n");
 
            // Bang mode 
-           if (ifunc>0) {printf("\t<cr> to continue:"); gets(line);}
+           if (ifunc>0) {printf("\t<cr> to continue:"); get_line(line);}
            if (ifunc<0) goto L41040;
            return;
        }
@@ -26418,7 +26418,7 @@ L41060_menu:
            printf("\t<cr> Return to main menu\n");
            printf("      > ");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%i",&itest);
 
@@ -26581,7 +26581,7 @@ adb_data_loop:
                            printf("\tADB=%2i Cable read data %4.4X   %s\n",adb_wr_ch,adb_rd_data,sok.c_str());
                            printf("\tADB=%2i Expected        %4.4X     \n",adb_wr_ch,scsi_wr_data);
                            printf("\tADB cable read data error: Skip Retry Exit [R]");
-                           gets(line);
+                           get_line(line);
                            if (line[0]==0)					goto adb_data_loop;		// Default Retry
                            if (line[0]=='R' || line[0]=='r')	goto adb_data_loop;		// Retry
                            if (line[0]=='S' || line[0]=='s')	goto next_adb;			// Skip
@@ -26614,7 +26614,7 @@ adb_hit_loop:
                                printf("\tADB=%2i Connectors hit  %6.6X %s\n",adb_wr_ch,adb_hit,sok.c_str());
                                printf("\tADB=%2i Expected        %6.6X   \n",adb_wr_ch,adb_hit_expect);
                                printf("\tADB connector hit error: Skip Retry Exit [R]");
-                               gets(line);
+                               get_line(line);
                                if (line[0]==0)					goto adb_hit_loop;		// Default Retry
                                if (line[0]=='R' || line[0]=='r')	goto adb_hit_loop;		// Retry
                                if (line[0]=='S' || line[0]=='s')	goto next_adb;			// Skip
@@ -26660,7 +26660,7 @@ next_adb:
                {
                    printf("\n");
                    printf("\tPress <CR> to advance to ADB channel=%2i Connector=%2i",adb_wr_ch,adb_wr_ch+1);
-                   gets(line);
+                   get_line(line);
                    goto adb_loop;
                }
 
@@ -27066,7 +27066,7 @@ L41080:
            printf("\n");
            printf("\tEnter pin to toggle [208:1]");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) goto L41080;
            sscanf(line,"%i",&ipin);
            if (ipin<1 || ipin>208) goto L41080;
@@ -27130,7 +27130,7 @@ L41090:
            printf("\t0xD	1101	RAT  Module       FPGA+PROM\n");
            printf("\t");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%X",&ichain);
            if (ichain<0x0 || ichain>0xF) goto L41090;
@@ -27139,7 +27139,7 @@ L41090:
 L41091:
            printf("\tEnter bit to toggle: 0=tdi 1=tms 2=tck");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%i",&ibit);
            if (ibit<0 || ipin>2) goto L41091;
@@ -27226,7 +27226,7 @@ sc_submenu:
            printf("\t<cr> Exit\n");
            printf("       > ");
 
-           gets(line);
+           get_line(line);
            if (line[0]==0) return;
            sscanf(line,"%X",&ifunc);
 
@@ -27617,7 +27617,7 @@ sc_opcode_24:
                 // Get data to write
                 printf("\tWrite Standby Register w_standby[41:0] 0-3FFFFFFFFFF ");
 
-                gets(line);
+                get_line(line);
                 if (line[0]==0) return;
                 sscanf(line,"%I64X",&i64);
 
@@ -28512,7 +28512,7 @@ L1910:
            fprintf(stdout,"\tRequires alct_sctest.v firmware in the Spartan-6 ALCT mezzanine FPGA\n");
            fprintf(stdout,"\n");
            fprintf(stdout,"\tStart Single Cable Test or skip to Loopback Test? yes|lbtest [yes] ");
-           gets(line);
+           get_line(line);
            if (line[0]==0)                goto start_sctest;
            if (line[0]=='Y' || line[0]=='y') goto start_sctest;
            if (line[0]=='L' || line[0]=='l'){for(itest=1;itest<=80;++itest)alct_nskipped[itest]=1; goto start_lbtest;}
@@ -29023,7 +29023,7 @@ start_sctest:
                fprintf(stdout,"\n");
                fprintf(stdout,"\tThis board has already failed\n");
                fprintf(stdout,"\tContinue anyway? yes|no [no] ");
-               gets(line);
+               get_line(line);
                if (line[0]=='Y' || line[0]=='y') goto rn;
                goto alct_auto_done;
            }
@@ -29031,7 +29031,7 @@ start_sctest:
            {
 rn:	fprintf(stdout,"\tConnect ribbon cable from SCSI J5 to ADB connector 1\n");
     fprintf(stdout,"\tReady? yes|no|skip|lbtest [no] ");
-    gets(line);
+    get_line(line);
     if (line[0]==0)                goto rn;	
     if (line[0]=='S' || line[0]=='s') goto alct_auto_done;	
     if (line[0]=='Y' || line[0]=='y') goto start_sc;	
@@ -29145,7 +29145,7 @@ adb_data_loop_sc:
                            printf("\tADB=%2i Cable read data %4.4X   %s\n",adb_wr_ch,adb_rd_data,sok.c_str());
                            printf("\tADB=%2i Expected        %4.4X     \n",adb_wr_ch,scsi_wr_data);
                            printf("\tADB cable read data error: skip|retry|exit [r]");
-                           gets(line);
+                           get_line(line);
                            if (line[0]==0)					goto adb_data_loop_sc;		// Default Retry
                            if (line[0]=='R' || line[0]=='r')	goto adb_data_loop_sc;		// Retry
                            if (line[0]=='S' || line[0]=='s')	goto next_adb_sc;			// Skip
@@ -29172,7 +29172,7 @@ adb_hit_loop_sc:											// Read ADB hit list, only the selected ADB should ha
                            printf("\tADB=%2i Connectors hit  %6.6X %s\n",adb_wr_ch,adb_hit,sok.c_str());
                            printf("\tADB=%2i Expected        %6.6X   \n",adb_wr_ch,adb_hit_expect);
                            printf("\tADB connector hit error: skip|retry|exit [r]");
-                           gets(line);
+                           get_line(line);
                            if (line[0]==0)					goto adb_hit_loop_sc;		// Default Retry
                            if (line[0]=='R' || line[0]=='r')	goto adb_hit_loop_sc;		// Retry
                            if (line[0]=='S' || line[0]=='s')	goto next_adb_sc;			// Skip
@@ -29208,7 +29208,7 @@ next_adb_sc:								// Automatic ADB increment
 
            printf("\n");
 na:	printf("\tCR to advance to ADB channel %2i connector %2i or skip|exit|lbtest [cr]",adb_wr_ch,adb_wr_ch+1);
-    gets(line);
+    get_line(line);
     if (line[0]==0)                {itest++; goto adb_loop_sc;}
     if (line[0]=='E' || line[0]=='e') goto alct_auto_done;
     if (line[0]=='L' || line[0]=='l') {for (i=itest;i<=80;++i) alct_nskipped[itest]=1; goto start_lbtest;}
@@ -29255,7 +29255,7 @@ start_lbtest:
     printf("\n");
     printf("\tInstall normal ALCT firmware\n");
     printf("\tEnter YES when ready  yes|no|skip|exit [no] ");
-    gets(line);
+    get_line(line);
     printf("\n");
     if (line[0]==0)                goto start_lbtest;
     if (line[0]=='Y' || line[0]=='y') goto run_lbtest;
@@ -29372,7 +29372,7 @@ run_lbtest:
     if (ipf==1)
     {
         printf("\tWrong ALCT Firmware version skip|retry|exit [exit]");
-        gets(line);
+        get_line(line);
         if (line[0]==0)                goto alct_auto_done;
         if (line[0]=='R' || line[0]=='r') goto run_lbtest;
         if (line[0]=='E' || line[0]=='e') goto alct_auto_done;
@@ -30771,7 +30771,7 @@ L410300:
     printf("\t<cr> Exit\n");
     printf("       > ");
 
-    gets(line);
+    get_line(line);
     if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
@@ -31056,7 +31056,7 @@ L410310:
     printf("\n");
 
     printf("\n\tWrite new data? bit,len,val <cr=no> ");
-    gets(line);
+    get_line(line);
     if (line[0]==0) goto L410300;
     sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 
@@ -31277,7 +31277,7 @@ L410320:
 
     // Write new data to USER2
     printf("\n\tWrite new data? bit,len,val <cr=no> ");
-    gets(line);
+    get_line(line);
     if (line[0]==0) goto L410329;
     sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 
@@ -31368,7 +31368,7 @@ void inquire(string prompt, const int &minv, const int &maxv, const int &radix, 
 
 ask:
     printf(prompt.c_str(),now);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     if (radix==16)	sscanf(line,"%x",&i);
     else			sscanf(line,"%i",&i);
@@ -31392,7 +31392,7 @@ void inquir2(string prompt, const int &min, const int &max, const int &radix, in
 
 ask:
     printf(prompt.c_str(),num,now);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     if (radix==16)	sscanf(line,"%x",&i);
     else			sscanf(line,"%i",&i);
@@ -31416,7 +31416,7 @@ void inquirl(string prompt, const int &min, const int &max, const int &radix, lo
 
 ask:
     printf(prompt.c_str(),now);
-    gets(line);
+    get_line(line);
     n=strlen(line);
     if (radix==16)	sscanf(line,"%x",&i);
     else			sscanf(line,"%i",&i);
@@ -31440,7 +31440,7 @@ void inquirb(string prompt, bool &now)
 
 ask:
     printf(prompt.c_str(),yesno(now&0x1));
-    gets(line);
+    get_line(line);
     n=strlen(line);
     sscanf(line,"%c",&i);
 
@@ -31464,7 +31464,7 @@ bool pass_fail(string prompt)
 
 ask:
     printf(prompt.c_str());
-    gets(line);
+    get_line(line);
     n = strlen(line);
     i = line[0];
 
@@ -31533,6 +31533,15 @@ void sleep_ms(clock_t msec)
     while (goal > clock());
 }
 
+//--------------------------------------------------------------------------------
+// Safer implementation of gets
+//--------------------------------------------------------------------------------
+
+void get_line (char * s) {
+    fgets(s, 80, stdin); 
+    // buffer[strcspn(buffer, "\n")] = 0;
+    s[strcspn(s, "\r\n")] = 0;
+}
 
 //------------------------------------------------------------------------------
 // The bitter end
