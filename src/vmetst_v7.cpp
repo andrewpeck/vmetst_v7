@@ -20988,11 +20988,11 @@ L2505:
     //L25010:
     itest=1;
 
-    i='ERR!';
-    j='OK  ';
+    i='E'; // 'ERR!';
+    j='O'; // 'OK  ';
 
     if (icrc==dsn[7] && icrc!=0) {
-        i='OK  ';
+        i='O'; // 'OK'
         rat_npassed[itest]=1;}
     else {
         rat_nfailed[itest]=1;
@@ -21722,8 +21722,9 @@ L2506:
         fprintf(test_file,"ERROR bad RPC window width %3i\n",rat_window_width);
     }
 
-    i='PASS';
-    if (rat_nfailed[itest]!=0) i='FAIL';
+    i='P'; // PASS
+    if (rat_nfailed[itest]!=0) 
+        i='F'; // FAIL
 
     fprintf(stdout,"\t");
     fprintf(stdout,"RPC DelayWindow opn=%3i ",rat_window_open);

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <iostream>
+#include <string.h>
 #include "ck.h"
 #include "pause.h"
 #include "crc22.h"
