@@ -2451,24 +2451,24 @@ int main()
     // Log file
     log_file_name = "vmetst_log.txt";
     log_file      = fopen(log_file_name.c_str(),"w");
-    //	setbuf(log_file, NULL);	// stops buffering, but is 3x slower
+    //	setbuf(log_file, 0);	// stops buffering, but is 3x slower
 
-    if (log_file  != NULL)  dprintf(stdout,"Opened      %s\n",log_file_name.c_str());
-    if (log_file  == NULL) {fprintf(stdout,"Failed to open %s\n",log_file_name.c_str()); pause("WTF?");}
+    if (log_file  != 0)  dprintf(stdout,"Opened      %s\n",log_file_name.c_str());
+    if (log_file  == 0) {fprintf(stdout,"Failed to open %s\n",log_file_name.c_str()); pause("WTF?");}
 
     // Summary files
     sum_file_name = "vmetst_sum.txt";
     sum_file      = fopen(sum_file_name.c_str(),"w");
-    //	setbuf(sum_file, NULL);	// stops buffering
+    //	setbuf(sum_file, 0);	// stops buffering
 
     scn_file_name = "vmetst_scn.txt";
     scn_file      = fopen(scn_file_name.c_str(),"w");
 
-    if (sum_file  != NULL)  dprintf(stdout,"Opened      %s\n",sum_file_name.c_str());
-    if (sum_file  == NULL) {fprintf(stdout,"Failed to open %s\n",sum_file_name.c_str()); pause("WTF?");}
+    if (sum_file  != 0)  dprintf(stdout,"Opened      %s\n",sum_file_name.c_str());
+    if (sum_file  == 0) {fprintf(stdout,"Failed to open %s\n",sum_file_name.c_str()); pause("WTF?");}
 
-    if (scn_file  != NULL)  dprintf(stdout,"Opened      %s\n",scn_file_name.c_str());
-    if (scn_file  == NULL) {fprintf(stdout,"Failed to open %s\n",scn_file_name.c_str()); pause("WTF?");}
+    if (scn_file  != 0)  dprintf(stdout,"Opened      %s\n",scn_file_name.c_str());
+    if (scn_file  == 0) {fprintf(stdout,"Failed to open %s\n",scn_file_name.c_str()); pause("WTF?");}
 
     // Put date into log files
     _strtime(timestr);
@@ -2691,7 +2691,7 @@ main_menu:
     printf("       > ");
 
     gets(line);
-    if (line[0]==NULL) goto exit;
+    if (line[0]==0) goto exit;
     sscanf(line,"%i",&ifunc);
 
     i=abs(ifunc);
@@ -2743,9 +2743,9 @@ main_menu:
     //------------------------------------------------------------------------------
 exit:
     if (vme_opened    ) status = vme_close();	// Close VME
-    if (log_file!=NULL) fclose(log_file);		// Close log file
-    if (sum_file!=NULL) fclose(sum_file);		// Close sum file
-    if (scn_file!=NULL) fclose(scn_file);		// Close scn file
+    if (log_file!=0) fclose(log_file);		// Close log file
+    if (sum_file!=0) fclose(sum_file);		// Close sum file
+    if (scn_file!=0) fclose(scn_file);		// Close scn file
 
     printf("\tSic transit gloria mundi");		// Say goodbye
     gets(line);
@@ -2760,7 +2760,7 @@ L100:
     printf("\tOld slot=%2.2i New slot[0-31]=",islot);
 
     gets(line);
-    if (line[0]==NULL) goto L100;
+    if (line[0]==0) goto L100;
     sscanf(line,"%i",&newslot);
     if ((newslot>31) || (newslot<0)) goto L100;
 
@@ -2897,7 +2897,7 @@ L420:
     dprintf(stdout,"length=%i\n",n);
 
     // <cr> = increment address
-    if (line[0]==NULL) {
+    if (line[0]==0) {
         adr=adr+2;
         goto L420;
     }
@@ -3428,7 +3428,7 @@ L610:
     n=strlen(line);
     sscanf(line,"%c,%X",&cch,&ddd_delay);
 
-    if (line[0] == NULL) return;
+    if (line[0] == 0) return;
     debug_loop=false;
     if ((cch=='l') || (cch=='L')) debug_loop=true;
     if ((cch=='w') || (cch=='W')) goto L630;		// Skip update if write current
@@ -3678,7 +3678,7 @@ L1000:
     printf("       > ");
 
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
     i=abs(ifunc);
@@ -4185,7 +4185,7 @@ L10810:
     printf("\t\t<cr>=exit, else send walking 1 forever: ");
 
     gets(line);
-    if (line[0]==NULL) goto L1000;
+    if (line[0]==0) goto L1000;
 
     printf("Started DMB walking 1 forever, check for shorts\n");
 
@@ -4256,7 +4256,7 @@ L10910:
     printf("\t\t<cr>=exit, else send walking 1 forever: ");
 
     gets(line);
-    if (line[0]==NULL) goto L1000;
+    if (line[0]==0) goto L1000;
 
     printf("Started MPC walking 1 forever, check for shorts\n");
 
@@ -5379,7 +5379,7 @@ L1600:
         pause("\n\tTMB has wrong firmware type for this operation. Expect firmware_type=normal\n");
         printf("\tContinue anyway? <cr>=n ");
         gets(line);
-        if (line[0]==NULL) return;
+        if (line[0]==0) return;
     }
 
     // Check for jtag cable
@@ -5387,7 +5387,7 @@ L1600:
         printf("\n\tJTAG cable is still connected, board status tests will fail.\n");
         printf("\tContinue anyway? <cr>=n ");
         gets(line);
-        if (line[0]==NULL) return;
+        if (line[0]==0) return;
     }
 
     // Get VME slot number, used for csc id
@@ -5415,7 +5415,7 @@ L1600:
     printf("       > ");
 
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
     i=abs(ifunc);
 
@@ -7072,7 +7072,7 @@ L16705:
                 fprintf(stdout,"\n\tOpening CLCT injector RAM image file %s\n",ram_file_name.c_str());
 
                 ram_file      = fopen(ram_file_name.c_str(),"r");
-                if (ram_file==NULL) {pause("Unable to open CLCT injector RAM image file"); return;}
+                if (ram_file==0) {pause("Unable to open CLCT injector RAM image file"); return;}
 
                 fgets(line,81,ram_file);								// Skip comment lines
                 fgets(line,81,ram_file);
@@ -9851,7 +9851,7 @@ L1700:
         printf("\n\tTMB has wrong firmware type for this operation. Expect firmware_type=normal\n");
         printf("\tContinue anyway? <cr>=n ");
         gets(line);
-        if (line[0]==NULL) return;
+        if (line[0]==0) return;
     }
 
     // Turn off CCB backplane inputs, enable L1A emulator
@@ -9893,7 +9893,7 @@ L1700:
     printf("       > ");
 
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
     i=abs(ifunc);
 
@@ -10607,7 +10607,7 @@ L18012:
         test_file_name = test_file_name+"tmb_"+sbid+"_loop_"+sdsn+"_"+sfver+".txt";
 
         test_file = fopen(test_file_name.c_str(),"r");	// Check if this version already exists
-        if (test_file==NULL) goto L1802;				// No, so we use this version number
+        if (test_file==0) goto L1802;				// No, so we use this version number
         fclose(test_file);								// Yes, so close it, proceed to next version number
     }	// close for iver
 
@@ -10617,10 +10617,10 @@ L18012:
 
     // Open TMB test log file
 L1802:
-    if (test_file!=NULL) fclose(test_file);
+    if (test_file!=0) fclose(test_file);
     test_file = fopen(test_file_name.c_str(),"w");
 
-    if (test_file!=NULL) {printf("\tOpened file  %s\n",test_file_name.c_str());}
+    if (test_file!=0) {printf("\tOpened file  %s\n",test_file_name.c_str());}
     else                 {printf("\tFailed to open %s\n",test_file_name.c_str()); pause("\tPerhaps folder does not exist"); return;}
 
     // Insert the date
@@ -13464,7 +13464,7 @@ tmb_auto_done:
            fprintf(test_file,"\t+-----------------------+\n");
        }
 
-       if (test_file!=NULL) fclose(test_file);
+       if (test_file!=0) fclose(test_file);
 
        if (ifunc<0) goto L1800;
        pause ("<cr>=return to main menu");
@@ -13501,7 +13501,7 @@ L1900:
     printf("       > ");
 
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
     i=abs(ifunc);
@@ -14289,7 +14289,7 @@ L19500:
     printf("\t<cr> Exit to previous menu\n");
 
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
     i=abs(ifunc);
@@ -15000,8 +15000,8 @@ L99020:
     if (jtaglogmode) {
         jtag_file_name = "jtaglog.txt";
         jtag_file      = fopen(jtag_file_name.c_str(),"w");
-        if (jtag_file  != NULL)  dprintf(stdout,"Opened         %s\n",jtag_file_name.c_str());
-        if (jtag_file  == NULL) {fprintf(stdout,"Failed to open %s\n",jtag_file_name.c_str()); pause("WTF?");}
+        if (jtag_file  != 0)  dprintf(stdout,"Opened         %s\n",jtag_file_name.c_str());
+        if (jtag_file  == 0) {fprintf(stdout,"Failed to open %s\n",jtag_file_name.c_str()); pause("WTF?");}
 
         ichain = 0x000D;							// RAT jtag chain
         adr    = boot_adr;							// Boot register address
@@ -15506,7 +15506,7 @@ L2100:
     // Inquire
     printf("\texit=<cr>,else=run again:");
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     goto L2100;
 }
 //------------------------------------------------------------------------------
@@ -15536,7 +15536,7 @@ L2200:
     // Change MPC accept delay
     printf("\tmpc_delay     = %2i <cr>=keep: ",mpc_delay);
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&mpc_delay);	
 
     adr     = base_adr+tmb_trig_adr;
@@ -15579,7 +15579,7 @@ L2200:
 //            printf("       > ");
 //        
 //            gets(line);
-//            if (line[0]==NULL) return;
+//            if (line[0]==0) return;
 //            sscanf(line,"%i",&ifunc);
 //        
 //            i=abs(ifunc);
@@ -15964,7 +15964,7 @@ L2200:
 //        
 //            printf("\n\tWrite new data? bit,len,val <cr=no> ");
 //            gets(line);
-//            if (line[0]==NULL) goto L2300;
+//            if (line[0]==0) goto L2300;
 //            sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 //        
 //            // Set new ALCT cfg bits
@@ -16185,7 +16185,7 @@ L2200:
 //            // Write new data to USER2
 //            printf("\n\tWrite new data? bit,len,val <cr=no> ");
 //            gets(line);
-//            if (line[0]==NULL) goto L23299;
+//            if (line[0]==0) goto L23299;
 //            sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 //        
 //            // Set new ALCT USER2 bits
@@ -20950,7 +20950,7 @@ L2500:
         test_file_name = test_file_name.append(string("rat_")).append(cbid).append(string("_")).append(sdsn).append(string("_")).append(sfver).append(string(".txt"));
 
         test_file = fopen(test_file_name.c_str(),"r");	// Check if this version already exists
-        if (test_file==NULL) goto L2502;				// No, so we use this version number
+        if (test_file==0) goto L2502;				// No, so we use this version number
         fclose(test_file);								// Yes, so close it, proceed to next version number
     }	// close for iver
 
@@ -20960,10 +20960,10 @@ L2500:
 
     // Open RAT test log file
 L2502:
-    if (test_file!=NULL) fclose(test_file);
+    if (test_file!=0) fclose(test_file);
     test_file = fopen(test_file_name.c_str(),"w");
 
-    if (test_file!=NULL) {printf("\tOpened file    %s\n",test_file_name.c_str());}
+    if (test_file!=0) {printf("\tOpened file    %s\n",test_file_name.c_str());}
     else                 {printf("\tFailed to open %s\n",test_file_name.c_str()); pause("\tPerhaps folder does not exist"); return;}
 
     // Insert the date
@@ -22718,7 +22718,7 @@ rat_auto_done:
            fprintf(test_file,"\t+-----------------------+\n");
        }
 
-       if (test_file!=NULL) fclose(test_file);
+       if (test_file!=0) fclose(test_file);
 
        if (ifunc<0) goto L2500;
        pause ("<cr>=return to main menu");
@@ -22733,7 +22733,7 @@ L2600:
 
            printf("\t<cr> to arm scope, else exit: ");
            gets(line);
-           if (line[0] != NULL) return;
+           if (line[0] != 0) return;
 
            // Arm scope trigger
            scp_arm        = true;
@@ -23013,7 +23013,7 @@ L2800:
            //	Go again
            printf("\tTry again? <cr=no>: ");
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            goto L2800;
        }
        //------------------------------------------------------------------------------
@@ -23032,7 +23032,7 @@ L2900:
            printf("       > ");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%i",&ichain);
 
            if (ichain == 0x0001) goto L2920;	// ALCT Slow Control PROM
@@ -23049,7 +23049,7 @@ L2920:
            printf("\n\tXSVF File Name: <default=%s> :",xsvf_tmb_user_default.c_str());
            gets(line);
 
-           if (line[0]==NULL) {
+           if (line[0]==0) {
                printf("\tUsing default: %s\n",xsvf_tmb_user_default.c_str());
                xsvf_file_name = xsvf_tmb_user_default;
            }
@@ -23058,7 +23058,7 @@ L2920:
 
            xsvf_file = fopen(xsvf_file_name.c_str(),"rb");
 
-           if (xsvf_file==NULL) {
+           if (xsvf_file==0) {
                fprintf(stdout,"\tFailed to open %s\n",xsvf_file_name.c_str()); 
                pause(" ");
                goto L2900;
@@ -23101,7 +23101,7 @@ L2920:
            status      = xsvfExecute();
            endClock    = clock();
 
-           if (xsvf_file!=NULL) fclose(xsvf_file);
+           if (xsvf_file!=0) fclose(xsvf_file);
            ucTdoBit= readTDOBit();								// purge any pending write in the buffer
 
            if (status != 0) printf("\tXSVF Player FAILURE =:-(\n");
@@ -23141,7 +23141,7 @@ L3000:
            printf("       > ");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%i",&ifunc);
 
            i=abs(ifunc);
@@ -23174,10 +23174,10 @@ L30100:
            else            {prom_file_name = string(line);}
 
            // Open prom output file
-           if (prom_file!=NULL) fclose(prom_file);
+           if (prom_file!=0) fclose(prom_file);
            prom_file = fopen(prom_file_name.c_str(),"w");
 
-           if (prom_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",prom_file_name.c_str());}
+           if (prom_file!=0) {fprintf(stdout,"\tOpened file    %s\n",prom_file_name.c_str());}
            else                 {fprintf(stdout,"\tFailed to open %s\n",prom_file_name.c_str()); pause("WTF?"); goto L30100;}
 
            // This version merely stores data=adr at every address to aid decrypting the xsvf file: format=AAAA DD
@@ -23189,7 +23189,7 @@ L30100:
                fprintf(prom_file,"%4.4X %2.2X\n",adr,wr_data);
            }
 
-           if (prom_file!=NULL) fclose(prom_file);
+           if (prom_file!=0) fclose(prom_file);
            goto L3000;
 
            //------------------------------------------------------------------------------
@@ -23205,10 +23205,10 @@ L30200:
            if (line[0]==0) {ascii_file_name = ascii_file_name_default;}
            else            {ascii_file_name = string(line);}
 
-           if (ascii_file!=NULL) fclose(ascii_file);
+           if (ascii_file!=0) fclose(ascii_file);
            ascii_file = fopen(ascii_file_name.c_str(),"r");
 
-           if (ascii_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",ascii_file_name.c_str());}
+           if (ascii_file!=0) {fprintf(stdout,"\tOpened file    %s\n",ascii_file_name.c_str());}
            else                  {fprintf(stdout,"\tFailed to open %s\n",ascii_file_name.c_str()); pause("WTF?"); goto L30200;}
 
            // MCS output file
@@ -23220,10 +23220,10 @@ L30201:
            if (line[0]==0) {mcs_file_name = mcs_file_name_default;}
            else            {mcs_file_name = string(line);}
 
-           if (mcs_file!=NULL) fclose(mcs_file);
+           if (mcs_file!=0) fclose(mcs_file);
            mcs_file = fopen(mcs_file_name.c_str(),"w");
 
-           if (mcs_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",mcs_file_name.c_str());}
+           if (mcs_file!=0) {fprintf(stdout,"\tOpened file    %s\n",mcs_file_name.c_str());}
            else                {fprintf(stdout,"\tFailed to open %s\n",mcs_file_name.c_str()); pause("WTF?"); goto L30201;}
 
            // Output MCS first word: extended address record
@@ -23315,8 +23315,8 @@ L30250:
            fprintf(mcs_file,"%c%2.2X%4.4X%2.2X%2.2X\n",colon,rec_len,filler,rec_type,cksum);
 
            // Close up
-           if (ascii_file!=NULL) fclose(ascii_file);
-           if (mcs_file  !=NULL) fclose(mcs_file  );
+           if (ascii_file!=0) fclose(ascii_file);
+           if (mcs_file  !=0) fclose(mcs_file  );
 
            printf("\n");
            printf("\tRead  %6i data words  \n",nwords);
@@ -23398,10 +23398,10 @@ L30500:
            if (line[0]==0) {dump_file_name = dump_file_name_default;}
            else            {dump_file_name = string(line);}
 
-           if (dump_file!=NULL) fclose(dump_file);
+           if (dump_file!=0) fclose(dump_file);
            dump_file = fopen(dump_file_name.c_str(),"w");
 
-           if (dump_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",dump_file_name.c_str());}
+           if (dump_file!=0) {fprintf(stdout,"\tOpened file    %s\n",dump_file_name.c_str());}
            else                 {fprintf(stdout,"\tFailed to open %s\n",dump_file_name.c_str()); pause("WTF?"); goto L30500;}
 
            // Open input compare file
@@ -23419,10 +23419,10 @@ L30501:
                if (line[0]==0) {compare_file_name = compare_file_name_default;}
                else            {compare_file_name = string(line);}
 
-               if (compare_file!=NULL) fclose(compare_file);
+               if (compare_file!=0) fclose(compare_file);
                compare_file = fopen(compare_file_name.c_str(),"r");
 
-               if (compare_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",compare_file_name.c_str());}
+               if (compare_file!=0) {fprintf(stdout,"\tOpened file    %s\n",compare_file_name.c_str());}
                else                    {fprintf(stdout,"\tFailed to open %s\n",compare_file_name.c_str()); pause("WTF?"); goto L30501;}
            }	// close if compare
 
@@ -23608,8 +23608,8 @@ L30510:
            }	// close for prom_adr
 
            // Close files
-           if (dump_file    != NULL) fclose(dump_file   );
-           if (compare_file != NULL) fclose(compare_file);
+           if (dump_file    != 0) fclose(dump_file   );
+           if (compare_file != 0) fclose(compare_file);
 
            // Turn PROMs off
            prom_clk[iprom] = 0;	// disble this one
@@ -23667,7 +23667,7 @@ L30600:
            ilen=256;
            printf("\tPROM size 256 or 512 <cr=%3i> ",ilen);
            gets(line);
-           if (line[0]!=NULL) sscanf(line,"%i",&ilen);
+           if (line[0]!=0) sscanf(line,"%i",&ilen);
            if ((ilen!=256) && (ilen!=512)) goto L30600;
 
            sprintf(csize,"%3.3i",ilen);
@@ -23680,17 +23680,17 @@ L30600:
            if (line[0]==0) {prom_file_name = prom_file_name_default;}
            else            {prom_file_name = string(line);}
 
-           if (prom_file!=NULL) fclose(prom_file);
+           if (prom_file!=0) fclose(prom_file);
            prom_file = fopen(prom_file_name.c_str(),"w");
 
-           if (prom_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",prom_file_name.c_str());}
+           if (prom_file!=0) {fprintf(stdout,"\tOpened file    %s\n",prom_file_name.c_str());}
            else                 {fprintf(stdout,"\tFailed to open %s\n",prom_file_name.c_str()); pause("WTF?"); goto L30600;}
 
            // Open jtaglog.txt for reading
            jtag_file_name = "jtaglog.txt";
            jtag_file = fopen(jtag_file_name.c_str(),"r");
 
-           if (jtag_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",jtag_file_name.c_str());}
+           if (jtag_file!=0) {fprintf(stdout,"\tOpened file    %s\n",jtag_file_name.c_str());}
            else                 {fprintf(stdout,"\tFailed to open %s\n",jtag_file_name.c_str()); pause("WTF?"); return;}
 
            // Insert header
@@ -23806,8 +23806,8 @@ L30620:
 
            printf("\tWord count=%5i Checksum=%2.2X\n",wdcnt,cksum);
 
-           if (jtag_file!=NULL) fclose(jtag_file);
-           if (prom_file!=NULL) fclose(prom_file);
+           if (jtag_file!=0) fclose(jtag_file);
+           if (prom_file!=0) fclose(prom_file);
 
            goto L3000;
 
@@ -24000,7 +24000,7 @@ L3100:
            printf("       > ");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%i",&ifunc);
 
            i=abs(ifunc);
@@ -24020,7 +24020,7 @@ L31100:
            ilen=256;
            printf("\tPROM size 256 or 512 <cr=%3i> ",ilen);
            gets(line);
-           if (line[0]!=NULL) sscanf(line,"%i",&ilen);
+           if (line[0]!=0) sscanf(line,"%i",&ilen);
            if ((ilen!=256) && (ilen!=512)) goto L31100;
 
            sprintf(csize,"%3.3i",ilen);
@@ -24034,10 +24034,10 @@ L31100:
            else            {prom_file_name = string(line);}
 
            // Open prom file
-           if (prom_file!=NULL) fclose(prom_file);
+           if (prom_file!=0) fclose(prom_file);
            prom_file = fopen(prom_file_name.c_str(),"w");
 
-           if (prom_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",prom_file_name.c_str());}
+           if (prom_file!=0) {fprintf(stdout,"\tOpened file    %s\n",prom_file_name.c_str());}
            else                 {fprintf(stdout,"\tFailed to open %s\n",prom_file_name.c_str()); pause("WTF?"); goto L31100;}
 
            // Inquire header data
@@ -24073,7 +24073,7 @@ L31100:
 L31120:
            printf("\tAdr, data=");
            gets(line);
-           if (line[0]==NULL) goto L31180;		// <cr> = done
+           if (line[0]==0) goto L31180;		// <cr> = done
            sscanf(line,"%X,%X",&newadr,&wr_data);
 
            if ((newadr <0) || (newadr >0xFFFFFF)) {printf("\tAdr  out of range 0-FFFFFF, read=%X\n",newadr ); goto L31120;}
@@ -24193,10 +24193,10 @@ L31200:
            else            {ascii_file_name = string(line);}
 
            // open ascii file for reading
-           if (ascii_file!=NULL) fclose(ascii_file);
+           if (ascii_file!=0) fclose(ascii_file);
            ascii_file = fopen(ascii_file_name.c_str(),"r");
 
-           if (ascii_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",ascii_file_name.c_str());}
+           if (ascii_file!=0) {fprintf(stdout,"\tOpened file    %s\n",ascii_file_name.c_str());}
            else                  {fprintf(stdout,"\tFailed to open %s\n",ascii_file_name.c_str()); pause("WTF?"); goto L31200;}
 
 L31201:
@@ -24211,10 +24211,10 @@ L31201:
            else            {mcs_file_name = string(line);}
 
            // open MCS file for writing
-           if (mcs_file!=NULL) fclose(mcs_file);
+           if (mcs_file!=0) fclose(mcs_file);
            mcs_file = fopen(mcs_file_name.c_str(),"w");
 
-           if (mcs_file!=NULL) {fprintf(stdout,"\tOpened file    %s\n",mcs_file_name.c_str());}
+           if (mcs_file!=0) {fprintf(stdout,"\tOpened file    %s\n",mcs_file_name.c_str());}
            else                {fprintf(stdout,"\tFailed to open %s\n",mcs_file_name.c_str()); pause("WTF?"); goto L31201;}
 
            // Output MCS first word: extended address record
@@ -24309,8 +24309,8 @@ L31250:
            fprintf(mcs_file,"%c%2.2X%4.4X%2.2X%2.2X\n",colon,rec_len,filler,rec_type,cksum);
 
            // Close up
-           if (ascii_file!=NULL) fclose(ascii_file);
-           if (mcs_file  !=NULL) fclose(mcs_file  );
+           if (ascii_file!=0) fclose(ascii_file);
+           if (mcs_file  !=0) fclose(mcs_file  );
 
            printf("\n");
            printf("\tRead  %6i data words  \n",nwords);
@@ -24344,8 +24344,8 @@ L31400:
            if (dump_file!=0) fclose(dump_file);
            dump_file = fopen(dump_file_name.c_str(),"w");
 
-           if (dump_file != NULL)  fprintf(stdout,"\tOpened file    %s\n",dump_file_name.c_str());
-           if (dump_file == NULL) {fprintf(stdout,"\tFailed to open %s\n",dump_file_name.c_str()); pause("WTF?"); goto L31400;}
+           if (dump_file != 0)  fprintf(stdout,"\tOpened file    %s\n",dump_file_name.c_str());
+           if (dump_file == 0) {fprintf(stdout,"\tFailed to open %s\n",dump_file_name.c_str()); pause("WTF?"); goto L31400;}
 
            // Put date into verify file for kix
            _strtime(timestr);
@@ -24992,11 +24992,11 @@ L3300:
            else      {vme_file_name = string(line);}
 
            // Open dump file
-           if (vme_file!=NULL) fclose(vme_file);
+           if (vme_file!=0) fclose(vme_file);
            vme_file = fopen(vme_file_name.c_str(),"r");
 
-           if (vme_file != NULL)  fprintf(stdout,"\tOpened      %s\n",vme_file_name.c_str());
-           if (vme_file == NULL) {
+           if (vme_file != 0)  fprintf(stdout,"\tOpened      %s\n",vme_file_name.c_str());
+           if (vme_file == 0) {
                fprintf(stdout,"\tFailed to open %s\n",vme_file_name.c_str());
                pause("WTF?");
                goto L3300;
@@ -25026,11 +25026,11 @@ L3310:
            else      {vme_file_name = string(line);}
 
            // Open compare file
-           if (vme_file!=NULL) fclose(vme_file);
+           if (vme_file!=0) fclose(vme_file);
            vme_file = fopen(vme_file_name.c_str(),"r");
 
-           if (vme_file != NULL)  fprintf(stdout,"\tOpened      %s\n",vme_file_name.c_str());
-           if (vme_file == NULL) {
+           if (vme_file != 0)  fprintf(stdout,"\tOpened      %s\n",vme_file_name.c_str());
+           if (vme_file == 0) {
                fprintf(stdout,"\tFailed to open %s\n",vme_file_name.c_str());
                pause("WTF?");
                goto L3310;
@@ -25060,7 +25060,7 @@ L3310:
            }	// close for iadr
 
 L3320:
-           if (vme_file!=NULL) fclose(vme_file);
+           if (vme_file!=0) fclose(vme_file);
 
            printf("\tAddresses read = %3i\n",nadrs);
            printf("\tMis-matches    = %3i\n",nmiss);
@@ -25086,11 +25086,11 @@ L3400:
            else      {vme_file_name = string(line);}
 
            // Open dump file
-           if (vme_file!=NULL) fclose(vme_file);
+           if (vme_file!=0) fclose(vme_file);
            vme_file = fopen(vme_file_name.c_str(),"r");
 
-           if (vme_file != NULL)  fprintf(stdout,"\tOpened      %s\n",vme_file_name.c_str());
-           if (vme_file == NULL) {
+           if (vme_file != 0)  fprintf(stdout,"\tOpened      %s\n",vme_file_name.c_str());
+           if (vme_file == 0) {
                fprintf(stdout,"\tFailed to open %s\n",vme_file_name.c_str());
                pause("WTF?");
                goto L3400;
@@ -25124,7 +25124,7 @@ L3400:
 
            // Done reading dump file
 L3420:	
-           if (vme_file != NULL) fclose(vme_file);
+           if (vme_file != 0) fclose(vme_file);
            printf("\tAddresses read=%i3 last adr=%6.6X\n",nadrs_read,iadr_rd);
            if (nadrs_read<=0) stop("bad addresses");
 
@@ -25140,7 +25140,7 @@ L3420:
            if (nadrs_written!=nadrs_read) stop("address count err");
 
            // Done
-           if (vme_file != NULL) fclose(vme_file);
+           if (vme_file != 0) fclose(vme_file);
            printf("Last address written = %6.6X \n",adr);
            pause("\tReturn to main menu <cr> ");
            return;
@@ -25174,8 +25174,8 @@ L3420:
 
            raw_file      = fopen(raw_file_name.c_str(),"r");
 
-           if (raw_file  != NULL)  dprintf(stdout,"Opened      %s\n",raw_file_name.c_str());
-           if (raw_file  == NULL) {fprintf(stdout,"\tFailed to open %s\n",raw_file_name.c_str()); pause("\tWTF? <cr>=return to main menu: "); return;}
+           if (raw_file  != 0)  dprintf(stdout,"Opened      %s\n",raw_file_name.c_str());
+           if (raw_file  == 0) {fprintf(stdout,"\tFailed to open %s\n",raw_file_name.c_str()); pause("\tWTF? <cr>=return to main menu: "); return;}
 
            // Read comment line, col(1-4)= !DDU for ddu format, !RAW for raw hits format, !
 read_comment:
@@ -25197,19 +25197,19 @@ read_comment:
            }
 
            diff=_strnicmp(comment,"!DDU",4);
-           if(diff == NULL) {
+           if(diff == 0) {
                printf("\t%s\n","File is !DDU format"); 
                goto read_ddu;
            }
 
            diff=_strnicmp(comment,"!ADRDDU",5);
-           if(diff == NULL) {
+           if(diff == 0) {
                printf("\t%s\n","File is !ADRDDU format"); 
                goto read_adrddu;
            }
 
            diff=_strnicmp(comment,"!DMB",4);
-           if(diff == NULL) {
+           if(diff == 0) {
                printf("\t%s\n","File is !DMB format"); 
                goto read_dmb;
            }
@@ -25298,7 +25298,7 @@ decode:
            // Done
 exit_playback:
 
-           if (raw_file!=NULL) fclose(raw_file);
+           if (raw_file!=0) fclose(raw_file);
            return;
        }
        //------------------------------------------------------------------------------
@@ -25523,10 +25523,10 @@ L3900:
            // Log file
            log_file_name = "alct_test_log.txt";
            log_file      = fopen(log_file_name.c_str(),"w");
-           //	setbuf(log_file, NULL);	// stops buffering, but is 3x slower
+           //	setbuf(log_file, 0);	// stops buffering, but is 3x slower
 
-           if (log_file  != NULL)  dprintf(stdout,"Opened      %s\n",log_file_name.c_str());
-           if (log_file  == NULL) {fprintf(stdout,"Failed to open %s\n",log_file_name.c_str()); pause("WTF?");}
+           if (log_file  != 0)  dprintf(stdout,"Opened      %s\n",log_file_name.c_str());
+           if (log_file  == 0) {fprintf(stdout,"Failed to open %s\n",log_file_name.c_str()); pause("WTF?");}
 
            // Turn on jtag logging
            //!	jtaglogmode = true;
@@ -25536,16 +25536,16 @@ L3900:
            {
                jtag_file_name =  "jtaglog.txt";
                jtag_file      =  fopen(jtag_file_name.c_str(),"w");
-               if (jtag_file  != NULL)  dprintf(stdout,"Opened         %s\n",jtag_file_name.c_str());
-               if (jtag_file  == NULL) {fprintf(stdout,"Failed to open %s\n",jtag_file_name.c_str()); pause("WTF?");}
+               if (jtag_file  != 0)  dprintf(stdout,"Opened         %s\n",jtag_file_name.c_str());
+               if (jtag_file  == 0) {fprintf(stdout,"Failed to open %s\n",jtag_file_name.c_str()); pause("WTF?");}
            }
 
            // Put date into log files
            _strtime(timestr);
            _strdate(datestr);
 
-           if (log_file  != NULL)  fprintf(log_file, "Started:       %s %s\n",datestr,timestr);
-           if (jtag_file != NULL)  fprintf(jtag_file,"Started:       %s %s\n",datestr,timestr); 
+           if (log_file  != 0)  fprintf(log_file, "Started:       %s %s\n",datestr,timestr);
+           if (jtag_file != 0)  fprintf(jtag_file,"Started:       %s %s\n",datestr,timestr); 
            fprintf(stdout, "\tStarted:       %s %s\n",datestr,timestr);
 
            //------------------------------------------------------------------------------
@@ -25669,7 +25669,7 @@ main_menu:
            printf("       > ");
 
            gets(line);
-           if (line[0]==NULL) goto exit;
+           if (line[0]==0) goto exit;
            sscanf(line,"%i",&ifunc);
 
            i=abs(ifunc);
@@ -25712,8 +25712,8 @@ main_menu:
            //------------------------------------------------------------------------------
 exit:
            if (vme_opened    ) status = vme_close();	// Close VME
-           if (log_file  != NULL) fclose(log_file );	// Close log  file
-           if (jtag_file != NULL) fclose(jtag_file);	// Close jtag file
+           if (log_file  != 0) fclose(log_file );	// Close log  file
+           if (jtag_file != 0) fclose(jtag_file);	// Close jtag file
            printf("\tSic transit gloria mundi");		// Say goodbye
            gets(line);
 
@@ -26418,7 +26418,7 @@ L41060_menu:
            printf("      > ");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%i",&itest);
 
            if (itest<0 || itest>9) goto L41060_menu;
@@ -26581,7 +26581,7 @@ adb_data_loop:
                            printf("\tADB=%2i Expected        %4.4X     \n",adb_wr_ch,scsi_wr_data);
                            printf("\tADB cable read data error: Skip Retry Exit [R]");
                            gets(line);
-                           if (line[0]==NULL)					goto adb_data_loop;		// Default Retry
+                           if (line[0]==0)					goto adb_data_loop;		// Default Retry
                            if (line[0]=='R' || line[0]=='r')	goto adb_data_loop;		// Retry
                            if (line[0]=='S' || line[0]=='s')	goto next_adb;			// Skip
                            if (line[0]=='E' || line[0]=='e')	goto L41060_menu;		// Exit
@@ -26614,7 +26614,7 @@ adb_hit_loop:
                                printf("\tADB=%2i Expected        %6.6X   \n",adb_wr_ch,adb_hit_expect);
                                printf("\tADB connector hit error: Skip Retry Exit [R]");
                                gets(line);
-                               if (line[0]==NULL)					goto adb_hit_loop;		// Default Retry
+                               if (line[0]==0)					goto adb_hit_loop;		// Default Retry
                                if (line[0]=='R' || line[0]=='r')	goto adb_hit_loop;		// Retry
                                if (line[0]=='S' || line[0]=='s')	goto next_adb;			// Skip
                                if (line[0]=='E' || line[0]=='e')	goto L41060_menu;		// Exit
@@ -27066,7 +27066,7 @@ L41080:
            printf("\tEnter pin to toggle [208:1]");
 
            gets(line);
-           if (line[0]==NULL) goto L41080;
+           if (line[0]==0) goto L41080;
            sscanf(line,"%i",&ipin);
            if (ipin<1 || ipin>208) goto L41080;
 
@@ -27130,7 +27130,7 @@ L41090:
            printf("\t");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%X",&ichain);
            if (ichain<0x0 || ichain>0xF) goto L41090;
 
@@ -27139,7 +27139,7 @@ L41091:
            printf("\tEnter bit to toggle: 0=tdi 1=tms 2=tck");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%i",&ibit);
            if (ibit<0 || ipin>2) goto L41091;
 
@@ -27226,11 +27226,11 @@ sc_submenu:
            printf("       > ");
 
            gets(line);
-           if (line[0]==NULL) return;
+           if (line[0]==0) return;
            sscanf(line,"%X",&ifunc);
 
            opcode=abs(ifunc);
-           if (jtag_file != NULL)  fprintf(jtag_file,"\nOpcode=0x%2.2X\n",opcode); 
+           if (jtag_file != 0)  fprintf(jtag_file,"\nOpcode=0x%2.2X\n",opcode); 
 
            if (opcode == 0x00) goto sc_opcode_00;
            if (opcode == 0x01) goto sc_opcode_01;
@@ -27617,7 +27617,7 @@ sc_opcode_24:
                 printf("\tWrite Standby Register w_standby[41:0] 0-3FFFFFFFFFF ");
 
                 gets(line);
-                if (line[0]==NULL) return;
+                if (line[0]==0) return;
                 sscanf(line,"%I64X",&i64);
 
                 sc_wr_standby[0] = i64 & 0xFFFFFFFF;
@@ -28474,7 +28474,7 @@ vga_done:
                test_file_name = test_file_name+"alct_"+salct_board_id+"_mez_"+smez_board_id+"_ver"+sfver+".txt";
 
                test_file = fopen(test_file_name.c_str(),"r");	// Check if this version already exists
-               if (test_file==NULL) goto L1910;				// No,  so we use this version number
+               if (test_file==0) goto L1910;				// No,  so we use this version number
                fclose(test_file);								// Yes, so close it, proceed to next version number
            }	// close for iver
 
@@ -28484,10 +28484,10 @@ vga_done:
 
            // Open TMB test log file
 L1910:
-           if (test_file!=NULL) fclose(test_file);
+           if (test_file!=0) fclose(test_file);
            test_file = fopen(test_file_name.c_str(),"w");
 
-           if (test_file!=NULL) {printf("\n");}
+           if (test_file!=0) {printf("\n");}
            else                 {printf("\tFailed to open %s\n",test_file_name.c_str()); pause("\tPerhaps folder does not exist"); return;}
 
            // Insert the date
@@ -28512,7 +28512,7 @@ L1910:
            fprintf(stdout,"\n");
            fprintf(stdout,"\tStart Single Cable Test or skip to Loopback Test? yes|lbtest [yes] ");
            gets(line);
-           if (line[0]==NULL)                goto start_sctest;
+           if (line[0]==0)                goto start_sctest;
            if (line[0]=='Y' || line[0]=='y') goto start_sctest;
            if (line[0]=='L' || line[0]=='l'){for(itest=1;itest<=80;++itest)alct_nskipped[itest]=1; goto start_lbtest;}
            fprintf(stdout,"\n");
@@ -29031,7 +29031,7 @@ start_sctest:
 rn:	fprintf(stdout,"\tConnect ribbon cable from SCSI J5 to ADB connector 1\n");
     fprintf(stdout,"\tReady? yes|no|skip|lbtest [no] ");
     gets(line);
-    if (line[0]==NULL)                goto rn;	
+    if (line[0]==0)                goto rn;	
     if (line[0]=='S' || line[0]=='s') goto alct_auto_done;	
     if (line[0]=='Y' || line[0]=='y') goto start_sc;	
     if (line[0]=='L' || line[0]=='l') goto start_lbtest;	
@@ -29145,7 +29145,7 @@ adb_data_loop_sc:
                            printf("\tADB=%2i Expected        %4.4X     \n",adb_wr_ch,scsi_wr_data);
                            printf("\tADB cable read data error: skip|retry|exit [r]");
                            gets(line);
-                           if (line[0]==NULL)					goto adb_data_loop_sc;		// Default Retry
+                           if (line[0]==0)					goto adb_data_loop_sc;		// Default Retry
                            if (line[0]=='R' || line[0]=='r')	goto adb_data_loop_sc;		// Retry
                            if (line[0]=='S' || line[0]=='s')	goto next_adb_sc;			// Skip
                            if (line[0]=='E' || line[0]=='e')	goto alct_auto_done;		// Exit
@@ -29172,7 +29172,7 @@ adb_hit_loop_sc:											// Read ADB hit list, only the selected ADB should ha
                            printf("\tADB=%2i Expected        %6.6X   \n",adb_wr_ch,adb_hit_expect);
                            printf("\tADB connector hit error: skip|retry|exit [r]");
                            gets(line);
-                           if (line[0]==NULL)					goto adb_hit_loop_sc;		// Default Retry
+                           if (line[0]==0)					goto adb_hit_loop_sc;		// Default Retry
                            if (line[0]=='R' || line[0]=='r')	goto adb_hit_loop_sc;		// Retry
                            if (line[0]=='S' || line[0]=='s')	goto next_adb_sc;			// Skip
                            if (line[0]=='E' || line[0]=='e')	goto alct_auto_done;		// Exit
@@ -29208,7 +29208,7 @@ next_adb_sc:								// Automatic ADB increment
            printf("\n");
 na:	printf("\tCR to advance to ADB channel %2i connector %2i or skip|exit|lbtest [cr]",adb_wr_ch,adb_wr_ch+1);
     gets(line);
-    if (line[0]==NULL)                {itest++; goto adb_loop_sc;}
+    if (line[0]==0)                {itest++; goto adb_loop_sc;}
     if (line[0]=='E' || line[0]=='e') goto alct_auto_done;
     if (line[0]=='L' || line[0]=='l') {for (i=itest;i<=80;++i) alct_nskipped[itest]=1; goto start_lbtest;}
     if (line[0]=='S' || line[0]=='s') 
@@ -29256,7 +29256,7 @@ start_lbtest:
     printf("\tEnter YES when ready  yes|no|skip|exit [no] ");
     gets(line);
     printf("\n");
-    if (line[0]==NULL)                goto start_lbtest;
+    if (line[0]==0)                goto start_lbtest;
     if (line[0]=='Y' || line[0]=='y') goto run_lbtest;
     if (line[0]=='E' || line[0]=='e') goto alct_auto_done;
     if (line[0]=='S' || line[0]=='s') goto skip_lb;
@@ -29372,7 +29372,7 @@ run_lbtest:
     {
         printf("\tWrong ALCT Firmware version skip|retry|exit [exit]");
         gets(line);
-        if (line[0]==NULL)                goto alct_auto_done;
+        if (line[0]==0)                goto alct_auto_done;
         if (line[0]=='R' || line[0]=='r') goto run_lbtest;
         if (line[0]=='E' || line[0]=='e') goto alct_auto_done;
         if (line[0]=='S' || line[0]=='s') goto rx_scan;
@@ -30749,7 +30749,7 @@ alct_auto_done:
         fprintf(test_file,"\t+-----------------------+\n");
     }
 
-    if (test_file!=NULL) fclose(test_file);
+    if (test_file!=0) fclose(test_file);
     pause ("Return to main menu [cr}");
     return;
 }
@@ -30771,7 +30771,7 @@ L410300:
     printf("       > ");
 
     gets(line);
-    if (line[0]==NULL) return;
+    if (line[0]==0) return;
     sscanf(line,"%i",&ifunc);
 
     i=abs(ifunc);
@@ -31056,7 +31056,7 @@ L410310:
 
     printf("\n\tWrite new data? bit,len,val <cr=no> ");
     gets(line);
-    if (line[0]==NULL) goto L410300;
+    if (line[0]==0) goto L410300;
     sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 
     // Set new ALCT cfg bits
@@ -31277,7 +31277,7 @@ L410320:
     // Write new data to USER2
     printf("\n\tWrite new data? bit,len,val <cr=no> ");
     gets(line);
-    if (line[0]==NULL) goto L410329;
+    if (line[0]==0) goto L410329;
     sscanf(line,"%i %i %X",&ibit,&ilen,&ival);	
 
     // Set new ALCT USER2 bits
