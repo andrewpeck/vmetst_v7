@@ -1,19 +1,19 @@
 //-----------------------------------------------------------------------------
-//	Xsvf_writer: Subsecton L5000 extracted from full xsvfwriter.cpp
+//  Xsvf_writer: Subsecton L5000 extracted from full xsvfwriter.cpp
 //
-// 04/28/2006	Edits Impact xsvf templates
-// 04/28/2006	Inserts usercode
-// 04/28/2006	Started xsvf player
-// 05/01/2006	Add user prom readback
-// 05/08/2006	Add crate scan
-// 05/11/2006	Add push pop
-// 05/12/2006	Add multi-module programming
-// 05/15/2006	Add usercode readout to programmer
-// 01/20/2010	Port to c++
-// 01/23/2010	Mod for VS8
-// 01/25/2010	Add block transfers
-// 01/26/2010	Bugfix
-// 07/11/2011	Mod for tmb auto test
+// 04/28/2006   Edits Impact xsvf templates
+// 04/28/2006   Inserts usercode
+// 04/28/2006   Started xsvf player
+// 05/01/2006   Add user prom readback
+// 05/08/2006   Add crate scan
+// 05/11/2006   Add push pop
+// 05/12/2006   Add multi-module programming
+// 05/15/2006   Add usercode readout to programmer
+// 01/20/2010   Port to c++
+// 01/23/2010   Mod for VS8
+// 01/25/2010   Add block transfers
+// 01/26/2010   Bugfix
+// 07/11/2011   Mod for tmb auto test
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -32,155 +32,155 @@ using namespace std;
 //------------------------------------------------------------------------------
 void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
     //------------------------------------------------------------------------------
-    //	islot           = VME slot for TMB to program
-    //	xsvf_file_name  = Input PROM data file
-    //	nerrors         = Errors
+    //  islot           = VME slot for TMB to program
+    //  xsvf_file_name  = Input PROM data file
+    //  nerrors         = Errors
     //------------------------------------------------------------------------------
 {
     // VME calls
-    long			status;
-    unsigned long	base_adr;
-    unsigned long	boot_adr;
-    unsigned long	adr;
-    unsigned short	rd_data;
-    unsigned short	wr_data;
-    //	long			nbread;
+    long            status;
+    unsigned long   base_adr;
+    unsigned long   boot_adr;
+    unsigned long   adr;
+    unsigned short  rd_data;
+    unsigned short  wr_data;
+    //  long            nbread;
 
     // Local
-    //	char			line[80];
-    //	int				nfields;
-    int				ilen;
+    //  char            line[80];
+    //  int             nfields;
+    int             ilen;
 
-    int				itmb;
-    int				itdo[21+1];
-    int				scan_nerrors[21+1];
-    bool			scan_gosub=false;
-    char			s='s';
+    int             itmb;
+    int             itdo[21+1];
+    int             scan_nerrors[21+1];
+    bool            scan_gosub=false;
+    char            s='s';
 
-    int				i;
-    int				n;
-    int				nwrite;
+    int             i;
+    int             n;
+    int             nwrite;
 
-    int				ibyte;
-    int				nbytes;
+    int             ibyte;
+    int             nbytes;
 
-    int				iadr;
-    int				iadr_base;
-    int				iblock;
-    int				iblock_template;
+    int             iadr;
+    int             iadr_base;
+    int             iblock;
+    int             iblock_template;
 
-    int				icomplete;
-    int				icmd;
-    string			cmd;
+    int             icomplete;
+    int             icmd;
+    string          cmd;
 
-    int				length;
-    unsigned long	xruntest_time;
-    int				xrepeat_times;
-    int				xdr_length;
+    int             length;
+    unsigned long   xruntest_time;
+    int             xrepeat_times;
+    int             xdr_length;
 
-    int				state;
-    int				state_previous;
-    string			sstate;
+    int             state;
+    int             state_previous;
+    string          sstate;
 
 
-    int				iadr_xsdrtdo;
-    int				prom_id;
+    int             iadr_xsdrtdo;
+    int             prom_id;
 
-    char			colon=':';
-    string			ssize;
-    char			cmsg[28+1]="Your mother wears army boots";
+    char            colon=':';
+    string          ssize;
+    char            cmsg[28+1]="Your mother wears army boots";
 
     // File names
-    FILE*			xsvf_file=NULL;
-    string			xsvf_file_name_default;
+    FILE*           xsvf_file=NULL;
+    string          xsvf_file_name_default;
 
-    //	FILE*			log_file=NULL;
-    string			log_file_name;
-    string			log_file_name_default;
+    //  FILE*           log_file=NULL;
+    string          log_file_name;
+    string          log_file_name_default;
 
     // Dynamic arrays
-    const int		mx_tdi=8196;
-    const int		mx_tdo=8196;
-    const int		mx_xsvf_image=13*1024*1024;	// needed for tmb mezzanine proms
+    const int       mx_tdi=8196;
+    const int       mx_tdo=8196;
+    const int       mx_xsvf_image=13*1024*1024; // needed for tmb mezzanine proms
 
-    char			*rdf;				rdf = new char [mx_bitstream];
-    char			*tck;				tck = new char [mx_bitstream];
-    char			*tms;				tms = new char [mx_bitstream];	
-    char			*tdi;				tdi = new char [mx_bitstream];
-    unsigned char	*tdo2d[mx_bitstream];for (i=0; i<mx_bitstream; i++) tdo2d[i] = new unsigned char [21+1];//char tdo2d[mx_bitstream][21+1]
-    char			*tdo;				tdo         = new          char [mx_bitstream];
-    unsigned char	*tdoexpected;		tdoexpected = new unsigned char [mx_tdo];
-    unsigned char	*tdomask;			tdomask     = new unsigned char [mx_tdo];
-    unsigned char	*tdivalue;			tdivalue    = new unsigned char [mx_tdi];
-    unsigned char	*xsvf_image;		xsvf_image  = new unsigned char [mx_xsvf_image];
+    char            *rdf;               rdf = new char [mx_bitstream];
+    char            *tck;               tck = new char [mx_bitstream];
+    char            *tms;               tms = new char [mx_bitstream];  
+    char            *tdi;               tdi = new char [mx_bitstream];
+    unsigned char   *tdo2d[mx_bitstream];for (i=0; i<mx_bitstream; i++) tdo2d[i] = new unsigned char [21+1];//char tdo2d[mx_bitstream][21+1]
+    char            *tdo;               tdo         = new          char [mx_bitstream];
+    unsigned char   *tdoexpected;       tdoexpected = new unsigned char [mx_tdo];
+    unsigned char   *tdomask;           tdomask     = new unsigned char [mx_tdo];
+    unsigned char   *tdivalue;          tdivalue    = new unsigned char [mx_tdi];
+    unsigned char   *xsvf_image;        xsvf_image  = new unsigned char [mx_xsvf_image];
 
     // Local
-    int				length_sw;
-    int				length_min;
+    int             length_sw;
+    int             length_min;
 
-    int				imode;
-    int				imode_write    = 0;
-    int				imode_verify   = 1;
-    int				imode_usercode = 2;
-    string			smode[3]={"Write  Mode","Verify Mode","Usercode   "};
-    bool			mode_switch;
-    long int		usercode;
+    int             imode;
+    int             imode_write    = 0;
+    int             imode_verify   = 1;
+    int             imode_usercode = 2;
+    string          smode[3]={"Write  Mode","Verify Mode","Usercode   "};
+    bool            mode_switch;
+    long int        usercode;
 
-    int				xendir_state = 0;
-    int				xenddr_state = 0;
+    int             xendir_state = 0;
+    int             xenddr_state = 0;
 
-    double			pct_done;
-    double			pct_done_old;
-    double			delta;
-    clock_t			startClock;
-    clock_t			endClock;
-    int				iseconds;
+    double          pct_done;
+    double          pct_done_old;
+    double          delta;
+    clock_t         startClock;
+    clock_t         endClock;
+    int             iseconds;
 
-    int				opcode;
-    int				reg_len;
-    int				chip_id;
-    long int		idcode;
-    int				ichain;
+    int             opcode;
+    int             reg_len;
+    int             chip_id;
+    long int        idcode;
+    int             ichain;
 
-    //	unsigned short	id_reg[4];
-    //	int				id_slot;
-    //	int				id_ver;
-    //	int				id_type;
-    //	int				id_month;
-    //	int				id_day;
-    //	int				id_year;
-    //	int				id_rev;
-    //	int				id_rev_day;
-    //	int				id_rev_month;
-    //	int				id_rev_year;
-    //	int				id_rev_fpga;
-    //	int				boot_data;
+    //  unsigned short  id_reg[4];
+    //  int             id_slot;
+    //  int             id_ver;
+    //  int             id_type;
+    //  int             id_month;
+    //  int             id_day;
+    //  int             id_year;
+    //  int             id_rev;
+    //  int             id_rev_day;
+    //  int             id_rev_month;
+    //  int             id_rev_year;
+    //  int             id_rev_fpga;
+    //  int             boot_data;
 
     // VME registers
-    const unsigned long	vme_idreg_adr	= 0x000000;
-    const unsigned long	vme_prom_adr	= 0x000012;
-    const unsigned long	vme_dsn_adr		= 0x000026;
+    const unsigned long vme_idreg_adr   = 0x000000;
+    const unsigned long vme_prom_adr    = 0x000012;
+    const unsigned long vme_dsn_adr     = 0x000026;
 
-    int				vme_en=1;
-    bool			nonzero_tdomask;
-    bool			alwaysread;
-    unsigned char	rd_bit;
-    unsigned char	rd_byte[21+1];
-    int				ibit;
-    int				nbit;
-    int				m;
-    int				itms;
-    unsigned char	ibread;
-    unsigned char	ibexpect;
+    int             vme_en=1;
+    bool            nonzero_tdomask;
+    bool            alwaysread;
+    unsigned char   rd_bit;
+    unsigned char   rd_byte[21+1];
+    int             ibit;
+    int             nbit;
+    int             m;
+    int             itms;
+    unsigned char   ibread;
+    unsigned char   ibexpect;
 
-    int				tmb_global_slot = 26;
-    int				tmb_brcst_slot  = 27;
-    unsigned short	firmware_normal	= 0xC;
-    unsigned short	firmware_debug	= 0xD;
+    int             tmb_global_slot = 26;
+    int             tmb_brcst_slot  = 27;
+    unsigned short  firmware_normal = 0xC;
+    unsigned short  firmware_debug  = 0xD;
 
     // Debugging
-    //	wrlog=false;	// disable logging
-    wrlog=true;		// enable   logging
+    //  wrlog=false;    // disable logging
+    wrlog=true;     // enable   logging
 
     //-----------------------------------------------------------------------------
     // Program PROMs with XSVF file via TMB Boot Register
@@ -192,14 +192,14 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
     scan_ntmbs       = 1;
     scan_islot[1]    = islot;
     scan_boot_adr[1] = boot_adr;
-    ichain           = 0x0008;	// User PROM chain
+    ichain           = 0x0008;  // User PROM chain
 
     // Open files
     // L5050:
-    startClock = clock();						// start timing
+    startClock = clock();                       // start timing
 
     if (xsvf_file!=NULL) fclose(xsvf_file);
-    //	if (log_file !=NULL) fclose(log_file );
+    //  if (log_file !=NULL) fclose(log_file );
 
     xsvf_file  = fopen(xsvf_file_name.c_str(),"rb");
     debug_file = log_file;
@@ -213,18 +213,18 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
     if (ichain == 0x0008) {
         printf("\n");
 
-        for (itmb=1; itmb<=scan_ntmbs; ++itmb) {				// Loop over TMBs
-            for (prom_id=0; prom_id<=1; ++prom_id) {				// Loop over proms
+        for (itmb=1; itmb<=scan_ntmbs; ++itmb) {                // Loop over TMBs
+            for (prom_id=0; prom_id<=1; ++prom_id) {                // Loop over proms
 
-                ichain = 0x0008;										// User PROM chain
+                ichain = 0x0008;                                        // User PROM chain
                 adr    = scan_boot_adr[itmb];
-                vme_jtag_anystate_to_rti(adr,ichain);					// Take TAP to RTI
+                vme_jtag_anystate_to_rti(adr,ichain);                   // Take TAP to RTI
 
-                opcode  = 0xFE;											// IDcode opcode
-                reg_len = 32;											// IDcode length
-                chip_id = prom_id;										// Loop over PROM chips
-                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+                opcode  = 0xFE;                                         // IDcode opcode
+                reg_len = 32;                                           // IDcode length
+                chip_id = prom_id;                                      // Loop over PROM chips
+                vme_jtag_write_ir(adr,ichain,chip_id,opcode);           // Set opcode
+                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);  // Write 0's read idcode
 
                 tdi_to_i4(tdo,idcode,32,0);
 
@@ -239,11 +239,11 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
                     ilen  = 0;
                 }
 
-                opcode  = 0xFD;											// PROM USERcode opcode
-                reg_len = 32;											// Usercode length
+                opcode  = 0xFD;                                         // PROM USERcode opcode
+                reg_len = 32;                                           // Usercode length
 
-                vme_jtag_write_ir(adr,ichain,chip_id,opcode);			// Set opcode
-                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);	// Write 0's read idcode
+                vme_jtag_write_ir(adr,ichain,chip_id,opcode);           // Set opcode
+                vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);  // Write 0's read idcode
                 tdi_to_i4(tdo,usercode,32,0);
 
                 if (wrlog)
@@ -251,21 +251,21 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
                 fprintf(stdout,"\tTMB %2i slot %2i PROM%1i IDcode=%8.8X %sKbit USERcode=%8.8X\n",itmb,scan_islot[itmb],chip_id,idcode,ssize.c_str(),usercode);
 
                 if (ilen==0) pause("Can not determine PROM size");
-            }	// close prom_id
+            }   // close prom_id
             printf("\n");
-        }	// close itmb
-    }	// close userprom chain
+        }   // close itmb
+    }   // close userprom chain
 
     // Select JTAG chain in Boot Register
     adr     = boot_adr;
-    status  = vme_read (adr,rd_data);				// Get current boot reg
-    wr_data = rd_data & 0xFFF8;						// zero tck, tms, tdi
+    status  = vme_read (adr,rd_data);               // Get current boot reg
+    wr_data = rd_data & 0xFFF8;                     // zero tck, tms, tdi
     status  = vme_write(adr,wr_data);
 
-    wr_data = wr_data & 0xFF80 | (ichain << 3);		// Select new chain id
+    wr_data = wr_data & 0xFF80 | (ichain << 3);     // Select new chain id
     status  = vme_write(adr,wr_data);
 
-    wr_data = wr_data | (1 << 7);					// Commandeer the jtag chain
+    wr_data = wr_data | (1 << 7);                   // Commandeer the jtag chain
     status  = vme_write(adr,wr_data);
 
     // Load xsvf file into memory
@@ -291,12 +291,12 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
     // Take TAP controller to TLR, ala Xilinx writer
     nwrite=12;
     for (i=0; i<nwrite; i=i+2) {
-        tck[i  ]=0;	tms[i  ]=1;	tdi[i  ]=0;
-        tck[i+1]=1;	tms[i+1]=1;	tdi[i+1]=0;
+        tck[i  ]=0; tms[i  ]=1; tdi[i  ]=0;
+        tck[i+1]=1; tms[i+1]=1; tdi[i+1]=0;
     }
 
     for (i=0; i<nwrite; ++i) {
-        wr_data =	(tdi[i] << 0) |
+        wr_data =   (tdi[i] << 0) |
             (tms[i] << 1) |
             (tck[i] << 2) |
             (ichain << 3) |
@@ -313,12 +313,12 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
     erased      = false;
     mode_switch = false;
     idevice     = -1;
-    imode       = imode_verify;	// 0=write proms, 1=verify proms
+    imode       = imode_verify; // 0=write proms, 1=verify proms
     length_min  = 0x100;
     length_sw   = 0x100;
 
-    xruntest_time   = 0;		// initial
-    xrepeat_times   = 32;		// default
+    xruntest_time   = 0;        // initial
+    xrepeat_times   = 32;       // default
     nonzero_tdomask = false;
     alwaysread      = true;
 
@@ -330,7 +330,7 @@ L5600:
 
         case 0x00: cmd = "XCOMPLETE  ";
                    icomplete++;
-                   vme_pop(boot_adr,itdo);			// purge write buffer
+                   vme_pop(boot_adr,itdo);          // purge write buffer
                    if (wrlog) fprintf(log_file,"%s Xcomplete command encountered\n",cmd.c_str());
                    if (icomplete!=1) {
                        if (wrlog) fprintf(log_file,"Multiple XCOMPLETEs encountered\n");
@@ -371,64 +371,64 @@ L5600:
                        fprintf(log_file,"\n");}
 
                    // Take TAP to Shift-IR, TMS=HHLL, assume we were in RTI before
-                   nwrite = 8;		// popluate tck[7:0]
-                   m      = 0;	
-                   if (state!=1) {	// xsvf left us in TLR, so pre-pend 1 tck with tms=0 to move to RTI
+                   nwrite = 8;      // popluate tck[7:0]
+                   m      = 0;  
+                   if (state!=1) {  // xsvf left us in TLR, so pre-pend 1 tck with tms=0 to move to RTI
                        if (wrlog) fprintf(log_file,"%s WRONG state in XSIR=%2.2X %s, moving to RTI\n",cmd.c_str(),state,sstate.c_str());
-                       nwrite = 10;	// popluate tck[9:0]
-                       m      =  2;	
-                       tck[0]=0;	tms[0]=0;	tdi[0]=0;		// in tlr
-                       tck[1]=1;	tms[1]=0;	tdi[1]=0;		// enters rti
+                       nwrite = 10; // popluate tck[9:0]
+                       m      =  2; 
+                       tck[0]=0;    tms[0]=0;   tdi[0]=0;       // in tlr
+                       tck[1]=1;    tms[1]=0;   tdi[1]=0;       // enters rti
                        state = 1;
-                   }	// close if state
+                   }    // close if state
 
-                   tck[m+0]=0;	tms[m+0]=1;	tdi[m+0]=0;		// in rti			we start at tck[0] or tck[2]
-                   tck[m+1]=1;	tms[m+1]=1;	tdi[m+1]=0;		// enters select-dr
+                   tck[m+0]=0;  tms[m+0]=1; tdi[m+0]=0;     // in rti           we start at tck[0] or tck[2]
+                   tck[m+1]=1;  tms[m+1]=1; tdi[m+1]=0;     // enters select-dr
 
-                   tck[m+2]=0;	tms[m+2]=1;	tdi[m+2]=0;		// in select-dr
-                   tck[m+3]=1;	tms[m+3]=1;	tdi[m+3]=0;		// enters select-ir
+                   tck[m+2]=0;  tms[m+2]=1; tdi[m+2]=0;     // in select-dr
+                   tck[m+3]=1;  tms[m+3]=1; tdi[m+3]=0;     // enters select-ir
 
-                   tck[m+4]=0;	tms[m+4]=0;	tdi[m+4]=0;		// in select-ir
-                   tck[m+5]=1;	tms[m+5]=0;	tdi[m+5]=0;		// enters capture-ir
+                   tck[m+4]=0;  tms[m+4]=0; tdi[m+4]=0;     // in select-ir
+                   tck[m+5]=1;  tms[m+5]=0; tdi[m+5]=0;     // enters capture-ir
 
-                   tck[m+6]=0;	tms[m+6]=0;	tdi[m+6]=0;		// in capture-ir
-                   tck[m+7]=1;	tms[m+7]=0;	tdi[m+7]=0;		// enters shift-ir	we end at tck[7] or tck[9]
+                   tck[m+6]=0;  tms[m+6]=0; tdi[m+6]=0;     // in capture-ir
+                   tck[m+7]=1;  tms[m+7]=0; tdi[m+7]=0;     // enters shift-ir  we end at tck[7] or tck[9]
 
                    // Shift in TDI value, hold tms low to stay in Shift-IR
                    if (length==0) stop("XSIR unexpected 0 length");
-                   m      = nwrite;						// pointer into tck,tms,tdi next avail adr
-                   nwrite = nwrite+length*2;				// number bits in tck,tms,tdi
-                   nbit   = 0;								// number bits stored by this section
-                   itms   = 0;								// 
-                   for (i=n-1; i>=0; --i)	{				// loop over tdi bytes
-                       ibyte=tdivalue[i];						// extract 1 tdi byte
+                   m      = nwrite;                     // pointer into tck,tms,tdi next avail adr
+                   nwrite = nwrite+length*2;                // number bits in tck,tms,tdi
+                   nbit   = 0;                              // number bits stored by this section
+                   itms   = 0;                              // 
+                   for (i=n-1; i>=0; --i)   {               // loop over tdi bytes
+                       ibyte=tdivalue[i];                       // extract 1 tdi byte
                        ibyte=ibyte & 0xFF;
-                       for (ibit=0; ibit<=7; ++ibit) {			// unpack bits from tdi byte
+                       for (ibit=0; ibit<=7; ++ibit) {          // unpack bits from tdi byte
                            nbit++;
                            if (nbit<=length*2) {
-                               if (nbit==length) itms=1;				// tms=1 on last IR bit shifted in
-                               rd_bit=(ibyte >> ibit) & 0x1;			// extact 1 bit
-                               tck[m]=0; tms[m]=itms; tdi[m]=rd_bit;	//					we load tck[8] or tck[10]
+                               if (nbit==length) itms=1;                // tms=1 on last IR bit shifted in
+                               rd_bit=(ibyte >> ibit) & 0x1;            // extact 1 bit
+                               tck[m]=0; tms[m]=itms; tdi[m]=rd_bit;    //                  we load tck[8] or tck[10]
                                m++;
-                               tck[m]=1; tms[m]=itms; tdi[m]=rd_bit;	//					we load tck[9] or tck[11]
+                               tck[m]=1; tms[m]=itms; tdi[m]=rd_bit;    //                  we load tck[9] or tck[11]
                                m++;
-                           }	// close if  nbit<=
-                       }	// close for ibit
-                   }	// close for i
+                           }    // close if  nbit<=
+                       }    // close for ibit
+                   }    // close for i
 
                    // Take TAP to RTI if xruntest time is non-zero, else to xendir, which is always RTI anyway
                    m      = nwrite;
                    nwrite = nwrite+4;
 
-                   tck[m+0]=0;	tms[m+0]=1;	tdi[m+0]=0;		// in exit-ir from last shift
-                   tck[m+1]=1;	tms[m+1]=1;	tdi[m+1]=0;		// enter update-ir
+                   tck[m+0]=0;  tms[m+0]=1; tdi[m+0]=0;     // in exit-ir from last shift
+                   tck[m+1]=1;  tms[m+1]=1; tdi[m+1]=0;     // enter update-ir
 
-                   tck[m+2]=0;	tms[m+2]=0;	tdi[m+2]=0;		// in update-ir
-                   tck[m+3]=1;	tms[m+3]=0;	tdi[m+3]=0;		// enter rti
+                   tck[m+2]=0;  tms[m+2]=0; tdi[m+2]=0;     // in update-ir
+                   tck[m+3]=1;  tms[m+3]=0; tdi[m+3]=0;     // enter rti
 
                    // Pack JTAG transitions into boot register format
                    for (i=0; i<nwrite; ++i) {
-                       wr_data =	(tdi[i] << 0) |
+                       wr_data =    (tdi[i] << 0) |
                            (tms[i] << 1) |
                            (tck[i] << 2) |
                            (ichain << 3) |
@@ -444,7 +444,7 @@ L5600:
                    if (xendir_state!=0) stop("XSIR: Unexpected xendir state !=0");
                    break;
 
-        case 0x03: cmd = "XSDR       ";	break;
+        case 0x03: cmd = "XSDR       "; break;
 
         case 0x04: cmd = "XRUNTEST   ";
                    iadr++;
@@ -462,8 +462,8 @@ L5600:
                    if (wrlog) fprintf(log_file,"%s time   = %8.8X uSec\n",cmd.c_str(),xruntest_time);
                    break;
 
-        case 0x05: cmd = "XUNDEFINED5";	break;
-        case 0x06: cmd = "XUNDEFINED6";	break;
+        case 0x05: cmd = "XUNDEFINED5"; break;
+        case 0x06: cmd = "XUNDEFINED6"; break;
 
         case 0x07: cmd = "XREPEAT    ";
                    iadr++;
@@ -493,14 +493,14 @@ L5600:
                    length=xdr_length;
                    if (length>mx_tdi) stop("mx_tdi ovf in xsdrtdo");
 
-                   if (length >length_min) {		// its a data block,not a command block
-                       if (length!=length_sw ) {		// mode switched
+                   if (length >length_min) {        // its a data block,not a command block
+                       if (length!=length_sw ) {        // mode switched
                            length_sw=length;
-                           imode=(imode+1)%2;				// new mode 0->1 or 1->0
+                           imode=(imode+1)%2;               // new mode 0->1 or 1->0
                            mode_switch=true;
                        }}
 
-                   if (mode_switch || (erased && length>length_min && !mode_switch)) {	// display new mode
+                   if (mode_switch || (erased && length>length_min && !mode_switch)) {  // display new mode
                        erased      = false;
                        mode_switch = false;
                        printf("\tStarting %s on device %1i\t\t\n",smode[imode].c_str(),idevice);
@@ -513,22 +513,22 @@ L5600:
                        ibyte=xsvf_image[iadr];
                        if (i>mx_tdi) pause("tdi ovf");
                        tdivalue[i]=ibyte & 0xFF;
-                   }	// close for i
+                   }    // close for i
                    if (wrlog) {
                        fprintf(log_file,"%s length = %8.8X bits TDIvalue    = ",cmd.c_str(),length);
                        for (i=0; i<n; ++i) fprintf(log_file,"%2.2X",tdivalue[i]);
                        fprintf(log_file,"\n");}
 
                    // XSDRTDO, the tdo part
-                   length=xdr_length;	// length in bits
+                   length=xdr_length;   // length in bits
                    if (length > mx_tdo) stop("mx_tdo ovf in xsdrtdo");
-                   n=(length-1)/8+1;	// length in bytes
+                   n=(length-1)/8+1;    // length in bytes
                    for (i=0; i<n; ++i) {
                        iadr++;
                        ibyte=xsvf_image[iadr];
                        if (i > mx_tdo) pause("tdo ovf");
                        tdoexpected[i]=ibyte & 0xFF;
-                   }	// close for i
+                   }    // close for i
                    if (wrlog) {
                        fprintf(log_file,"%s length = %8.8X bits TDOexpected = ",cmd.c_str(),length);
                        for (i=0; i<n; ++i) fprintf(log_file,"%2.2X",tdoexpected[i]);
@@ -543,76 +543,76 @@ L5600:
 
                    nwrite=6;
 
-                   tck[0]=0;	tms[0]=1;	tdi[0]=0;	rdf[0]=0;	// in rti
-                   tck[1]=1;	tms[1]=1;	tdi[1]=0;	rdf[1]=0;	// enter select-dr
+                   tck[0]=0;    tms[0]=1;   tdi[0]=0;   rdf[0]=0;   // in rti
+                   tck[1]=1;    tms[1]=1;   tdi[1]=0;   rdf[1]=0;   // enter select-dr
 
-                   tck[2]=0;	tms[2]=0;	tdi[2]=0;	rdf[2]=0;	// in select-dr
-                   tck[3]=1;	tms[3]=0;	tdi[3]=0;	rdf[3]=0;	// enter capture-dr
+                   tck[2]=0;    tms[2]=0;   tdi[2]=0;   rdf[2]=0;   // in select-dr
+                   tck[3]=1;    tms[3]=0;   tdi[3]=0;   rdf[3]=0;   // enter capture-dr
 
-                   tck[4]=0;	tms[4]=0;	tdi[4]=0;	rdf[4]=0;	// in capture-dr
-                   tck[5]=1;	tms[5]=0;	tdi[5]=0;	rdf[5]=0;	// enters shift-dr
+                   tck[4]=0;    tms[4]=0;   tdi[4]=0;   rdf[4]=0;   // in capture-dr
+                   tck[5]=1;    tms[5]=0;   tdi[5]=0;   rdf[5]=0;   // enters shift-dr
 
                    // Shift in TDI value, hold tms low to stay in Shift-DR
                    if (length==0) stop("XSDRTDO unexpected 0 length");
-                   m=nwrite;							// pointer into tck,tms,tdi next available adr
-                   nwrite=nwrite+length*2;				// number bits in tck,tms,tdi
+                   m=nwrite;                            // pointer into tck,tms,tdi next available adr
+                   nwrite=nwrite+length*2;              // number bits in tck,tms,tdi
                    if (nwrite>=mx_bitstream) stop("mxbitstream ovf");
-                   nbit=0;								// number bits stored by this section
-                   itms=0;	
-                   for (i=n-1; i>=0; --i) {			// loop over tdi bytes
-                       ibyte=tdivalue[i];					// extract 1 tdi byte
-                       for (ibit=0; ibit<=7; ++ibit) {		// unpack bits from tdi byte
+                   nbit=0;                              // number bits stored by this section
+                   itms=0;  
+                   for (i=n-1; i>=0; --i) {         // loop over tdi bytes
+                       ibyte=tdivalue[i];                   // extract 1 tdi byte
+                       for (ibit=0; ibit<=7; ++ibit) {      // unpack bits from tdi byte
                            nbit++;
                            if (nbit <= length*2) {
-                               if (nbit == length)itms=1;			// tms=1 on last DR bit shifted in
-                               rd_bit=(ibyte >> ibit) & 0x1;		// extact 1 bit
-                               tck[m]=0; tms[m]=itms; tdi[m]=rd_bit;	rdf[m]=1;
+                               if (nbit == length)itms=1;           // tms=1 on last DR bit shifted in
+                               rd_bit=(ibyte >> ibit) & 0x1;        // extact 1 bit
+                               tck[m]=0; tms[m]=itms; tdi[m]=rd_bit;    rdf[m]=1;
                                m++;
-                               tck[m]=1; tms[m]=itms; tdi[m]=rd_bit;	rdf[m]=0;
+                               tck[m]=1; tms[m]=itms; tdi[m]=rd_bit;    rdf[m]=0;
                                m++;
-                           }	// close if nbit <= length*2
-                       }	// close for ibit
-                   }	// close for n
+                           }    // close if nbit <= length*2
+                       }    // close for ibit
+                   }    // close for n
 
                    // Take TAP to RTI if xruntest time is non-zero, else to xendir, which is always RTI anyway
                    m=nwrite;
                    nwrite=nwrite+4;
                    if (nwrite >= mx_bitstream) stop("mx_bitstream ovf");
 
-                   tck[m+0]=0;	tms[m+0]=1;	tdi[m+0]=0;	rdf[m+0]=0;	// in exit-dr from last shift
-                   tck[m+1]=1;	tms[m+1]=1;	tdi[m+1]=0;	rdf[m+1]=0;	// enter update-dr
+                   tck[m+0]=0;  tms[m+0]=1; tdi[m+0]=0; rdf[m+0]=0; // in exit-dr from last shift
+                   tck[m+1]=1;  tms[m+1]=1; tdi[m+1]=0; rdf[m+1]=0; // enter update-dr
 
-                   tck[m+2]=0;	tms[m+2]=0;	tdi[m+2]=0;	rdf[m+2]=0;	// in update-dr
-                   tck[m+3]=1;	tms[m+3]=0;	tdi[m+3]=0;	rdf[m+3]=0;	// enter rti
+                   tck[m+2]=0;  tms[m+2]=0; tdi[m+2]=0; rdf[m+2]=0; // in update-dr
+                   tck[m+3]=1;  tms[m+3]=0; tdi[m+3]=0; rdf[m+3]=0; // enter rti
 
                    // Pack JTAG transitions into boot register format
                    ibyte = 0;
                    ibit  = 0;
 
-                   for (itmb=1; itmb<=scan_ntmbs; ++itmb) {	// clear tdo array for display in case no-read
+                   for (itmb=1; itmb<=scan_ntmbs; ++itmb) { // clear tdo array for display in case no-read
                        rd_byte[itmb]=0;
                        for (i=0; i<nwrite; ++i) {
                            tdo2d[i][itmb]=0;
                        }}
 
                    for (i=0; i<nwrite; ++i) {
-                       wr_data=	(tdi[i] << 0) |
+                       wr_data= (tdi[i] << 0) |
                            (tms[i] << 1) |
                            (tck[i] << 2) |
                            (ichain << 3) |
                            (vme_en << 7);
                        vme_push(boot_adr,wr_data);
 
-                       if (rdf[i]==1 && (nonzero_tdomask || alwaysread)) {	// tdo readback required
-                           vme_pop(boot_adr,itdo);								// purge write buffer, read tdo
+                       if (rdf[i]==1 && (nonzero_tdomask || alwaysread)) {  // tdo readback required
+                           vme_pop(boot_adr,itdo);                              // purge write buffer, read tdo
 
                            for (itmb=1; itmb<=scan_ntmbs; ++itmb) {
-                               rd_byte[itmb]=rd_byte[itmb] | (itdo[itmb] << ibit);	// pack tdo bits into bytes
-                               tdo2d[ibyte][itmb]=rd_byte[itmb];					// store now, in case less than 8 bits in the byte
-                           }	// close itmb
+                               rd_byte[itmb]=rd_byte[itmb] | (itdo[itmb] << ibit);  // pack tdo bits into bytes
+                               tdo2d[ibyte][itmb]=rd_byte[itmb];                    // store now, in case less than 8 bits in the byte
+                           }    // close itmb
                            ibit++;
 
-                           if (ibit==8) {										// pack bytes into array
+                           if (ibit==8) {                                       // pack bytes into array
                                ibyte++;
                                if (ibyte >= mx_bitstream) stop("mx_bitstream ovf");
                                ibit=0;
@@ -621,9 +621,9 @@ L5600:
                                    rd_byte[itmb]=0;
                                }
 
-                           }	// close ibit
-                       }	// close rdf
-                   }	// close i
+                           }    // close ibit
+                       }    // close rdf
+                   }    // close i
 
                    // Compare tdo-read to tdo-expected using tdo-mask
                    for (itmb=1; itmb<=scan_ntmbs; ++itmb) {
@@ -633,7 +633,7 @@ L5600:
                            for (i=n-1; i>=0; --i) fprintf(log_file,"%2.2X",tdo2d[i][itmb]);
                            fprintf(log_file,"  itmb=%2i slot=%2i\n",itmb,scan_islot[itmb]);}
 
-                       if (nonzero_tdomask) {	// tdo readback comparison required
+                       if (nonzero_tdomask) {   // tdo readback comparison required
                            for (i=0; i<n; ++i) {
                                ibread   = tdo2d[n-1-i][itmb] & tdomask[i];
                                ibexpect = tdoexpected[i]     & tdomask[i];
@@ -644,10 +644,10 @@ L5600:
                                        fprintf(log_file,"TDO error in byte %5i masked(read=%2.2X expect=%2.2X) unmasked(read=%2.2X expect=%2.2X)%9i\n",
                                                i,ibread,ibexpect,tdo2d[n-1-i][itmb],tdoexpected[i],scan_nerrors[itmb]);
 
-                               }	// close ibread
-                           }	// close i
-                       }	// close nonzero
-                   }	// close itmb
+                               }    // close ibread
+                           }    // close i
+                       }    // close nonzero
+                   }    // close itmb
 
                    // Wait xruntest time
                    if (xruntest_time>0)
@@ -657,14 +657,14 @@ L5600:
                    if (xenddr_state!=0) stop("XSIR: Unexpected xenddr 0 state");
                    break;
 
-        case 0x0A: cmd = "XSETSDRMASK";	break;
-        case 0x0B: cmd = "XSDRINC    ";	break;
-        case 0x0C: cmd = "XSDRB      ";	break;
-        case 0x0D: cmd = "XSDRC      ";	break;
-        case 0x0E: cmd = "XSDRE      ";	break;
-        case 0x0F: cmd = "XSDRTDOB   ";	break;
-        case 0x10: cmd = "XSDRTDOC   ";	break;
-        case 0x11: cmd = "XSDRTDOE   ";	break;
+        case 0x0A: cmd = "XSETSDRMASK"; break;
+        case 0x0B: cmd = "XSDRINC    "; break;
+        case 0x0C: cmd = "XSDRB      "; break;
+        case 0x0D: cmd = "XSDRC      "; break;
+        case 0x0E: cmd = "XSDRE      "; break;
+        case 0x0F: cmd = "XSDRTDOB   "; break;
+        case 0x10: cmd = "XSDRTDOC   "; break;
+        case 0x11: cmd = "XSDRTDOE   "; break;
 
         case 0x12: cmd = "XSTATE     ";
                    iadr++;
@@ -681,18 +681,18 @@ L5600:
                    {
                        nwrite=12;
                        for (i=0; i<nwrite; i=i+2) {
-                           tck[i  ]=0;	tms[i  ]=1;	tdi[i  ]=0;
-                           tck[i+1]=1;	tms[i+1]=1;	tdi[i+1]=0;
-                       }	// close for i
-                   }	// close if state
+                           tck[i  ]=0;  tms[i  ]=1; tdi[i  ]=0;
+                           tck[i+1]=1;  tms[i+1]=1; tdi[i+1]=0;
+                       }    // close for i
+                   }    // close if state
 
                    // State 01 take TAP to RTI by setting TMS-0 and toggling TCK 1 time
                    else if (state==1)
                    {
                        if (state_previous!=0) stop("XSTATE: previous state was not TLR");
                        nwrite=2;
-                       tck[ 0]=0;	tms[ 0]=0;	tdi[ 0]=0;
-                       tck[ 1]=1;	tms[ 1]=0;	tdi[ 1]=0;
+                       tck[ 0]=0;   tms[ 0]=0;  tdi[ 0]=0;
+                       tck[ 1]=1;   tms[ 1]=0;  tdi[ 1]=0;
                    }
 
                    // Undefined state
@@ -707,7 +707,7 @@ L5600:
 
                    // Pack JTAG transitions into boot register format
                    for (i=0; i<nwrite; ++i) {
-                       wr_data=	(tdi[i] << 0) |
+                       wr_data= (tdi[i] << 0) |
                            (tms[i] << 1) |
                            (tck[i] << 2) |
                            (ichain << 3) |
@@ -736,10 +736,10 @@ L5600:
                    if (wrlog) fprintf(log_file,"%s state  = %2.2X %s\n",cmd.c_str(),xenddr_state,sstate.c_str());
                    break;
 
-        case 0x15: cmd = "XSIR2      ";	break;
-        case 0x16: cmd = "XCOMMENT   ";	break;
+        case 0x15: cmd = "XSIR2      "; break;
+        case 0x16: cmd = "XCOMMENT   "; break;
 
-                   //	Close switch
+                   //   Close switch
     }
 
     // Command case not found
@@ -767,7 +767,7 @@ L5600:
 
     // Disengage Boot Register from JTAG chain
     adr     = boot_adr;
-    wr_data = (0xC << 3);	// idle to empty jtag chain address
+    wr_data = (0xC << 3);   // idle to empty jtag chain address
     status  = vme_write(adr,wr_data);
 
     // Summary
@@ -793,7 +793,7 @@ L5600:
 
     // Close VME interface
     status = vme_close();
-    //	goto main_menu;
+    //  goto main_menu;
     goto exit;
 
     //-----------------------------------------------------------------------------
@@ -808,15 +808,15 @@ exit:
 //-----------------------------------------------------------------------------
 void shift(unsigned char array[], int &len)
 {
-    unsigned char	carry;
-    unsigned char	ibyte;
-    int				i;
+    unsigned char   carry;
+    unsigned char   ibyte;
+    int             i;
 
     carry = 0;
     for (i=len-1; i>=1; --i) {
         ibyte   =  array[i];
         array[i]= (ibyte << 1) | (carry << 0);
-        carry   = (ibyte >> 7) & 0x1;	// msb this byte, carries to lsb next byte
+        carry   = (ibyte >> 7) & 0x1;   // msb this byte, carries to lsb next byte
     }
     array[0]=carry;
     return;
@@ -829,21 +829,21 @@ void xsvf_wait (unsigned long &usec, unsigned long &boot_adr, unsigned short &bo
 {
     // common/status_common/
     // Local
-    static bool		first_entry=true;
-    static double	tck_per_usec;
-    long			nbwrite;
-    unsigned short	wr_data;
-    long			status;
-    int				tck_lo;
-    int				tck_hi;
-    int				i;
-    int				n;
-    int				ncycles;
-    int				pulse_tck[2];
-    bool			wrlog_saved;
-    double			delta;
-    clock_t			startClock;
-    clock_t			endClock;
+    static bool     first_entry=true;
+    static double   tck_per_usec;
+    long            nbwrite;
+    unsigned short  wr_data;
+    long            status;
+    int             tck_lo;
+    int             tck_hi;
+    int             i;
+    int             n;
+    int             ncycles;
+    int             pulse_tck[2];
+    bool            wrlog_saved;
+    double          delta;
+    clock_t         startClock;
+    clock_t         endClock;
 
     // On first entry calibrate CPU speed
     if (wrlog) fprintf(debug_file,"WAIT: %10i microseconds\n",usec);
@@ -857,7 +857,7 @@ void xsvf_wait (unsigned long &usec, unsigned long &boot_adr, unsigned short &bo
             wr_buf[i]=boot_reg;
         }
 
-        startClock = clock();								// start timing
+        startClock = clock();                               // start timing
         ncycles = 320;
         nbwrite = n;
 
@@ -865,28 +865,28 @@ void xsvf_wait (unsigned long &usec, unsigned long &boot_adr, unsigned short &bo
             status=vme_bwrite(boot_adr,wr_buf,nbwrite);
         }
 
-        endClock = clock();									// stop timing
+        endClock = clock();                                 // stop timing
         delta    = (float)(endClock-startClock)/(float)CLOCKS_PER_SEC;
-        if (delta < 1.0e-06) delta=1.0e-01;					// do not allow divide by 0
-        tck_per_usec=0.5*float(n*ncycles)/(delta*1.0e06);	// tcks per microsecond, takes 2 pushes per tck period
+        if (delta < 1.0e-06) delta=1.0e-01;                 // do not allow divide by 0
+        tck_per_usec=0.5*float(n*ncycles)/(delta*1.0e06);   // tcks per microsecond, takes 2 pushes per tck period
         printf("\tTCK/uSec=%8.6f deltaT=%6.4f for cycles=%6i\n",tck_per_usec,delta,n*ncycles);
 
-        tck_per_usec=tck_per_usec*0.9725;					// correction for actual Bit3 timing
-    }	// close if(first
+        tck_per_usec=tck_per_usec*0.9725;                   // correction for actual Bit3 timing
+    }   // close if(first
 
     // Wait for microseconds using calibrated TCK speed
-    wrlog_saved = wrlog;	// turn off logging
+    wrlog_saved = wrlog;    // turn off logging
     wrlog      = false;
 
     if (usec>1000000) {
         erased=true;
         idevice++;
         printf("\r\tErasing device%2i %6i seconds\t\t\t\n",idevice,usec/1000000);
-        startClock = clock();			// start timing
+        startClock = clock();           // start timing
     }
 
-    tck_lo = boot_reg & 0xFFFB;		// tck=0
-    tck_hi = boot_reg | 0x0004;		// tck=1
+    tck_lo = boot_reg & 0xFFFB;     // tck=0
+    tck_hi = boot_reg | 0x0004;     // tck=1
 
     pulse_tck[0] = tck_lo;
     pulse_tck[1] = tck_hi;
@@ -899,7 +899,7 @@ void xsvf_wait (unsigned long &usec, unsigned long &boot_adr, unsigned short &bo
     }
 
     if (usec>1000000) {
-        endClock = clock();							// stop timing
+        endClock = clock();                         // stop timing
         delta    = (float)(endClock-startClock)/(float)CLOCKS_PER_SEC;
         if (wrlog)
             fprintf(debug_file,"Erase elapsed time   %5.2f\n",delta);
@@ -915,22 +915,22 @@ void xsvf_wait (unsigned long &usec, unsigned long &boot_adr, unsigned short &bo
 //-----------------------------------------------------------------------------
 void vme_push(unsigned long &boot_adr, unsigned short &wr_data)
 {
-    //	common/status_common/
+    //  common/status_common/
     // Local
-    long			status;
-    int				itdi;
-    int				itms;
-    int				itck;
-    int				ichain;
-    int				ivme_en;
-    int				npush_thresh=4095;
-    long			nbwrite;
+    long            status;
+    int             itdi;
+    int             itms;
+    int             itck;
+    int             ichain;
+    int             ivme_en;
+    int             npush_thresh=4095;
+    long            nbwrite;
 
     // Push data onto stack
-    wr_buf[npush]=wr_data;						// push
-    npush++;									// words in write buffer
-    npush_total++;								// total words written to vme
-    if (npush>npush_peak) npush_peak=npush;		// largest vme buffer
+    wr_buf[npush]=wr_data;                      // push
+    npush++;                                    // words in write buffer
+    npush_total++;                              // total words written to vme
+    if (npush>npush_peak) npush_peak=npush;     // largest vme buffer
 
     // Display data if logging enabled
     if (wrlog) { 
@@ -958,17 +958,17 @@ void vme_push(unsigned long &boot_adr, unsigned short &wr_data)
 //-----------------------------------------------------------------------------
 void vme_pop (unsigned long &boot_adr, int itdo[])
 {
-    //	common/status_common/
+    //  common/status_common/
     // Local
-    long			status;
-    unsigned short	rd_data;
-    //	unsigned short	wr_data;
-    unsigned long	adr;
-    int				itmb;
+    long            status;
+    unsigned short  rd_data;
+    //  unsigned short  wr_data;
+    unsigned long   adr;
+    int             itmb;
 
     // Write partial buffer to vme if its not empty
     if (npush>0) {
-        status=vme_bwrite(boot_adr,wr_buf,npush);	// block writes dont work here, dunno why
+        status=vme_bwrite(boot_adr,wr_buf,npush);   // block writes dont work here, dunno why
         npush=0;
     }
 

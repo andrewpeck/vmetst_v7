@@ -1,9 +1,9 @@
 #ifndef CFEBBX_RD_H
 #define CFEBBX_RD_H
 //------------------------------------------------------------------------------
-//	Reads CFEB nbx Interstage Delay Settings
+//  Reads CFEB nbx Interstage Delay Settings
 //
-//	08/14/09 Ported from posneg_rd
+//  08/14/09 Ported from posneg_rd
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------

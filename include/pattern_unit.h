@@ -7,9 +7,9 @@
 #include "pause.h"
 
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 
 #ifdef debug
 #define dprintf fprintf
@@ -17,7 +17,7 @@
 #define dprintf //
 #endif
 //------------------------------------------------------------------------------
-//	Prototypes
+//  Prototypes
 //------------------------------------------------------------------------------
 void pattern_unit 
 (
@@ -29,12 +29,12 @@ void pattern_unit
  int ly4[],
  int ly5[],
  // Outputs
- int	&pat_nhits,
- int	&pat_id
+ int    &pat_nhits,
+ int    &pat_id
  ); 
 //------------------------------------------------------------------------------
 // Function to sum number of layers hit
-// Returns 	count1s = (inp[5]+inp[4]+inp[3])+(inp[2]+inp[1]+inp[0]);
+// Returns  count1s = (inp[5]+inp[4]+inp[3])+(inp[2]+inp[1]+inp[0]);
 //------------------------------------------------------------------------------
 int count1s(int pat[6]);
 #endif

@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//	Calls dsn_io to read TMB digital serial numbers
+//  Calls dsn_io to read TMB digital serial numbers
 //
-//	01/04/02 Initial
-//	11/13/08 Port to c++
+//  01/04/02 Initial
+//  11/13/08 Port to c++
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -12,9 +12,9 @@
 #include "dsn_io.h"
 using namespace std;
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 
 #ifdef debug
 #define dprintf fprintf
@@ -27,16 +27,16 @@ using namespace std;
 //------------------------------------------------------------------------------------------
 void dsn_rd(unsigned long &vme_dsn_adr, const int &itype, int dsn[])
 {
-    unsigned long	adr;
-    unsigned short	wr_data;
-    unsigned short	rd_data;
+    unsigned long   adr;
+    unsigned short  wr_data;
+    unsigned short  rd_data;
 
-    int				ioffset;
-    int				ibit;
-    int				i;
-    int				j;
-    int				dsn_bit[64];
-    int				idata;
+    int             ioffset;
+    int             ibit;
+    int             i;
+    int             j;
+    int             dsn_bit[64];
+    int             idata;
 
     // VME dsn register offset for mez,0=TMB dsn, 1=Mezzanine dsn
     ioffset = itype*5;

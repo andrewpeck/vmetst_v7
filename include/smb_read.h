@@ -7,9 +7,9 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #include "vme_io_wxp.h"
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 #ifdef debug
 #define dprintf fprintf
 #else

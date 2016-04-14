@@ -1,10 +1,10 @@
 #ifndef CRC22_H
 #define CRC22_H
 //------------------------------------------------------------------------------
-	void crc22a (
-	long int	&din,		// 16 bit integer
-	long int	&crc,		// 22 bit integer
-	int			reset);
+    void crc22a (
+    long int    &din,       // 16 bit integer
+    long int    &crc,       // 22 bit integer
+    int         reset);
 //------------------------------------------------------------------------------
 void nextCRC22_D16(int din[16], int crc[22], int newcrc[22]);
 //------------------------------------------------------------------------------

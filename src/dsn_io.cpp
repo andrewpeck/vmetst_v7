@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//	Digital serial number single I/O cycle
+//  Digital serial number single I/O cycle
 //
-//	01/04/02 Initial
-//	11/13/08 Port to c++
+//  01/04/02 Initial
+//  11/13/08 Port to c++
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -15,9 +15,9 @@
 using namespace std;
 
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 
 #ifdef debug
 #define dprintf fprintf
@@ -31,18 +31,18 @@ using namespace std;
 void dsn_io (unsigned long &adr, unsigned short &wr_data, unsigned short &rd_data)
     //------------------------------------------------------------------------------------------
 {
-    long int		status;
-    unsigned short	wr_datax;
-    int				busy_tmb;
-    int				busy_mez;
-    int				busy_rat;
-    int				busy;
-    int				nbusy;
+    long int        status;
+    unsigned short  wr_datax;
+    int             busy_tmb;
+    int             busy_mez;
+    int             busy_rat;
+    int             busy;
+    int             nbusy;
 
     // Write to the DSN state machine register
     nbusy  = 0;
-    status = vme_write(adr,wr_data);	
-rd:	status = vme_read (adr,rd_data);
+    status = vme_write(adr,wr_data);    
+rd: status = vme_read (adr,rd_data);
 
     busy_tmb = (rd_data >>  3) & 0x1;
     busy_mez = (rd_data >>  8) & 0x1;

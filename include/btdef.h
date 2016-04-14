@@ -160,7 +160,7 @@
 **
 *****************************************************************************/
 
-#define BT_OUI_SBS_CP	(0x00d01cUL)	/* 24 bit company ID */
+#define BT_OUI_SBS_CP   (0x00d01cUL)    /* 24 bit company ID */
 
 /*****************************************************************************
 **
@@ -189,8 +189,8 @@
 #define BT_PCI_DEVICE_2510_1    0x0103  /* Broadcast Memory (PN 85601917)   */
 #define BT_PCI_DEVICE_2590_1    0x0104  /* Shared Memory (PN 85601918)      */
 #define BT_PCI_DEVICE_2591_1    0x0105  /* Shared Memory (PN 85601919)      */
-#define	BT_PCI_DEVICE_2506      0x0110  /* Broadcast Memory VME (PN 85631360*/
-#define	BT_PCI_DEVICE_2516      0x0111  /* Broadcast Memory VME (PN 85631355*/
+#define BT_PCI_DEVICE_2506      0x0110  /* Broadcast Memory VME (PN 85631360*/
+#define BT_PCI_DEVICE_2516      0x0111  /* Broadcast Memory VME (PN 85631355*/
 
 #define BT_PCI_DEVICE_xxxx      0x0200  /* NanoPort card                    */
 
@@ -225,24 +225,24 @@
 **  POSIX type definitions needed
 */
 
-#if	defined(__linux__)
+#if defined(__linux__)
 
-#if	defined(__KERNEL__)
-#include	<linux/types.h>
+#if defined(__KERNEL__)
+#include    <linux/types.h>
 
 /* Copy from <sys/unistd.h> */
 
-#define	SEEK_SET	0
-#define	SEEK_CUR	1
-#define	SEEK_END	2
+#define SEEK_SET    0
+#define SEEK_CUR    1
+#define SEEK_END    2
 
-#else	/* defined(__KERNEL__) */
+#else   /* defined(__KERNEL__) */
 
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/types.h>
 
-#endif	/* defined(__KERNEL__) */
+#endif  /* defined(__KERNEL__) */
 
 #elif     defined(POSIX_SOURCE) || defined(SYS_V) || defined(BSD_4_2) \
         || defined(__sun)     || defined(__sgi) || defined(__AIX)   \
@@ -280,22 +280,22 @@ typedef long    off_t;
 #define bool_t  int
 #endif  /* !defined(bool_t) */
 
-#if	defined(SUNOS5_5)
-#define	uint8_t		unsigned char
-#define	uint16_t	unsigned short
-#define	uint32_t	unsigned long
-#define uint64_t	unsigned long long
-#define	int8_t		char
-#define	int16_t         short
-#define	int32_t         long
+#if defined(SUNOS5_5)
+#define uint8_t     unsigned char
+#define uint16_t    unsigned short
+#define uint32_t    unsigned long
+#define uint64_t    unsigned long long
+#define int8_t      char
+#define int16_t         short
+#define int32_t         long
 #define int64_t         longlong_t
 #define intptr_t        int
 #define timeout_id_t    int
-#endif	/* defined(SUNOS5_5) */
+#endif  /* defined(SUNOS5_5) */
 
-#if	defined(SUNOS5_6)
+#if defined(SUNOS5_6)
 #define timeout_id_t    int
-#endif	/* defined(SUNOS5_6) */
+#endif  /* defined(SUNOS5_6) */
 
 typedef uint8_t         bt_data8_t;
 typedef uint16_t        bt_data16_t;
@@ -415,15 +415,15 @@ typedef size_t bt_width_t;
 **  btdef.h file.
 */
 
-#if	defined(__vxworks)
+#if defined(__vxworks)
 
-typedef int bt_accessflag_t;	/* Want to match type used for open() */
+typedef int bt_accessflag_t;    /* Want to match type used for open() */
 
-#else	/* defined(__vxworks) */
+#else   /* defined(__vxworks) */
 
 typedef unsigned long bt_accessflag_t;
 
-#endif	/* defined(__vxworks) */
+#endif  /* defined(__vxworks) */
 
 #define BT_RD   (1<<0)
 #define BT_WR   (1<<1)

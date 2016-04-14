@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
-//	Headers
+//  Headers
 //------------------------------------------------------------------------------
 #define _CRT_SECURE_NO_WARNINGS 1
 //------------------------------------------------------------------------------
 
-#define DEBUG_MODE    "1"	
+#define DEBUG_MODE    "1"   
 
 /*****************************************************************************
 * file:         micro.c
@@ -69,11 +69,11 @@
 #include "ports.h"
 
 //------------------------------------------------------------------------------
-//	Common
+//  Common
 //------------------------------------------------------------------------------
 // Files
-	extern	FILE			*log_file;
-	extern	FILE			*xsvf_file;
+    extern  FILE            *log_file;
+    extern  FILE            *xsvf_file;
 
 /*============================================================================
 * XSVF #define
@@ -128,8 +128,8 @@
 ============================================================================*/
 
 #ifdef  DEBUG_MODE
-//	FILE *stream;
-	#define stream log_file
+//  FILE *stream;
+    #define stream log_file
 
     #define XSVFDBG_PRINTF(iDebugLevel,pzFormat) \
                 { if ( xsvf_iDebugLevel >= iDebugLevel ) \
@@ -407,7 +407,7 @@ TXsvfDoCmdFuncPtr   xsvf_pfDoCmd[]  =
 #ifdef DEBUG_MODE
     FILE* in;   /* Legacy DEBUG_MODE file pointer */
 //    int xsvf_iDebugLevel=4; // HACK!
-	int xsvf_iDebugLevel;	// Virgin
+    int xsvf_iDebugLevel;   // Virgin
 #endif /* DEBUG_MODE */
 
 /*============================================================================
@@ -833,7 +833,7 @@ int xsvfShift( unsigned char*   pucTapState,
     int             iMismatch;
     unsigned char   ucRepeat;
     int             iExitShift;
-	long int		nmismatch_errors=0;
+    long int        nmismatch_errors=0;
 
     iErrorCode  = XSVF_ERROR_NONE;
     iMismatch   = 0;
@@ -876,13 +876,13 @@ int xsvfShift( unsigned char*   pucTapState,
                                             plvTdoCaptured,
                                             plvTdoMask );
 
-			  //if(iMismatch == 0) printf("TDO OK \n");
-				if(iMismatch != 0)
-				{
-				nmismatch_errors=nmismatch_errors+1;
-				printf("\n\tTDO mismatch, alas: %i\n",nmismatch_errors);
-				}
-				iMismatch=0;	// HACK TO IGNORE TDO errors!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+              //if(iMismatch == 0) printf("TDO OK \n");
+                if(iMismatch != 0)
+                {
+                nmismatch_errors=nmismatch_errors+1;
+                printf("\n\tTDO mismatch, alas: %i\n",nmismatch_errors);
+                }
+                iMismatch=0;    // HACK TO IGNORE TDO errors!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             }
 
             if ( iExitShift )
@@ -1702,7 +1702,7 @@ int xsvfRun( SXsvfInfo* pXsvfInfo )
             XSVFDBG_PRINTF1( 2, "  %s\n",
                              xsvf_pzCommandName[pXsvfInfo->ucCommand] );
 
-			setPortPrint(pXsvfInfo->ucCommand);
+            setPortPrint(pXsvfInfo->ucCommand);
 
             /* If your compiler cannot take this form,
                then convert to a switch statement */
@@ -1791,7 +1791,7 @@ int xilinx_xsvf_main( int *xsvf_iDebugLevel, char *pzXsvfFileName )
     int     iErrorCode;
  //   char*   pzXsvfFileName;
     int     i;
-	unsigned char   ucTdoBit;
+    unsigned char   ucTdoBit;
     clock_t startClock;
     clock_t endClock;
 
@@ -1808,7 +1808,7 @@ int xilinx_xsvf_main( int *xsvf_iDebugLevel, char *pzXsvfFileName )
         printf( "where:  -v level      = verbose, level = 0-4 (default=0)\n" );
         printf( "        filename.xsvf = the XSVF file to execute.\n" );
         printf( "Missing command-line options. Press any key to exit:");
-		i=getchar();
+        i=getchar();
     }
     else
     {
@@ -1829,7 +1829,7 @@ int xilinx_xsvf_main( int *xsvf_iDebugLevel, char *pzXsvfFileName )
             iErrorCode  = xsvfExecute();
             endClock    = clock();
             fclose( in );
-			ucTdoBit    = readTDOBit();	// purge any pending write in the buffer
+            ucTdoBit    = readTDOBit(); // purge any pending write in the buffer
             printf( "     Execution Time = %.3f seconds\n",
                     (((double)(endClock - startClock))/CLOCKS_PER_SEC) );
         }

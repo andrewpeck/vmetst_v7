@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
-//	Calls dsn_io_alct to read ALCT digital serial numbers
+//  Calls dsn_io_alct to read ALCT digital serial numbers
 //
-//	01/04/2002	Initial
-//	11/13/2008	Port to c++
-//	05/02/2012	Copy from TMB version
+//  01/04/2002  Initial
+//  11/13/2008  Port to c++
+//  05/02/2012  Copy from TMB version
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -19,15 +19,15 @@ using namespace std;
 void dsn_rd_alct (unsigned long &adr, int &ichain, int &chip_id, int &opcode_rd, 
         int &opcode_wr, int &reg_len, const int &itype, int dsn[])
 {
-    unsigned short	wr_data;
-    unsigned short	rd_data;
+    unsigned short  wr_data;
+    unsigned short  rd_data;
 
-    int				ioffset;
-    int				ibit;
-    int				i;
-    int				j;
-    int				dsn_bit[64];
-    int				idata;
+    int             ioffset;
+    int             ibit;
+    int             i;
+    int             j;
+    int             dsn_bit[64];
+    int             idata;
 
     // VME dsn register offset for mez,0=TMB dsn, 1=Mezzanine dsn
     ioffset = itype*5;

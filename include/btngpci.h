@@ -51,9 +51,9 @@ typedef enum BT_AXSTYPS {
     ** Original Unix definitions
     */
     BT_AXSIO,                   /* Access I/O registers */
-#define	BT_MIN_DEV BT_AXSIO	/* Used for parameter checking */
+#define BT_MIN_DEV BT_AXSIO /* Used for parameter checking */
     BT_AXSRDP,                  /* Access Remote Dual Port RAM */
-#define	BT_AXSDP BT_AXSRDP	/* Old DP name references remote DP */
+#define BT_AXSDP BT_AXSRDP  /* Old DP name references remote DP */
     BT_AXSRI,                   /* Access Remote IO */
     BT_AXSRR,                   /* Access Remote RAM */
     BT_AXSRE,                   /* Access Remote RAM Extended */
@@ -65,20 +65,20 @@ typedef enum BT_AXSTYPS {
     /* 
     ** The following definition is used internally by some drivers 
     */
-    BT_DEV_RE = BT_AXSRE,	/* Not to be used by application programs! */
+    BT_DEV_RE = BT_AXSRE,   /* Not to be used by application programs! */
 
     /*
     ** Mirror API definitions
     */
-    BT_DEV_DP = BT_AXSRDP,	/* Dual Port RAM */
-    BT_DEV_LDP = BT_AXSLDP,	/* Local Dual Port RAM */
-    BT_DEV_RDP = BT_AXSRDP,	/* Remote Dual Port RAM */
-    BT_DEV_IO = BT_AXSRI,	/* Remote bus A16 (I/O) space */
-    BT_DEV_A24 = BT_AXS24,	/* Remote bus A24 (short) space */
-    BT_DEV_RR = BT_AXSRR,	/* Remote bus A32 (standard) space */
-    BT_DEV_LM = BT_AXSLM,	/* Local Memory device */
-    BT_DEV_NIO = BT_AXSIO,	/* Adapter Node I/O registers */
-    BT_DEV_DIAG = BT_AXSIO,	/* For Internal Use Only! */
+    BT_DEV_DP = BT_AXSRDP,  /* Dual Port RAM */
+    BT_DEV_LDP = BT_AXSLDP, /* Local Dual Port RAM */
+    BT_DEV_RDP = BT_AXSRDP, /* Remote Dual Port RAM */
+    BT_DEV_IO = BT_AXSRI,   /* Remote bus A16 (I/O) space */
+    BT_DEV_A24 = BT_AXS24,  /* Remote bus A24 (short) space */
+    BT_DEV_RR = BT_AXSRR,   /* Remote bus A32 (standard) space */
+    BT_DEV_LM = BT_AXSLM,   /* Local Memory device */
+    BT_DEV_NIO = BT_AXSIO,  /* Adapter Node I/O registers */
+    BT_DEV_DIAG = BT_AXSIO, /* For Internal Use Only! */
     
     /*
     ** Mirror API aliases
@@ -367,25 +367,25 @@ typedef enum param_valus {
     /*
     ** Mirror API info parameters 
     */
-    BT_MIN_INFO,	        /* Range checking only */
+    BT_MIN_INFO,            /* Range checking only */
 #define INVALID                 BT_MIN_INFO
 
-    BT_INFO_BLOCK,	        /* Can use BLT mode: TRUE/FALSE */
+    BT_INFO_BLOCK,          /* Can use BLT mode: TRUE/FALSE */
 #define DMA_BLOCK               BT_INFO_BLOCK
 
-    BT_INFO_PAUSE,	        /* Set pause mode for DMA: TRUE/FALSE */
+    BT_INFO_PAUSE,          /* Set pause mode for DMA: TRUE/FALSE */
 #define DMA_PAUSE               BT_INFO_PAUSE
 
-    BT_INFO_DATAWIDTH,	        /* Maximum access width allowed on a transfer */
+    BT_INFO_DATAWIDTH,          /* Maximum access width allowed on a transfer */
 #define DATA_SIZE               BT_INFO_DATAWIDTH
 
-    BT_INFO_DMA_AMOD,	        /* Address Modifier to use for DMA */
+    BT_INFO_DMA_AMOD,           /* Address Modifier to use for DMA */
 #define DMA_ADDR_MOD            BT_INFO_DMA_AMOD
 
-    BT_INFO_PIO_AMOD,	        /* Address Modifier to use for PIO */
+    BT_INFO_PIO_AMOD,           /* Address Modifier to use for PIO */
 #define PIO_ADDR_MOD            BT_INFO_PIO_AMOD
 
-    BT_INFO_MMAP_AMOD,	        /* Address Modifier to use for MMAP */
+    BT_INFO_MMAP_AMOD,          /* Address Modifier to use for MMAP */
 #define MMAP_ADDR_MOD           BT_INFO_MMAP_AMOD
 
     BT_INFO_SWAP,               /* Swapping value to use for logical dev */
@@ -400,7 +400,7 @@ typedef enum param_valus {
     BT_INFO_DMA_WATCHDOG,          /* Watchdog timer for DMA, default 5 seconds */
 #define DMA_TIMEOUT             BT_INFO_DMA_WATCHDOG
 
-    BT_INFO_TRACE,	            /* Software tracing level */
+    BT_INFO_TRACE,              /* Software tracing level */
 #define TRACE_LVL               BT_INFO_TRACE
 
     BT_INFO_RESET_DELAY,    /* Wait time for remote reset to complete */
@@ -408,7 +408,7 @@ typedef enum param_valus {
 
     BT_INFO_USE_PT,         /* Send PT programmed irqs instead of PR */
 
-    BT_INFO_INC_INHIB,	    /* Set increment inhibit for DMA: TRUE/FALSE */
+    BT_INFO_INC_INHIB,      /* Set increment inhibit for DMA: TRUE/FALSE */
 #define DMA_INC_INHIB       BT_INFO_INC_INHIB
 
     BT_INFO_ICBR_PRIO,     /* Task priority of interrupt dispatch, vxWorks only */
@@ -421,28 +421,28 @@ typedef enum param_valus {
 #define BT_INFO_GET_BASE    BT_INFO_LOC_PN
 #define INF_LDEV_TYPE       BT_INFO_LOC_PN
 
-    BT_INFO_REM_PN,	    /* Part number of remote card */
+    BT_INFO_REM_PN,     /* Part number of remote card */
 #define INF_RDEV_TYPE       BT_INFO_REM_PN
 
-    BT_INFO_LM_SIZE,	    /* Size of local memory device */
+    BT_INFO_LM_SIZE,        /* Size of local memory device */
 #define INF_LM_SIZE         BT_INFO_LM_SIZE
 
     BT_INFO_ICBR_Q_SIZE,    /* Size of the interrupt dispatch queue */
 #define INF_ICBR_Q_SIZE     BT_INFO_ICBR_Q_SIZE
 
-    BT_INFO_BIND_ALIGN,	    /* Alignment required for bt_bind() buffers */
+    BT_INFO_BIND_ALIGN,     /* Alignment required for bt_bind() buffers */
 #define INF_BIND_ALIGN      BT_INFO_BIND_ALIGN
 
-    BT_INFO_BIND_SIZE,	    /* Maximum size of a single bound buffer */
+    BT_INFO_BIND_SIZE,      /* Maximum size of a single bound buffer */
 #define INF_BIND_SIZE       BT_INFO_BIND_SIZE
 
-    BT_INFO_BIND_COUNT,	    /* Number of concurrent bind requests allowed */
+    BT_INFO_BIND_COUNT,     /* Number of concurrent bind requests allowed */
 #define INF_BIND_COUNT      BT_INFO_BIND_COUNT
 
     BT_INFO_TRANSMITTER,    /* TRUE = transmitter mode; FALSE = receiver mode */
 #define INF_TRANSMITTER     BT_INFO_TRANSMITTER
 
-    BT_INFO_UNIT_NUM,	    /* Unit number (0..15) */
+    BT_INFO_UNIT_NUM,       /* Unit number (0..15) */
 #define INF_UNIT            BT_INFO_UNIT_NUM
 
     BT_INFO_KMEM_SIZE,      /* Total kernel memory used in bytes */
@@ -480,7 +480,7 @@ typedef enum param_valus {
     BT_INFO_KMALLOC_SIZ,    /* size of buffer to kmalloc from driver */
 #endif
 
-    BT_MAX_INFO		    /* Last valid BT_INFO_ value, internal use only */
+    BT_MAX_INFO         /* Last valid BT_INFO_ value, internal use only */
 } bt_info_t;
 
 /* 
@@ -785,7 +785,7 @@ typedef struct {
 /*
 ** Local Interrupt Control Register (read/write, 8 bits)
 */
-	bt_data8_t		loc_int_ctrl;
+    bt_data8_t      loc_int_ctrl;
 #define LOC_INT_CTRL            (0x01)  /* local interrupt control register */
 #define LOC_INT_CTRL_SIZE       (BT_WIDTH_D8)
 #define LIC_INT_PENDING         (1<<7)  /* r  , set when generating irq     */
@@ -828,7 +828,7 @@ typedef struct {
 /*
 ** Local Interrupt Status Register (read only, 8 bits)
 */
-        bt_data8_t		loc_int_status;
+        bt_data8_t      loc_int_status;
 #define LOC_INT_STATUS          (0x03)  /* interrupt status register */
 #define LOC_INT_STATUS_SIZE     (BT_WIDTH_D8)
 #define LIS_CINT7               (1<<7)  /* r  , cable interrupt 7 */
@@ -843,7 +843,7 @@ typedef struct {
 /*
 ** Local Bus Control Register (read/write, 8 bits)
 */
-        bt_data8_t		loc_bus_ctrl;
+        bt_data8_t      loc_bus_ctrl;
 #define LOC_BUS_CTRL            (0x04)  /* bus control register         */
 #define LOC_BUS_CTRL_SIZE       (BT_WIDTH_D8)
 #define LBC_GEMS_SWAP_ENABLE    (1<<3)  /* enable lword swap for GEMS   */
@@ -860,7 +860,7 @@ typedef struct {
 ** Loopback Control Register (read/write, 8 bits)
 ** Only avaliable on special adapter models, check HW manual
 */
-        bt_data8_t		loc_loopback;
+        bt_data8_t      loc_loopback;
 #define LOC_LOOPBACK            (0x05)  /* loopback control register    */
 #define LOC_LOOPBACK_SIZE       (BT_WIDTH_D8)
 #define LLB_LINK_UP             (1<<7)  /* r, link up                   */
@@ -871,7 +871,7 @@ typedef struct {
 ** Mapping RAM Control Register (read/write, 8 bits)
 ** Only avaliable on certain adapter models, check HW manual
 */
-        bt_data8_t		loc_mreg_ctrl;
+        bt_data8_t      loc_mreg_ctrl;
 #define LOC_MREG_CTRL           (0x06)  /* map reg control register */
 #define LOC_MREG_CTRL_SIZE      (BT_WIDTH_D8)
 #define LMC_DRIVER_MASTER       (1<<3)  /* local driver master */
@@ -900,16 +900,16 @@ typedef struct {
 ** Remote Node Status Register (read, 8 bits)
 ** Same ofset as Remote Note command register 1
 */
-#define rem_status	rem_cmd1
+#define rem_status  rem_cmd1
 #define REM_STATUS      (0x08)  /* remote status register */
 #define RSR_WAS_RESET   (1<<7)  /* Remote bus was reset */
                                 /* Valid only for A32 VMEbus adaptors */
-#define RSR_IACK1	(1<<6)  /* IACK read mode address bit 1 */
+#define RSR_IACK1   (1<<6)  /* IACK read mode address bit 1 */
 #define RSR_PR_STATUS   (1<<5)  /* PR Interrupt is set */
 #define RSR_NOT_LOCK_STATUS (1<<4)      /* Remote bus is *NOT* locked */
-#define RSR_IACK2	(1<<2)  /* IACK read mode address bit 2 */
+#define RSR_IACK2   (1<<2)  /* IACK read mode address bit 2 */
 #define RSR_PT_STATUS   (1<<1)  /* PT interrupt is set */
-#define RSR_IACK0	(1<<0)  /* IACK read mode address bit 0 */
+#define RSR_IACK0   (1<<0)  /* IACK read mode address bit 0 */
 
 
 /*
@@ -1023,19 +1023,19 @@ typedef struct {
 /*
 ** Remote Node Slave Status Register (read, 8 bits)
 */
-        bt_data8_t	rem_slave_status;
+        bt_data8_t  rem_slave_status;
 #define REM_SLAVE_STATUS    (0x1e)  /* remote node slave status register  */
-#define RSS_PARITY_ERR      (1<<7)  /* r=1, interface parity error 	  */
-#define RSS_REMBUS_ERR      (1<<6)  /* r=1, remote bus error 	          */
+#define RSS_PARITY_ERR      (1<<7)  /* r=1, interface parity error    */
+#define RSS_REMBUS_ERR      (1<<6)  /* r=1, remote bus error              */
 #define RSS_PR_STATUS       (1<<5)  /* r=1, pr interrupt (from remote)    */
-#define RSS_LRC_ERR         (1<<3)  /* r=1, LRC DMA packet error 	  */
+#define RSS_LRC_ERR         (1<<3)  /* r=1, LRC DMA packet error      */
 #define RSS_TIMEOUT_ERR     (1<<2)  /* r=1, interface timeout error       */
 #define RSS_PT_STATUS       (1<<1)  /* r=1, pt interrupt (to remote)      */
 #define RSS_NO_CONNECT      (1<<0)  /* r=1, no connection to remote       */
-#define RSS_ERROR_MASK	    (RSS_PARITY_ERR | RSS_REMBUS_ERR \
-			        | RSS_LRC_ERR | RSS_TIMEOUT_ERR)
+#define RSS_ERROR_MASK      (RSS_PARITY_ERR | RSS_REMBUS_ERR \
+                    | RSS_LRC_ERR | RSS_TIMEOUT_ERR)
 
-#define RSS_CERROR_MASK	    (RSS_NO_CONNECT | RSS_ERROR_MASK)
+#define RSS_CERROR_MASK     (RSS_NO_CONNECT | RSS_ERROR_MASK)
 
 /*
 ** Remote Node Slave Clear Register (write, 8 bits)
@@ -1238,7 +1238,7 @@ enum BT_CABLE_INTR {
 #define BT_ID_PCI_DMA   0xAB                /* PCI card ID value            */
 #define BT_ID_PCI       0xAC                /* PCI wo/DMA card ID value     */
 #define BT_ID_VME_NODMA 0x81                /* VME wo/DMA card ID value     */
-#define	BT_ID_VME_NOINC	0x82		    /* VME RPQ w/ DMA Inc Inhibit   */
+#define BT_ID_VME_NOINC 0x82            /* VME RPQ w/ DMA Inc Inhibit   */
 #define BT_ID_VME_FIBER 0x83                /* VME Fiberoptic card          */
 #define BT_ID_VME_FIBER_D64 0x84            /* VME Fiberoptic card w/D64    */
 #define BT_ID_VME_DB    0x85            /* VME dataBLIZZARD w/D64 */
@@ -1365,17 +1365,17 @@ typedef unsigned long  data32_t;
 */
 #define BT_MOCK_UNIT   99               /* When real physical unit is unknown */
 
-#define	BT_DEV_SHFT	(5)
-#define	BT_AXS_SHFT	BT_DEV_SHFT	/* Older name */
+#define BT_DEV_SHFT (5)
+#define BT_AXS_SHFT BT_DEV_SHFT /* Older name */
 
 /*
 ** Linux requires that BT_MAX_UNITS be a simple integer with no parathesis
 ** or operators. It MUST NOT be an expression.
 */
-#define	BT_MAX_UNITS	31	/* Don't change or you will break Linux */
-#if	BT_MAX_UNITS != ((1 << BT_DEV_SHFT) - 1)
-#error	"Shift and maximum values out of sync."
-#endif	/* BT_MAX_UNITS */
+#define BT_MAX_UNITS    31  /* Don't change or you will break Linux */
+#if BT_MAX_UNITS != ((1 << BT_DEV_SHFT) - 1)
+#error  "Shift and maximum values out of sync."
+#endif  /* BT_MAX_UNITS */
 
 #if defined(_BTDD_H)
 #ifdef __sgi
@@ -1719,7 +1719,7 @@ typedef struct bt_unit_d {
     ** Local Memory (BT_DEV_LM) device information 
     */
     char           *lm_phys_addr;   /* VMEbus A24/A32 address of BT_DEV_LM */
-    bt_addr_width_t lm_space;	    /* Address Width: BT_AW_A32 or BT_AW_A24 */
+    bt_addr_width_t lm_space;       /* Address Width: BT_AW_A32 or BT_AW_A24 */
     char           *lm_base_p;      /* Local bus address of BT_DEV_LM */
     unsigned int    lm_b_resid;     /* need to release resources for lm device */
     unsigned int    lm_b_flags;
@@ -1792,7 +1792,7 @@ typedef struct bt_unit_d {
     
 #elif defined(BT1003)
 
-    struct pci_dev *dev_p;		/* Location of device in PCI space */
+    struct pci_dev *dev_p;      /* Location of device in PCI space */
 
     /* 
     ** PCI configuration information  -- NOT FROM PCI CONFIG REGISTERS 
@@ -1802,9 +1802,9 @@ typedef struct bt_unit_d {
     unsigned long mr_phys_addr;     /* physical address of mapping ram */
     unsigned int irq;               /* System IRQ level */
 
-    bt_cookie_t hirq_cookie;	    /* Hardware IRQ cookie */
-    bt_cookie_t sirq_cookie;	    /* Software IRQ cookie */
-    bt_cookie_t task_cookie;	    /* Task level cookie, no special context */
+    bt_cookie_t hirq_cookie;        /* Hardware IRQ cookie */
+    bt_cookie_t sirq_cookie;        /* Software IRQ cookie */
+    bt_cookie_t task_cookie;        /* Task level cookie, no special context */
 
     unsigned int    mr_page;               /* Mapping regs per page */
 
@@ -2201,59 +2201,59 @@ typedef struct {
 
 /******************************************************************************
 **
-**	Define error numbers
+**  Define error numbers
 **
 ** In the cases where there is an errno defined by Standard C or POSIX that
 ** is the equivilent to our error return, we would like to use it.
 ******************************************************************************/
 
-#if	defined(__vxworks)
-#define	POSIX_EQUIV(BT_ENO, ENO)	BT_ENO = ENO
-#define	BT_ESTART	M_btp
+#if defined(__vxworks)
+#define POSIX_EQUIV(BT_ENO, ENO)    BT_ENO = ENO
+#define BT_ESTART   M_btp
 
 #elif   defined(BT_WINNT)
 #define POSIX_EQUIV(BT_ENO, ENO)        BT_ENO
 
 #elif   defined(__sun)
-#define	POSIX_EQUIV(BT_ENO, ENO)	BT_ENO
-#define	BT_ESTART	0x1000
+#define POSIX_EQUIV(BT_ENO, ENO)    BT_ENO
+#define BT_ESTART   0x1000
 
 #elif   defined(__sgi)
-#define	POSIX_EQUIV(BT_ENO, ENO)	BT_ENO
-#define	BT_ESTART	0x1000
+#define POSIX_EQUIV(BT_ENO, ENO)    BT_ENO
+#define BT_ESTART   0x1000
 
 #elif   defined(__linux__)
-#define	POSIX_EQUIV(BT_ENO, ENO)	BT_ENO
-#define	BT_ESTART	0x1000
+#define POSIX_EQUIV(BT_ENO, ENO)    BT_ENO
+#define BT_ESTART   0x1000
 
-#else	/* unknown operating system */
+#else   /* unknown operating system */
 #error Unknown Operating System!
-#endif	/* defined(__vxworks) */
+#endif  /* defined(__vxworks) */
 
 typedef enum {
-    BT_SUCCESS = 0,			/* Everything is just swell */
-    POSIX_EQUIV(BT_EIO, EIO),		/* Input or output error */
-    POSIX_EQUIV(BT_ENXIO, ENXIO),	/* Non-existent device */
-    POSIX_EQUIV(BT_ENOMEM, ENOMEM),	/* Out of memory or other resource */
-    POSIX_EQUIV(BT_EINVAL, EINVAL),	/* Invalid parameter */
-    POSIX_EQUIV(BT_EACCESS, EACCES),	/* Access failed: permission denied */
-    POSIX_EQUIV(BT_EDESC, EBADF),	/* Invalid descriptor */
-    POSIX_EQUIV(BT_ENOSUP, ENOSYS),	/* Option not supported on this */
-    					/* particular implementation. */
+    BT_SUCCESS = 0,         /* Everything is just swell */
+    POSIX_EQUIV(BT_EIO, EIO),       /* Input or output error */
+    POSIX_EQUIV(BT_ENXIO, ENXIO),   /* Non-existent device */
+    POSIX_EQUIV(BT_ENOMEM, ENOMEM), /* Out of memory or other resource */
+    POSIX_EQUIV(BT_EINVAL, EINVAL), /* Invalid parameter */
+    POSIX_EQUIV(BT_EACCESS, EACCES),    /* Access failed: permission denied */
+    POSIX_EQUIV(BT_EDESC, EBADF),   /* Invalid descriptor */
+    POSIX_EQUIV(BT_ENOSUP, ENOSYS), /* Option not supported on this */
+                        /* particular implementation. */
 
-    POSIX_EQUIV(BT_EABORT, EINTR),	/* Interrupted a system call */
+    POSIX_EQUIV(BT_EABORT, EINTR),  /* Interrupted a system call */
 
 #define BT_EINTR BT_EABORT              /* Obsolete form */
 
     POSIX_EQUIV(BT_ESYSMAX, BT_ESTART), /* past last POSIX defined error */
 
-    BT_EFAIL,		/* Something went wrong. Generic error. */
+    BT_EFAIL,       /* Something went wrong. Generic error. */
     BT_ENORD,           /* Device does not support reads */
     BT_ENOWR,           /* Device does not support writes */
-    BT_ESTATUS,		/* Status register error value */
+    BT_ESTATUS,     /* Status register error value */
     BT_ENOPWR,          /* Power is off or cable is disconnected */
     BT_EPWRCYC,         /* Power was cycled */
-    BT_EBUSY,		/* Timer expired before a resource became available. */
+    BT_EBUSY,       /* Timer expired before a resource became available. */
     BT_ELCARD,          /* Local card failed diagnostics */
     BT_ECABLE,          /* Interconnection cable failed diagnostics */
     BT_ERCARD,          /* Remote card failed diagnostics */
@@ -2270,10 +2270,10 @@ typedef enum {
     BT_ENO_MMAP,        /* Logical device does not support bt_mmap() */
     BT_EHANDLE,         /* Attempt to get unique signal handle failed */
 
-    BT_MAX_ERR		/* Last Error number */
+    BT_MAX_ERR      /* Last Error number */
 } bt_error_t;
 
 
-#undef	POSIX_EQUIV
+#undef  POSIX_EQUIV
 
 #endif /* !_BTNGPCI_H */

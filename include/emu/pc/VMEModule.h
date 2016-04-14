@@ -222,14 +222,14 @@ protected:
   /// appropriate start() and end() routines are called
   /// maybe change these to HAL interface someday?
   void devdo(DEVTYPE dev,int ncmd,const  char *cmd,int nbuf,
-	     const char *inbuf,char *outbuf,int irdsnd);
+         const char *inbuf,char *outbuf,int irdsnd);
   void new_devdo(DEVTYPE dev,int ncmd,const  char *cmd,int nbuf,
-	     const char *inbuf,char *outbuf,int irdsnd);
+         const char *inbuf,char *outbuf,int irdsnd);
   void scan(int reg,const char *snd,int cnt2,char *rcv,int ird);
-	void scan_reset(int reg,const char *snd,int cnt2,char *rcv,int ird);
-	void scan_reset_headtail(int reg,const char *snd,int cnt,char *rcv,int headtail,int ird);
-	void scan_dmb_headtail(int reg,const char *snd,int cnt,char *rcv,int ird,int headtail,int when);
-	void RestoreIdle();
+    void scan_reset(int reg,const char *snd,int cnt2,char *rcv,int ird);
+    void scan_reset_headtail(int reg,const char *snd,int cnt,char *rcv,int headtail,int ird);
+    void scan_dmb_headtail(int reg,const char *snd,int cnt,char *rcv,int ird,int headtail,int when);
+    void RestoreIdle();
   void RestoreReset();
   void InitJTAG(int port);
   void CloseJTAG();

@@ -16,9 +16,9 @@ using namespace std;
 
 
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 
 #ifdef debug
 #define dprintf fprintf

@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
-//	Reads DCM Digital Phase Shift VME register
+//  Reads DCM Digital Phase Shift VME register
 //
-//	06/15/09 Initial
-//	06/29/09 Added posneg bit
-//	06/30/09 Add phase delta
-//	08/14/09 Add cfeb phaser banks
+//  06/15/09 Initial
+//  06/29/09 Added posneg bit
+//  06/30/09 Add phase delta
+//  08/14/09 Add cfeb phaser banks
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -20,43 +20,43 @@ using namespace std;
 //------------------------------------------------------------------------------
 int phaser_rd(unsigned long &base_adr, const string phaser_bank, const int &phaser_delta)
     //------------------------------------------------------------------------------
-    //	base_adr     = VME base address for this TMB
-    //	phaser_bank  = "alct_txd" or "alct_rxd"
-    //	phaser_delta = scale factor for phaser_delay
-    //	returns		 = current phaser_delay=0-to-255 clock phase
+    //  base_adr     = VME base address for this TMB
+    //  phaser_bank  = "alct_txd" or "alct_rxd"
+    //  phaser_delta = scale factor for phaser_delay
+    //  returns      = current phaser_delay=0-to-255 clock phase
     //------------------------------------------------------------------------------
 {
     // VME addresses
-    const unsigned long	phaser0_adr = 0x00010E;
-    const unsigned long	phaser1_adr = 0x000110;
-    const unsigned long	phaser2_adr = 0x000112;
-    const unsigned long	phaser3_adr = 0x000114;
-    const unsigned long	phaser4_adr = 0x000116;
-    const unsigned long	phaser5_adr = 0x000118;
-    const unsigned long	phaser6_adr = 0x00011A;
+    const unsigned long phaser0_adr = 0x00010E;
+    const unsigned long phaser1_adr = 0x000110;
+    const unsigned long phaser2_adr = 0x000112;
+    const unsigned long phaser3_adr = 0x000114;
+    const unsigned long phaser4_adr = 0x000116;
+    const unsigned long phaser5_adr = 0x000118;
+    const unsigned long phaser6_adr = 0x00011A;
 
     // VME calls
-    unsigned long	adr;
-    unsigned short	rd_data;
-    long			status;
+    unsigned long   adr;
+    unsigned short  rd_data;
+    long            status;
 
     // Local
-    unsigned long	phaser_adr;
-    int				phaser_delay;
+    unsigned long   phaser_adr;
+    int             phaser_delay;
 
     // Phaser register
-    int				fire;
-    int				reset;
-    int				busy;
-    int				lock;
-    int				sm_vec;
-    int				posneg;
-    int				phase;
-    int				qcycle;
-    int				hcycle;
+    int             fire;
+    int             reset;
+    int             busy;
+    int             lock;
+    int             sm_vec;
+    int             posneg;
+    int             phase;
+    int             qcycle;
+    int             hcycle;
 
     // Phaser machine states
-    const string	sm_dsp[8] = {
+    const string    sm_dsp[8] = {
         "init     ",
         "wait_tmb ",
         "wait_dcm ",
@@ -71,28 +71,28 @@ int phaser_rd(unsigned long &base_adr, const string phaser_bank, const int &phas
     // Read phase delay value for selected DCM
     //------------------------------------------------------------------------------
     // Determine phaser bank VME address
-    if		(phaser_bank.compare("alct_rxd"  )==0) {phaser_adr=phaser0_adr; goto begin;}
-    else if	(phaser_bank.compare("alct_txd"  )==0) {phaser_adr=phaser1_adr; goto begin;}
-    else if	(phaser_bank.compare("cfeb_rxd_0")==0) {phaser_adr=phaser2_adr; goto begin;}
-    else if	(phaser_bank.compare("cfeb_rxd_1")==0) {phaser_adr=phaser3_adr; goto begin;}
-    else if	(phaser_bank.compare("cfeb_rxd_2")==0) {phaser_adr=phaser4_adr; goto begin;}
-    else if	(phaser_bank.compare("cfeb_rxd_3")==0) {phaser_adr=phaser5_adr; goto begin;}
-    else if	(phaser_bank.compare("cfeb_rxd_4")==0) {phaser_adr=phaser6_adr; goto begin;}
-    else	{printf("\nPhaser bank unknown: %s",phaser_bank.c_str()); pause ("<cr>");}
+    if      (phaser_bank.compare("alct_rxd"  )==0) {phaser_adr=phaser0_adr; goto begin;}
+    else if (phaser_bank.compare("alct_txd"  )==0) {phaser_adr=phaser1_adr; goto begin;}
+    else if (phaser_bank.compare("cfeb_rxd_0")==0) {phaser_adr=phaser2_adr; goto begin;}
+    else if (phaser_bank.compare("cfeb_rxd_1")==0) {phaser_adr=phaser3_adr; goto begin;}
+    else if (phaser_bank.compare("cfeb_rxd_2")==0) {phaser_adr=phaser4_adr; goto begin;}
+    else if (phaser_bank.compare("cfeb_rxd_3")==0) {phaser_adr=phaser5_adr; goto begin;}
+    else if (phaser_bank.compare("cfeb_rxd_4")==0) {phaser_adr=phaser6_adr; goto begin;}
+    else    {printf("\nPhaser bank unknown: %s",phaser_bank.c_str()); pause ("<cr>");}
 
     // Get current phaser status
 begin:
-    adr		= base_adr+phaser_adr;
-    status	= vme_read(adr,rd_data);
-    fire	= (rd_data >>  0) & 0x1;
-    reset	= (rd_data >>  1) & 0x1;
-    busy	= (rd_data >>  2) & 0x1;
-    lock	= (rd_data >>  3) & 0x1;
-    sm_vec	= (rd_data >>  4) & 0x7;
-    posneg	= (rd_data >>  7) & 0x1;
-    phase	= (rd_data >>  8) & 0x3F;
-    qcycle	= (rd_data >> 14) & 0x1;
-    hcycle	= (rd_data >> 15) & 0x1;
+    adr     = base_adr+phaser_adr;
+    status  = vme_read(adr,rd_data);
+    fire    = (rd_data >>  0) & 0x1;
+    reset   = (rd_data >>  1) & 0x1;
+    busy    = (rd_data >>  2) & 0x1;
+    lock    = (rd_data >>  3) & 0x1;
+    sm_vec  = (rd_data >>  4) & 0x7;
+    posneg  = (rd_data >>  7) & 0x1;
+    phase   = (rd_data >>  8) & 0x3F;
+    qcycle  = (rd_data >> 14) & 0x1;
+    hcycle  = (rd_data >> 15) & 0x1;
 
     phaser_delay = phase | (qcycle << 6) | (hcycle << 7);
 

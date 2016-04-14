@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------
-//	Reads 3D3444 delay from VME register
+//  Reads 3D3444 delay from VME register
 //
-//	06/04/09 Initial
+//  06/04/09 Initial
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-//	Headers
+//  Headers
 //------------------------------------------------------------------------------
 #include "vme_io_wxp.h"
 #include "ddd_rd.h"
@@ -15,16 +15,16 @@
 int ddd_rd(unsigned long &base_adr, int ddd_chip, int ddd_channel)
 {
     // VME address
-    const unsigned long	vme_ddd0_adr =0x000016;
+    const unsigned long vme_ddd0_adr =0x000016;
 
     // Local
-    long			status;
-    unsigned long	adr;
-    unsigned short	rd_data;
-    int				ddd_delay;
+    long            status;
+    unsigned long   adr;
+    unsigned short  rd_data;
+    int             ddd_delay;
 
     // Read indicated delay register and extract 4-bit delay value
-    adr	      = base_adr+vme_ddd0_adr+(2*ddd_chip);
+    adr       = base_adr+vme_ddd0_adr+(2*ddd_chip);
     status    = vme_read(adr,rd_data);
     ddd_delay = (rd_data >> (ddd_channel*4)) & 0xF;
 

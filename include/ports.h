@@ -16,7 +16,7 @@
 
 /* set the port "p" (TCK, TMS, or TDI) to val (0 or 1) */
 extern void setPort(short p, short val);
-extern void setPortPrint(unsigned char);	// HACK 5/9/2006
+extern void setPortPrint(unsigned char);    // HACK 5/9/2006
 
 /* read the TDO bit and store it in val */
 extern unsigned char readTDOBit();

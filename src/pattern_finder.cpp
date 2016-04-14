@@ -1,14 +1,14 @@
 //------------------------------------------------------------------------------
-//	CLCT Pattern Finder Emulator
+//  CLCT Pattern Finder Emulator
 //
 // Algorithm: 9-Pattern Front-end 80 MHz pattern-unit duplexing
 //
 // Process 5 CFEBs:
-//		Input	32 1/2-Strips x 6 CSC Layers x 5 CFEBs
-//		Output	Best 2 of 160 CLCTs
-//			   +DMB pre-trigger signals
+//      Input   32 1/2-Strips x 6 CSC Layers x 5 CFEBs
+//      Output  Best 2 of 160 CLCTs
+//             +DMB pre-trigger signals
 //
-//	03/30/10 Initial translation from verilog
+//  03/30/10 Initial translation from verilog
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -19,9 +19,9 @@
 using namespace std;
 
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 
 #ifdef debug
 #define dprintf fprintf
@@ -30,11 +30,11 @@ using namespace std;
 #endif
 
 //------------------------------------------------------------------------------
-//	Prototypes
+//  Prototypes
 //------------------------------------------------------------------------------
-void		pause		(string s);
-inline	int	arr_or			(int array[32]);
-inline	int	*arr_and		(int array1[32], int array2[32]);
+void        pause       (string s);
+inline  int arr_or          (int array[32]);
+inline  int *arr_and        (int array1[32], int array2[32]);
 
 void pattern_unit 
 (
@@ -46,8 +46,8 @@ void pattern_unit
  int ly4[],
  int ly5[],
  // Outputs
- int	&pat_nhits,
- int	&pat_id
+ int    &pat_nhits,
+ int    &pat_id
  );
 
 //------------------------------------------------------------------------------
@@ -59,8 +59,8 @@ void pattern_finder
  int &csc_type, 
  int &clct_sep, 
  int &adjcfeb_dist,
- int	&layer_trig_en,
- int	cfeb_en[5],
+ int    &layer_trig_en,
+ int    cfeb_en[5],
 
  int &hit_thresh_pretrig,
  int &pid_thresh_pretrig,
@@ -70,7 +70,7 @@ void pattern_finder
  // Outputs
  int cfeb_active[5],
  int &nlayers_hit,
- int	&layer_trig,
+ int    &layer_trig,
 
  int &hs_key_1st,
  int &hs_pid_1st,
@@ -84,53 +84,53 @@ void pattern_finder
     //------------------------------------------------------------------------------
     // Local
     //------------------------------------------------------------------------------
-    int	i;
+    int i;
     int ihs;
 
-    int	csc_me1ab;
-    int	stagger_hs_csc;
-    int	reverse_hs_csc;
-    int	reverse_hs_me1a;
-    int	reverse_hs_me1b;
+    int csc_me1ab;
+    int stagger_hs_csc;
+    int reverse_hs_csc;
+    int reverse_hs_me1a;
+    int reverse_hs_me1b;
 
     //-------------------------------------------------------------------------------------------------------------------
     // Re-Map input array into verilog pattern_finder format
     //-------------------------------------------------------------------------------------------------------------------
     // Alias stage0 array names
-    int	*cfeb0_ly0hs=&hs[0][0], *cfeb1_ly0hs=&hs[0][32], *cfeb2_ly0hs=&hs[0][64], *cfeb3_ly0hs=&hs[0][96], *cfeb4_ly0hs=&hs[0][128];
-    int	*cfeb0_ly1hs=&hs[1][0], *cfeb1_ly1hs=&hs[1][32], *cfeb2_ly1hs=&hs[1][64], *cfeb3_ly1hs=&hs[1][96], *cfeb4_ly1hs=&hs[1][128];
-    int	*cfeb0_ly2hs=&hs[2][0], *cfeb1_ly2hs=&hs[2][32], *cfeb2_ly2hs=&hs[2][64], *cfeb3_ly2hs=&hs[2][96], *cfeb4_ly2hs=&hs[2][128];
-    int	*cfeb0_ly3hs=&hs[3][0], *cfeb1_ly3hs=&hs[3][32], *cfeb2_ly3hs=&hs[3][64], *cfeb3_ly3hs=&hs[3][96], *cfeb4_ly3hs=&hs[3][128];
-    int	*cfeb0_ly4hs=&hs[4][0], *cfeb1_ly4hs=&hs[4][32], *cfeb2_ly4hs=&hs[4][64], *cfeb3_ly4hs=&hs[4][96], *cfeb4_ly4hs=&hs[4][128];
-    int	*cfeb0_ly5hs=&hs[5][0], *cfeb1_ly5hs=&hs[5][32], *cfeb2_ly5hs=&hs[5][64], *cfeb3_ly5hs=&hs[5][96], *cfeb4_ly5hs=&hs[5][128];
+    int *cfeb0_ly0hs=&hs[0][0], *cfeb1_ly0hs=&hs[0][32], *cfeb2_ly0hs=&hs[0][64], *cfeb3_ly0hs=&hs[0][96], *cfeb4_ly0hs=&hs[0][128];
+    int *cfeb0_ly1hs=&hs[1][0], *cfeb1_ly1hs=&hs[1][32], *cfeb2_ly1hs=&hs[1][64], *cfeb3_ly1hs=&hs[1][96], *cfeb4_ly1hs=&hs[1][128];
+    int *cfeb0_ly2hs=&hs[2][0], *cfeb1_ly2hs=&hs[2][32], *cfeb2_ly2hs=&hs[2][64], *cfeb3_ly2hs=&hs[2][96], *cfeb4_ly2hs=&hs[2][128];
+    int *cfeb0_ly3hs=&hs[3][0], *cfeb1_ly3hs=&hs[3][32], *cfeb2_ly3hs=&hs[3][64], *cfeb3_ly3hs=&hs[3][96], *cfeb4_ly3hs=&hs[3][128];
+    int *cfeb0_ly4hs=&hs[4][0], *cfeb1_ly4hs=&hs[4][32], *cfeb2_ly4hs=&hs[4][64], *cfeb3_ly4hs=&hs[4][96], *cfeb4_ly4hs=&hs[4][128];
+    int *cfeb0_ly5hs=&hs[5][0], *cfeb1_ly5hs=&hs[5][32], *cfeb2_ly5hs=&hs[5][64], *cfeb3_ly5hs=&hs[5][96], *cfeb4_ly5hs=&hs[5][128];
 
-    int	*cfebs_ly0hs=&hs[0][0];
-    int	*cfebs_ly1hs=&hs[1][0];
-    int	*cfebs_ly2hs=&hs[2][0];
-    int	*cfebs_ly3hs=&hs[3][0];
-    int	*cfebs_ly4hs=&hs[4][0];
-    int	*cfebs_ly5hs=&hs[5][0];
+    int *cfebs_ly0hs=&hs[0][0];
+    int *cfebs_ly1hs=&hs[1][0];
+    int *cfebs_ly2hs=&hs[2][0];
+    int *cfebs_ly3hs=&hs[3][0];
+    int *cfebs_ly4hs=&hs[4][0];
+    int *cfebs_ly5hs=&hs[5][0];
 
-    int	me1234_ly0hs[MXHS*5];
-    int	me1234_ly1hs[MXHS*5];
-    int	me1234_ly2hs[MXHS*5];
-    int	me1234_ly3hs[MXHS*5];
-    int	me1234_ly4hs[MXHS*5];
-    int	me1234_ly5hs[MXHS*5];
+    int me1234_ly0hs[MXHS*5];
+    int me1234_ly1hs[MXHS*5];
+    int me1234_ly2hs[MXHS*5];
+    int me1234_ly3hs[MXHS*5];
+    int me1234_ly4hs[MXHS*5];
+    int me1234_ly5hs[MXHS*5];
 
-    int	me1b_ly0hs[MXHS*4];
-    int	me1b_ly1hs[MXHS*4];
-    int	me1b_ly2hs[MXHS*4];
-    int	me1b_ly3hs[MXHS*4];
-    int	me1b_ly4hs[MXHS*4];
-    int	me1b_ly5hs[MXHS*4];
+    int me1b_ly0hs[MXHS*4];
+    int me1b_ly1hs[MXHS*4];
+    int me1b_ly2hs[MXHS*4];
+    int me1b_ly3hs[MXHS*4];
+    int me1b_ly4hs[MXHS*4];
+    int me1b_ly5hs[MXHS*4];
 
-    int	me1a_ly0hs[MXHS*1];
-    int	me1a_ly1hs[MXHS*1];
-    int	me1a_ly2hs[MXHS*1];
-    int	me1a_ly3hs[MXHS*1];
-    int	me1a_ly4hs[MXHS*1];
-    int	me1a_ly5hs[MXHS*1];
+    int me1a_ly0hs[MXHS*1];
+    int me1a_ly1hs[MXHS*1];
+    int me1a_ly2hs[MXHS*1];
+    int me1a_ly3hs[MXHS*1];
+    int me1a_ly4hs[MXHS*1];
+    int me1a_ly5hs[MXHS*1];
 
     dprintf(log_file,"dbg: ly0="); for (i=0; i<MXHS; ++i) dprintf(log_file,"%1i",cfeb0_ly0hs[i]); dprintf(log_file,"\n");
     dprintf(log_file,"dbg: ly1="); for (i=0; i<MXHS; ++i) dprintf(log_file,"%1i",cfeb0_ly1hs[i]); dprintf(log_file,"\n");
@@ -142,11 +142,11 @@ void pattern_finder
     //-------------------------------------------------------------------------------------------------------------------
     // Generate mask for marking adjacent cfeb as hit if nearby keys are over thresh
     //-------------------------------------------------------------------------------------------------------------------
-    int adjcfeb_mask_nm1[MXHS];		// Adjacent CFEB active feb flag mask
-    int	adjcfeb_mask_np1[MXHS];
+    int adjcfeb_mask_nm1[MXHS];     // Adjacent CFEB active feb flag mask
+    int adjcfeb_mask_np1[MXHS];
 
     for (ihs=0; ihs<=31; ++ihs) {
-        adjcfeb_mask_nm1[ihs]	 = (ihs<adjcfeb_dist) ? 1:0;
+        adjcfeb_mask_nm1[ihs]    = (ihs<adjcfeb_dist) ? 1:0;
         adjcfeb_mask_np1[31-ihs] = (ihs<adjcfeb_dist) ? 1:0;
     }
 
@@ -157,11 +157,11 @@ void pattern_finder
     {
 
         // Orientation flags
-        csc_me1ab	    = 0;			// 1= ME1A or ME1B CSC
-        stagger_hs_csc  = 1;			// 1=Staggered CSC non-me1
-        reverse_hs_csc  = 1;			// 1=Reversed  CSC non-me1
-        reverse_hs_me1a = 0;			// 1=reverse me1a hstrips prior to pattern sorting
-        reverse_hs_me1b = 0;			// 1=reverse me1b hstrips prior to pattern sorting
+        csc_me1ab       = 0;            // 1= ME1A or ME1B CSC
+        stagger_hs_csc  = 1;            // 1=Staggered CSC non-me1
+        reverse_hs_csc  = 1;            // 1=Reversed  CSC non-me1
+        reverse_hs_me1a = 0;            // 1=reverse me1a hstrips prior to pattern sorting
+        reverse_hs_me1b = 0;            // 1=reverse me1b hstrips prior to pattern sorting
 
         for (i=0; i<MXHS*5; ++i)
         {
@@ -172,7 +172,7 @@ void pattern_finder
             me1234_ly4hs[i] = cfebs_ly4hs[i];
             me1234_ly5hs[i] = cfebs_ly5hs[i];
         }
-    }	// close  if csc_type
+    }   // close  if csc_type
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 4A2: CSC_TYPE_B Reversed CSC
@@ -181,11 +181,11 @@ void pattern_finder
     {
 
         // Orientation flags
-        csc_me1ab	    = 0;			// 1= ME1A or ME1B CSC
-        stagger_hs_csc  = 1;			// 1=Staggered CSC non-me1
-        reverse_hs_csc  = 1;			// 1=Reversed  CSC non-me1
-        reverse_hs_me1a = 0;			// 1=reverse me1a hstrips prior to pattern sorting
-        reverse_hs_me1b = 0;			// 1=reverse me1b hstrips prior to pattern sorting
+        csc_me1ab       = 0;            // 1= ME1A or ME1B CSC
+        stagger_hs_csc  = 1;            // 1=Staggered CSC non-me1
+        reverse_hs_csc  = 1;            // 1=Reversed  CSC non-me1
+        reverse_hs_me1a = 0;            // 1=reverse me1a hstrips prior to pattern sorting
+        reverse_hs_me1b = 0;            // 1=reverse me1b hstrips prior to pattern sorting
 
         // Reverse all CFEBs and reverse layers
         for (i=0; i<MXHS*5; ++i)
@@ -196,8 +196,8 @@ void pattern_finder
             me1234_ly2hs[i] = cfebs_ly3hs[MXHS*5-1-i];
             me1234_ly1hs[i] = cfebs_ly4hs[MXHS*5-1-i];
             me1234_ly0hs[i] = cfebs_ly5hs[MXHS*5-1-i];
-        }	// close for i
-    }	// close  if csc_type
+        }   // close for i
+    }   // close  if csc_type
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 4A3: CSC_TYPE_C Normal ME1B reversed ME1A
@@ -206,11 +206,11 @@ void pattern_finder
     {
 
         // Orientation flags
-        csc_me1ab		= 1;			// 1= ME1A or ME1B CSC
-        stagger_hs_csc  = 0;			// 1=Staggered CSC non-me1
-        reverse_hs_csc  = 0;			// 1=Reversed  CSC non-me1
-        reverse_hs_me1a = 1;			// 1=reverse me1a hstrips prior to pattern sorting
-        reverse_hs_me1b = 0;			// 1=reverse me1b hstrips prior to pattern sorting
+        csc_me1ab       = 1;            // 1= ME1A or ME1B CSC
+        stagger_hs_csc  = 0;            // 1=Staggered CSC non-me1
+        reverse_hs_csc  = 0;            // 1=Reversed  CSC non-me1
+        reverse_hs_me1a = 1;            // 1=reverse me1a hstrips prior to pattern sorting
+        reverse_hs_me1b = 0;            // 1=reverse me1b hstrips prior to pattern sorting
 
         // Reversed ME1A cfebs
         for (i=0; i<MXHS; ++i)
@@ -221,7 +221,7 @@ void pattern_finder
             me1a_ly3hs[i] = cfeb4_ly3hs[MXHS-1-i];
             me1a_ly4hs[i] = cfeb4_ly4hs[MXHS-1-i];
             me1a_ly5hs[i] = cfeb4_ly5hs[MXHS-1-i];
-        }	// close for i
+        }   // close for i
 
         // Normal ME1B cfebs
         for (i=0; i<MXHS*4; ++i)
@@ -232,8 +232,8 @@ void pattern_finder
             me1b_ly3hs[i] = cfebs_ly3hs[i];
             me1b_ly4hs[i] = cfebs_ly4hs[i];
             me1b_ly5hs[i] = cfebs_ly5hs[i];
-        }	// close for i
-    }	// close  if csc_type
+        }   // close for i
+    }   // close  if csc_type
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 4A4: CSC_TYPE_D Normal ME1A reversed ME1B
@@ -242,11 +242,11 @@ void pattern_finder
     {
 
         // Orientation flags
-        csc_me1ab	    = 1;			// 1= ME1A or ME1B CSC
-        stagger_hs_csc  = 0;			// 1=Staggered CSC non-me1
-        reverse_hs_csc  = 0;			// 1=Reversed  CSC non-me1
-        reverse_hs_me1a = 0;			// 1=reverse me1a hstrips prior to pattern sorting
-        reverse_hs_me1b = 1;			// 1=reverse me1b hstrips prior to pattern sorting
+        csc_me1ab       = 1;            // 1= ME1A or ME1B CSC
+        stagger_hs_csc  = 0;            // 1=Staggered CSC non-me1
+        reverse_hs_csc  = 0;            // 1=Reversed  CSC non-me1
+        reverse_hs_me1a = 0;            // 1=reverse me1a hstrips prior to pattern sorting
+        reverse_hs_me1b = 1;            // 1=reverse me1b hstrips prior to pattern sorting
 
         // Normal ME1A cfebs
         for (i=0; i<MXHS; ++i)
@@ -257,7 +257,7 @@ void pattern_finder
             me1a_ly3hs[i] = cfeb4_ly3hs[i];
             me1a_ly4hs[i] = cfeb4_ly4hs[i];
             me1a_ly5hs[i] = cfeb4_ly5hs[i];
-        }	// close for i
+        }   // close for i
 
         // Reversed ME1B cfebs
         for (i=0; i<MXHS*4; ++i)
@@ -268,8 +268,8 @@ void pattern_finder
             me1b_ly3hs[i] = cfebs_ly3hs[MXHS*4-1-i];
             me1b_ly4hs[i] = cfebs_ly4hs[MXHS*4-1-i];
             me1b_ly5hs[i] = cfebs_ly5hs[MXHS*4-1-i];
-        }	// close for i
-    }	// close  if csc_type
+        }   // close for i
+    }   // close  if csc_type
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 4A5: CSC_TYPE_X Undefined
@@ -280,16 +280,16 @@ void pattern_finder
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 4B: Correct for CSC layer stagger: 565656 is a straight track, becomes 555555 on key layer 2
     //
-    //	ly0hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift
-    //	ly1hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
-    //	ly2hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift, key layer
-    //	ly3hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
-    //	ly4hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift
-    //	ly5hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
+    //  ly0hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift
+    //  ly1hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
+    //  ly2hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift, key layer
+    //  ly3hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
+    //  ly4hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift
+    //  ly5hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
     //-------------------------------------------------------------------------------------------------------------------
     // Create hs arrays with 0s padded at left and right csc edges
-    const int k=5;				// Shift negative array indexes positive to compensate for pattern bends off the edges
-    const int j=0;				// Shift negative array indexes positive to compensate for stagger
+    const int k=5;              // Shift negative array indexes positive to compensate for pattern bends off the edges
+    const int j=0;              // Shift negative array indexes positive to compensate for stagger
 
     int ly0hs_pad[k+MXHSX+j+k]={0};
     int ly1hs_pad[k+MXHSX+j+k]={0};
@@ -298,7 +298,7 @@ void pattern_finder
     int ly4hs_pad[k+MXHSX+j+k]={0};
     int ly5hs_pad[k+MXHSX+j+k]={0};
 
-    if (stagger_hs_csc)			// Stagger correction
+    if (stagger_hs_csc)         // Stagger correction
     {
         for (i=0; i<MXHSX; ++i) {
             ly0hs_pad[i-0+j+k] = me1234_ly0hs[i];
@@ -308,7 +308,7 @@ void pattern_finder
             ly4hs_pad[i-0+j+k] = me1234_ly4hs[i];
             ly5hs_pad[i-1+j+k] = me1234_ly5hs[i];
         }}
-    else						// No stagger correction
+    else                        // No stagger correction
     {
         for (i=0; i<MXHSX; ++i) {
             ly0hs_pad[i-0+j+k] = (i>=128) ? me1a_ly0hs[i%32] : me1b_ly0hs[i%128];
@@ -356,24 +356,24 @@ void pattern_finder
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 4D: 1/2-Strip Pattern Finder
-    //			 Finds number of hits in pattern templates for each key 1/2-strip.
+    //           Finds number of hits in pattern templates for each key 1/2-strip.
     //
-    //			hs	0123456789A
-    //	ly0[10:0]	xxxxxkxxxxx    5+1+5 =11
-    //	ly1[ 7:3]	   xxkxx       2+1+2 = 5
-    //	ly2[ 5:5]	     k         0+1+0 = 1
-    //	ly3[ 7:3]	   xxkxx       2+1+2 = 5
-    //	ly4[ 9:1]	 xxxxkxxxx     4+1+4 = 9
-    //	ly5[10:0]	xxxxxkxxxxx    5+1+5 =11
+    //          hs  0123456789A
+    //  ly0[10:0]   xxxxxkxxxxx    5+1+5 =11
+    //  ly1[ 7:3]      xxkxx       2+1+2 = 5
+    //  ly2[ 5:5]        k         0+1+0 = 1
+    //  ly3[ 7:3]      xxkxx       2+1+2 = 5
+    //  ly4[ 9:1]    xxxxkxxxx     4+1+4 = 9
+    //  ly5[10:0]   xxxxxkxxxxx    5+1+5 =11
     //                                                                   11111111 11111
     //              nnnnn            77777777 88888     77777 88888888   55555555 66666
     //          hs  54321 01234567   23456789 01234     56789 01234567   23456789 01234
-    //	ly0[10:0]	00000|aaaaaaaa...aaaaaaaa|bbbbb     aaaaa|bbbbbbbb...bbbbbbbb|00000
-    //	ly1[ 7:3]	   0s|aaaaaaaa...aaaaaaaa|bb           aa|bbbbbbbb...bbbbbbb0|00
-    //	ly2[ 5:5]	     |aaaaaaaa...aaaaaaaa|               |bbbbbbbb...bbbbbbbb|
-    //	ly3[ 7:3]	   0s|aaaaaaaa...aaaaaaaa|bb           aa|bbbbbbbb...bbbbbbb0|00
-    //	ly4[ 9:1]	 0000|aaaaaaaa...aaaaaaaa|bbbb       aaaa|bbbbbbbb...bbbbbbbb|0000
-    //	ly5[10:0]	0000s|aaaaaaaa...aaaaaaaa|bbbbb     aaaaa|bbbbbbbb...bbbbbbb0|00000
+    //  ly0[10:0]   00000|aaaaaaaa...aaaaaaaa|bbbbb     aaaaa|bbbbbbbb...bbbbbbbb|00000
+    //  ly1[ 7:3]      0s|aaaaaaaa...aaaaaaaa|bb           aa|bbbbbbbb...bbbbbbb0|00
+    //  ly2[ 5:5]        |aaaaaaaa...aaaaaaaa|               |bbbbbbbb...bbbbbbbb|
+    //  ly3[ 7:3]      0s|aaaaaaaa...aaaaaaaa|bb           aa|bbbbbbbb...bbbbbbb0|00
+    //  ly4[ 9:1]    0000|aaaaaaaa...aaaaaaaa|bbbb       aaaa|bbbbbbbb...bbbbbbbb|0000
+    //  ly5[10:0]   0000s|aaaaaaaa...aaaaaaaa|bbbbb     aaaaa|bbbbbbbb...bbbbbbb0|00000
     //
     //-------------------------------------------------------------------------------------------------------------------
     // Find pattern hits for each 1/2-strip key
@@ -385,7 +385,7 @@ void pattern_finder
         pattern_unit(
                 &ly0hs_pad[ihs],
                 &ly1hs_pad[ihs],
-                &ly2hs_pad[ihs],	//key on ly2
+                &ly2hs_pad[ihs],    //key on ly2
                 &ly3hs_pad[ihs],
                 &ly4hs_pad[ihs],
                 &ly5hs_pad[ihs],
@@ -404,26 +404,26 @@ void pattern_finder
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 5A: Pre-Trigger Look-ahead
-    // 			 Set active FEB bit ASAP if any pattern is over threshold. 
-    //			 It comes out before the priority encoder result
+    //           Set active FEB bit ASAP if any pattern is over threshold. 
+    //           It comes out before the priority encoder result
     //-------------------------------------------------------------------------------------------------------------------
     // Alias stage0 array names
-    int	(&hs_hit_pre_s0)[160](hs_hit);
-    int	(&hs_pid_pre_s0)[160](hs_pid);
+    int (&hs_hit_pre_s0)[160](hs_hit);
+    int (&hs_pid_pre_s0)[160](hs_pid);
 
     // Flag keys with pattern hits over threshold, use fast-out hit numbers before s0 latch
-    int	hs_key_hit0[MXHS], hs_key_pid0[MXHS], hs_key_dmb0[MXHS];
-    int	hs_key_hit1[MXHS], hs_key_pid1[MXHS], hs_key_dmb1[MXHS];
-    int	hs_key_hit2[MXHS], hs_key_pid2[MXHS], hs_key_dmb2[MXHS];
-    int	hs_key_hit3[MXHS], hs_key_pid3[MXHS], hs_key_dmb3[MXHS];
-    int	hs_key_hit4[MXHS], hs_key_pid4[MXHS], hs_key_dmb4[MXHS];
+    int hs_key_hit0[MXHS], hs_key_pid0[MXHS], hs_key_dmb0[MXHS];
+    int hs_key_hit1[MXHS], hs_key_pid1[MXHS], hs_key_dmb1[MXHS];
+    int hs_key_hit2[MXHS], hs_key_pid2[MXHS], hs_key_dmb2[MXHS];
+    int hs_key_hit3[MXHS], hs_key_pid3[MXHS], hs_key_dmb3[MXHS];
+    int hs_key_hit4[MXHS], hs_key_pid4[MXHS], hs_key_dmb4[MXHS];
 
     // Flag keys with pattern hits over threshold, use fast-out hit numbers before s0 latch
     for (ihs=0; ihs<MXHS; ++ ihs)
     {
-        if (csc_type==0xA || csc_type==0xC)										// Unreversed CSC or unreversed ME1B
+        if (csc_type==0xA || csc_type==0xC)                                     // Unreversed CSC or unreversed ME1B
         {
-            hs_key_hit0[ihs] = (hs_hit_pre_s0[ihs+MXHS*0] >= hit_thresh_pretrig);	// Normal CSC
+            hs_key_hit0[ihs] = (hs_hit_pre_s0[ihs+MXHS*0] >= hit_thresh_pretrig);   // Normal CSC
             hs_key_hit1[ihs] = (hs_hit_pre_s0[ihs+MXHS*1] >= hit_thresh_pretrig);
             hs_key_hit2[ihs] = (hs_hit_pre_s0[ihs+MXHS*2] >= hit_thresh_pretrig);
             hs_key_hit3[ihs] = (hs_hit_pre_s0[ihs+MXHS*3] >= hit_thresh_pretrig);
@@ -441,9 +441,9 @@ void pattern_finder
             hs_key_dmb3[ihs] = (hs_hit_pre_s0[ihs+MXHS*3] >= dmb_thresh_pretrig);
             hs_key_dmb4[ihs] = (hs_hit_pre_s0[ihs+MXHS*4] >= dmb_thresh_pretrig);
         }
-        else if (csc_type==0xB) 												// Reversed CSC
+        else if (csc_type==0xB)                                                 // Reversed CSC
         {
-            hs_key_hit0[ihs] = (hs_hit_pre_s0[MXHS*5-1-ihs] >= hit_thresh_pretrig);	// Reversed CSC
+            hs_key_hit0[ihs] = (hs_hit_pre_s0[MXHS*5-1-ihs] >= hit_thresh_pretrig); // Reversed CSC
             hs_key_hit1[ihs] = (hs_hit_pre_s0[MXHS*4-1-ihs] >= hit_thresh_pretrig);
             hs_key_hit2[ihs] = (hs_hit_pre_s0[MXHS*3-1-ihs] >= hit_thresh_pretrig);
             hs_key_hit3[ihs] = (hs_hit_pre_s0[MXHS*2-1-ihs] >= hit_thresh_pretrig);
@@ -461,9 +461,9 @@ void pattern_finder
             hs_key_dmb3[ihs] = (hs_hit_pre_s0[MXHS*2-1-ihs] >= dmb_thresh_pretrig);
             hs_key_dmb4[ihs] = (hs_hit_pre_s0[MXHS*1-1-ihs] >= dmb_thresh_pretrig);
         }
-        else																	// Reversed ME1B
+        else                                                                    // Reversed ME1B
         {
-            hs_key_hit0[ihs] = (hs_hit_pre_s0[MXHS*4-1-ihs] >= hit_thresh_pretrig);	// Reversed ME1B, not reversed ME1A
+            hs_key_hit0[ihs] = (hs_hit_pre_s0[MXHS*4-1-ihs] >= hit_thresh_pretrig); // Reversed ME1B, not reversed ME1A
             hs_key_hit1[ihs] = (hs_hit_pre_s0[MXHS*3-1-ihs] >= hit_thresh_pretrig);
             hs_key_hit2[ihs] = (hs_hit_pre_s0[MXHS*2-1-ihs] >= hit_thresh_pretrig);
             hs_key_hit3[ihs] = (hs_hit_pre_s0[MXHS*1-1-ihs] >= hit_thresh_pretrig);
@@ -484,8 +484,8 @@ void pattern_finder
     }
 
     // Output active FEB signal, and adjacent FEBs if hit is near board boundary
-    int	cfebnm1_hit[5];	// Adjacent CFEB-1 has a pattern over threshold
-    int	cfebnp1_hit[5];	// Adjacent CFEB+1 has a pattern over threshold
+    int cfebnm1_hit[5]; // Adjacent CFEB-1 has a pattern over threshold
+    int cfebnp1_hit[5]; // Adjacent CFEB+1 has a pattern over threshold
 
     int hs_key_hitpid0[MXHS];
     int hs_key_hitpid1[MXHS];
@@ -495,7 +495,7 @@ void pattern_finder
     int cfeb_hit[MXCFEB];
 
     for (i=0; i<MXHS; ++i) {
-        hs_key_hitpid0[i] = hs_key_hit0[i] & hs_key_pid0[i];	// hits on key satify both hit and pid thresholds
+        hs_key_hitpid0[i] = hs_key_hit0[i] & hs_key_pid0[i];    // hits on key satify both hit and pid thresholds
         hs_key_hitpid1[i] = hs_key_hit1[i] & hs_key_pid1[i];
         hs_key_hitpid2[i] = hs_key_hit2[i] & hs_key_pid2[i];
         hs_key_hitpid3[i] = hs_key_hit3[i] & hs_key_pid3[i];
@@ -510,29 +510,29 @@ void pattern_finder
     cfeb_hit[3] = (arr_or(hs_key_hitpid3) || cfeb_layer_trigger) && cfeb_en[3];
     cfeb_hit[4] = (arr_or(hs_key_hitpid4) || cfeb_layer_trigger) && cfeb_en[4];
 
-    cfebnm1_hit[1]	= arr_or(arr_and(hs_key_hitpid1, adjcfeb_mask_nm1));
-    cfebnm1_hit[2]	= arr_or(arr_and(hs_key_hitpid2, adjcfeb_mask_nm1));
-    cfebnm1_hit[3]	= arr_or(arr_and(hs_key_hitpid3, adjcfeb_mask_nm1));
-    cfebnm1_hit[4]	= arr_or(arr_and(hs_key_hitpid4, adjcfeb_mask_nm1)) && !csc_me1ab;	// Turn off adjacency for me1ab
+    cfebnm1_hit[1]  = arr_or(arr_and(hs_key_hitpid1, adjcfeb_mask_nm1));
+    cfebnm1_hit[2]  = arr_or(arr_and(hs_key_hitpid2, adjcfeb_mask_nm1));
+    cfebnm1_hit[3]  = arr_or(arr_and(hs_key_hitpid3, adjcfeb_mask_nm1));
+    cfebnm1_hit[4]  = arr_or(arr_and(hs_key_hitpid4, adjcfeb_mask_nm1)) && !csc_me1ab;  // Turn off adjacency for me1ab
 
-    cfebnp1_hit[0]	= arr_or(arr_and(hs_key_hitpid0, adjcfeb_mask_np1));
-    cfebnp1_hit[1]	= arr_or(arr_and(hs_key_hitpid1, adjcfeb_mask_np1));
-    cfebnp1_hit[2]	= arr_or(arr_and(hs_key_hitpid2, adjcfeb_mask_np1));
-    cfebnp1_hit[3]	= arr_or(arr_and(hs_key_hitpid3, adjcfeb_mask_np1)) && !csc_me1ab;	// Turn off adjacency for me1ab
+    cfebnp1_hit[0]  = arr_or(arr_and(hs_key_hitpid0, adjcfeb_mask_np1));
+    cfebnp1_hit[1]  = arr_or(arr_and(hs_key_hitpid1, adjcfeb_mask_np1));
+    cfebnp1_hit[2]  = arr_or(arr_and(hs_key_hitpid2, adjcfeb_mask_np1));
+    cfebnp1_hit[3]  = arr_or(arr_and(hs_key_hitpid3, adjcfeb_mask_np1)) && !csc_me1ab;  // Turn off adjacency for me1ab
 
     // Output active FEB signal, and adjacent FEBs if hit is near board boundary
-    cfeb_active[0]	=	(cfeb_hit[0] ||                   cfebnm1_hit[1] || arr_or(hs_key_dmb0)) && cfeb_en[0];
-    cfeb_active[1]	=	(cfeb_hit[1] || cfebnp1_hit[0] || cfebnm1_hit[2] || arr_or(hs_key_dmb1)) && cfeb_en[1];
-    cfeb_active[2]	=	(cfeb_hit[2] || cfebnp1_hit[1] || cfebnm1_hit[3] || arr_or(hs_key_dmb2)) && cfeb_en[2];
-    cfeb_active[3]	=	(cfeb_hit[3] || cfebnp1_hit[2] || cfebnm1_hit[4] || arr_or(hs_key_dmb3)) && cfeb_en[3];
-    cfeb_active[4]	=	(cfeb_hit[4] || cfebnp1_hit[3]                   || arr_or(hs_key_dmb4)) && cfeb_en[4];
+    cfeb_active[0]  =   (cfeb_hit[0] ||                   cfebnm1_hit[1] || arr_or(hs_key_dmb0)) && cfeb_en[0];
+    cfeb_active[1]  =   (cfeb_hit[1] || cfebnp1_hit[0] || cfebnm1_hit[2] || arr_or(hs_key_dmb1)) && cfeb_en[1];
+    cfeb_active[2]  =   (cfeb_hit[2] || cfebnp1_hit[1] || cfebnm1_hit[3] || arr_or(hs_key_dmb2)) && cfeb_en[2];
+    cfeb_active[3]  =   (cfeb_hit[3] || cfebnp1_hit[2] || cfebnm1_hit[4] || arr_or(hs_key_dmb3)) && cfeb_en[3];
+    cfeb_active[4]  =   (cfeb_hit[4] || cfebnp1_hit[3]                   || arr_or(hs_key_dmb4)) && cfeb_en[4];
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 5B: 1/2-Strip Priority Encoder
-    // 			 Select the 1st best pattern from 160 Key 1/2-Strips
+    //           Select the 1st best pattern from 160 Key 1/2-Strips
     //-------------------------------------------------------------------------------------------------------------------
     // Best 1 of 160 1/2-strip patterns
-    int	hs_pat_1st=0;	// pat[6:4]=nhits, pat[3:0]=pattern id
+    int hs_pat_1st=0;   // pat[6:4]=nhits, pat[3:0]=pattern id
 
     hs_key_1st=0;
     hs_pid_1st=0;
@@ -557,12 +557,12 @@ void pattern_finder
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 6B: Mark key 1/2-strips near the 1st CLCT key as busy to exclude them from 2nd CLCT priority encoding
     //-------------------------------------------------------------------------------------------------------------------
-    int	nspan;
-    int	pspan;
-    int	busy_min;
-    int	busy_max;
-    int	clct0_is_on_me1a;
-    int	hs_key_s2;
+    int nspan;
+    int pspan;
+    int busy_min;
+    int busy_max;
+    int clct0_is_on_me1a;
+    int hs_key_s2;
 
     nspan = clct_sep;
     pspan = clct_sep;
@@ -570,7 +570,7 @@ void pattern_finder
 
     // CSC Type A or B delimiters for excluding 2nd clct span hs0-159
     if (csc_type==0xA || csc_type==0xB) {
-        busy_max = (hs_key_s2 <= 159-pspan) ? hs_key_s2+pspan : 159;	// Limit busy list to range 0-159
+        busy_max = (hs_key_s2 <= 159-pspan) ? hs_key_s2+pspan : 159;    // Limit busy list to range 0-159
         busy_min = (hs_key_s2 >= nspan    ) ? hs_key_s2-nspan : 0;
     }
 
@@ -579,11 +579,11 @@ void pattern_finder
 
         clct0_is_on_me1a = hs_key_1st >> (MXKEYBX-1);
 
-        if (clct0_is_on_me1a) {		// CLCT0 is on ME1A cfeb4, limit blanking region to 128-159
+        if (clct0_is_on_me1a) {     // CLCT0 is on ME1A cfeb4, limit blanking region to 128-159
             busy_max = (hs_key_s2 <= 159-pspan) ? hs_key_s2+pspan : 159;
             busy_min = (hs_key_s2 >= 128+nspan) ? hs_key_s2-nspan : 128;
         }
-        else {						// CLCT0 is on ME1B cfeb0-cfeb3, limit blanking region to 0-127
+        else {                      // CLCT0 is on ME1B cfeb0-cfeb3, limit blanking region to 0-127
             busy_max = (hs_key_s2 <= 127-pspan) ? hs_key_s2+pspan : 127;
             busy_min = (hs_key_s2 >=     nspan) ? hs_key_s2-nspan : 0;
         }
@@ -594,8 +594,8 @@ void pattern_finder
         pause("CSC_TYPE undefined for 2nd clct delimiters in pattern_finder.v: Halting");
 
     // Latch busy key 1/2-strips for excluding 2nd clct
-    int	busy_key[MXHSX];
-    int	ikey;
+    int busy_key[MXHSX];
+    int ikey;
 
     for (ikey=0; ikey<MXHSX; ++ikey) {
         busy_key[ikey] = (ikey>=busy_min && ikey<=busy_max);
@@ -608,14 +608,14 @@ void pattern_finder
 
     //-------------------------------------------------------------------------------------------------------------------
     // Stage 7A: 1/2-Strip Priority Encoder
-    // 			Find 2nd best of 160 patterns, excluding busy region around 1st best key
+    //          Find 2nd best of 160 patterns, excluding busy region around 1st best key
     //-------------------------------------------------------------------------------------------------------------------
     // Best 1 of 160 1/2-strip patterns
     int hs_key_s5=0;
-    int hs_pat_s5=0;	// pat[6:4]=nhits, pat[3:0]=pattern id
+    int hs_pat_s5=0;    // pat[6:4]=nhits, pat[3:0]=pattern id
     int hs_pid_s5=0;
     int hs_hit_s5=0;
-    int	hs_bsy_s5=0;
+    int hs_bsy_s5=0;
 
     for (ihs=0; ihs<MXHSX; ++ihs)
     {
@@ -628,24 +628,24 @@ void pattern_finder
     }
 
     // Latch final 2nd CLCT
-    bool	blank_2nd;
-    int		hs_bsy_2nd;
-    int		clct_blanking=1;
+    bool    blank_2nd;
+    int     hs_bsy_2nd;
+    int     clct_blanking=1;
 
     hs_hit_s5    = (hs_pat_s5 >> MXPIDB);
     blank_2nd    = (hs_hit_s5==0 && clct_blanking==1);
 
     if (blank_2nd) {
-        hs_pid_2nd	= 0;
-        hs_hit_2nd	= 0;
-        hs_key_2nd	= 0;
-        hs_bsy_2nd	= hs_bsy_s5;
+        hs_pid_2nd  = 0;
+        hs_hit_2nd  = 0;
+        hs_key_2nd  = 0;
+        hs_bsy_2nd  = hs_bsy_s5;
     }
-    else {									// else assert final 2nd clct
-        hs_pid_2nd	= (hs_pat_s5 >> 0) & 0xF;
-        hs_hit_2nd	= (hs_pat_s5 >> 4) & 0x7;
-        hs_key_2nd	=  hs_key_s5;
-        hs_bsy_2nd	=  hs_bsy_s5;
+    else {                                  // else assert final 2nd clct
+        hs_pid_2nd  = (hs_pat_s5 >> 0) & 0xF;
+        hs_hit_2nd  = (hs_pat_s5 >> 4) & 0x7;
+        hs_key_2nd  =  hs_key_s5;
+        hs_bsy_2nd  =  hs_bsy_s5;
     }
     if (hs_bsy_2nd!=0) pause("pattern_finder hs_busy_2nd!=0 wtf?!");
 
@@ -662,7 +662,7 @@ void pattern_finder
 int arr_or(int array[32])
 {
     int ior = 0;
-    int	i;
+    int i;
 
     for (i=0; i<32; ++i) {
         ior = ior | array[i];
@@ -678,7 +678,7 @@ int arr_or(int array[32])
 int *arr_and(int array1[32], int array2[32])
 {
     int *iand = new int[32];
-    int	 i;
+    int  i;
 
     for (i=0; i<32; ++i) {
         iand[i] = array1[i] & array2[i];

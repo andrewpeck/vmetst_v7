@@ -2,7 +2,7 @@
 #ifndef VME_JTAG_IO_OPS_H
 #define VME_JTAG_IO_OPS_H
 //------------------------------------------------------------------------------
-//	Headers
+//  Headers
 //------------------------------------------------------------------------------
 #include <stdio.h>
 #include <iostream>
@@ -12,14 +12,14 @@ using namespace std;
 
 
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug_jtag_io_ops 1	// comment this line to turn off debug print
+//  #define debug_jtag_io_ops 1 // comment this line to turn off debug print
 
 //------------------------------------------------------------------------------
-//	Convert integer*4 word to 1 bit per byte for JTAG transmission
-//	SPI=0 for FPGAs and PROMs
-//	SPI=1 for DACs that take msb first
+//  Convert integer*4 word to 1 bit per byte for JTAG transmission
+//  SPI=0 for FPGAs and PROMs
+//  SPI=1 for DACs that take msb first
 //------------------------------------------------------------------------------
 void i4_to_tdi(long int &i4, char tdi[], const int &nbits, const int &spi);
 void tdi_to_i4(char tdi[], long int &i4, const int &nbits,  const int &spi);

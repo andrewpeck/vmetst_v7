@@ -36,11 +36,11 @@ typedef DWORD bt_addr_mod_t;
 /*
 ** Define the various flags for memory mapping
 */
-#define	BT_MAP_WRITE		BT_WR
-#define	BT_MAP_READ		    BT_RD
-#define	BT_MAP_SHARE		(1<<2)
+#define BT_MAP_WRITE        BT_WR
+#define BT_MAP_READ         BT_RD
+#define BT_MAP_SHARE        (1<<2)
 
-#define	BT_MAP_RW	(BT_MAP_READ | BT_MAP_WRITE)
+#define BT_MAP_RW   (BT_MAP_READ | BT_MAP_WRITE)
 
 /*
 ** Constants shared between driver and Mirror API
@@ -77,17 +77,17 @@ typedef DWORD bt_addr_mod_t;
 ** Define interrupt handling information
 */
 typedef enum {
-   BT_IRQ_OVERFLOW,	    /* Overflowed ability to deliver IRQ notifications */
-   BT_IRQ_ERROR,	    /* Error interrupt */
+   BT_IRQ_OVERFLOW,     /* Overflowed ability to deliver IRQ notifications */
+   BT_IRQ_ERROR,        /* Error interrupt */
    BT_IRQ_PRG,          /* Programmed interrupt PT/PR */
    BT_IRQ_IACK,         /* VMEbus interrupt */
    BT_MAX_IRQ
 } bt_irq_t;
 
-#define	BT_VECTOR_ALL	(0)
+#define BT_VECTOR_ALL   (0)
 
 typedef  void bt_icbr_t(void * param_p, bt_irq_t irq_type, 
-	bt_data32_t vector);
+    bt_data32_t vector);
 
 /*
 ** Macro to help align pointers

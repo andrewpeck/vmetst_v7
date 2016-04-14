@@ -10,9 +10,9 @@
 #include "pause.h"
 
 //------------------------------------------------------------------------------
-//	Debug print mode
+//  Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug_jtag_io_byte 1	// comment this line to turn off debug print
+//  #define debug_jtag_io_byte 1    // comment this line to turn off debug print
 
 //------------------------------------------------------------------------------
 // Prototypes

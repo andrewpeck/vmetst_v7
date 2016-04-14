@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
-//	TMB Internal Miniscope Readout
+//  TMB Internal Miniscope Readout
 // 
-//	05/01/09 Initial
-//	06/28/10 New channel assignments
-//	06/28/10 skip 1st tbin if it contains the wordcount
+//  05/01/09 Initial
+//  06/28/10 New channel assignments
+//  06/28/10 skip 1st tbin if it contains the wordcount
 //------------------------------------------------------------------------------
 // Headers
 //------------------------------------------------------------------------------
@@ -18,71 +18,71 @@ using namespace std;
 //------------------------------------------------------------------------------
 void miniscope16 ( unsigned long base_adr, int ntbins, int miniscope_data[16])
 {
-    const int		NCHANNELS	= 16;
-    const int		MXTBINS		= 32;			// tbins per channel
-    const int		MXDSP		= 32;			// max tbins to display
-    const bool		DISP_ALL	= false;		// true= display hex channel binary levels, false=blank them
+    const int       NCHANNELS   = 16;
+    const int       MXTBINS     = 32;           // tbins per channel
+    const int       MXDSP       = 32;           // max tbins to display
+    const bool      DISP_ALL    = false;        // true= display hex channel binary levels, false=blank them
 
-    int				itbin;
-    int				ich;
-    int				ibit;
-    int				idigit;
-    int				ndisp;
+    int             itbin;
+    int             ich;
+    int             ibit;
+    int             idigit;
+    int             ndisp;
 
-    int				scope_ch[MXTBINS] = {0};
-    int				ihex[MXTBINS]     = {0};
+    int             scope_ch[MXTBINS] = {0};
+    int             ihex[MXTBINS]     = {0};
 
-    static bool		scp_first_pass    = true;
-    bool			skip_1st_tbin     = true;
-    int				last_bit;
-    int				ndigits;
-    bool			chblank;
-    int				irow;
-    int				it;
-    int				tb0;
+    static bool     scp_first_pass    = true;
+    bool            skip_1st_tbin     = true;
+    int             last_bit;
+    int             ndigits;
+    bool            chblank;
+    int             irow;
+    int             it;
+    int             tb0;
 
-    char			state[8]={'s','i','p','t','f','h','6','7'};
+    char            state[8]={'s','i','p','t','f','h','6','7'};
     //------------------------------------------------------------------------------
     // Channel labels
     //------------------------------------------------------------------------------
     class label
     {
         public:
-            int		nbits;
-            int		bit;
-            string	tag;
+            int     nbits;
+            int     bit;
+            string  tag;
     };
     static label ch[NCHANNELS];
 
     if (scp_first_pass) {
-        //	Channel has nbits      This is bit              Channel name tag
+        //  Channel has nbits      This is bit              Channel name tag
         //                 |                 |              |
-        ch[ 0].nbits = 1;	ch[ 0].bit = 0;	ch[ 0].tag="any_cfeb_hit       ";
+        ch[ 0].nbits = 1;   ch[ 0].bit = 0; ch[ 0].tag="any_cfeb_hit       ";
 
-        ch[ 1].nbits = 3;	ch[ 1].bit = 0;	ch[ 1].tag="clct_state_machine ";
-        ch[ 2].nbits = 3;	ch[ 2].bit = 1;	ch[ 2].tag="clct_state_machine ";
-        ch[ 3].nbits = 3;	ch[ 3].bit = 2;	ch[ 3].tag="clct_state_machine ";
+        ch[ 1].nbits = 3;   ch[ 1].bit = 0; ch[ 1].tag="clct_state_machine ";
+        ch[ 2].nbits = 3;   ch[ 2].bit = 1; ch[ 2].tag="clct_state_machine ";
+        ch[ 3].nbits = 3;   ch[ 3].bit = 2; ch[ 3].tag="clct_state_machine ";
 
-        ch[ 4].nbits = 1;	ch[ 4].bit = 0;	ch[ 4].tag="clct0_vpf          ";
-        ch[ 5].nbits = 1;	ch[ 5].bit = 0;	ch[ 5].tag="clct1_vpf          ";
-        ch[ 6].nbits = 1;	ch[ 6].bit = 0;	ch[ 6].tag="alct0_vpf          ";
-        ch[ 7].nbits = 1;	ch[ 7].bit = 0;	ch[ 7].tag="alct1_vpf          ";
-        ch[ 8].nbits = 1;	ch[ 8].bit = 0;	ch[ 8].tag="clct_window        ";
-        ch[ 9].nbits = 1;	ch[ 9].bit = 0;	ch[ 9].tag="wr_push_rtmb       ";
+        ch[ 4].nbits = 1;   ch[ 4].bit = 0; ch[ 4].tag="clct0_vpf          ";
+        ch[ 5].nbits = 1;   ch[ 5].bit = 0; ch[ 5].tag="clct1_vpf          ";
+        ch[ 6].nbits = 1;   ch[ 6].bit = 0; ch[ 6].tag="alct0_vpf          ";
+        ch[ 7].nbits = 1;   ch[ 7].bit = 0; ch[ 7].tag="alct1_vpf          ";
+        ch[ 8].nbits = 1;   ch[ 8].bit = 0; ch[ 8].tag="clct_window        ";
+        ch[ 9].nbits = 1;   ch[ 9].bit = 0; ch[ 9].tag="wr_push_rtmb       ";
 
-        ch[10].nbits = 1;	ch[10].bit = 0;	ch[10].tag="tmb_push_dly       ";
-        ch[11].nbits = 1;	ch[11].bit = 0;	ch[11].tag="l1a_pulse          ";
-        ch[12].nbits = 1;	ch[12].bit = 0;	ch[12].tag="l1a_window_open    ";
-        ch[13].nbits = 1;	ch[13].bit = 0;	ch[13].tag="l1a_push_me        ";
+        ch[10].nbits = 1;   ch[10].bit = 0; ch[10].tag="tmb_push_dly       ";
+        ch[11].nbits = 1;   ch[11].bit = 0; ch[11].tag="l1a_pulse          ";
+        ch[12].nbits = 1;   ch[12].bit = 0; ch[12].tag="l1a_window_open    ";
+        ch[13].nbits = 1;   ch[13].bit = 0; ch[13].tag="l1a_push_me        ";
 
-        ch[14].nbits = 1;	ch[14].bit = 0;	ch[14].tag="tmb_special        ";
-        ch[15].nbits = 1;	ch[15].bit = 0;	ch[15].tag="ddu_special        ";
+        ch[14].nbits = 1;   ch[14].bit = 0; ch[14].tag="tmb_special        ";
+        ch[15].nbits = 1;   ch[15].bit = 0; ch[15].tag="ddu_special        ";
 
         scp_first_pass=false;
     }
 
     //------------------------------------------------------------------------------
-    //	Display
+    //  Display
     //------------------------------------------------------------------------------
     fprintf(log_file,"\n");
     ndisp = _cpp_min(ntbins,MXTBINS);
@@ -95,18 +95,18 @@ void miniscope16 ( unsigned long base_adr, int ntbins, int miniscope_data[16])
             if  (irow==0) it = itbin/16;
             else          it = itbin%16;
             fprintf(log_file,"%X",it);
-        }	// close itbin
+        }   // close itbin
         fprintf(log_file,"\n");
-    }	// close irow
+    }   // close irow
 
     // Construct waveform
-    for (ich=0;     ich  <=NCHANNELS-1; ++ich)	{		// Loop over scope channels
-        for (itbin=tb0; itbin<=ndisp-1;     ++itbin)	{		// Time bins per channel
+    for (ich=0;     ich  <=NCHANNELS-1; ++ich)  {       // Loop over scope channels
+        for (itbin=tb0; itbin<=ndisp-1;     ++itbin)    {       // Time bins per channel
 
-            // Construct binary waveforms for single-bit channels	
-            ibit=(miniscope_data[itbin] >> (ich % 16)) & 0x1;	// Logic levels vs tbin for this channel
-            if(ibit==0) scope_ch[itbin]='_';					// Display symbol for logic 0					
-            if(ibit==1) scope_ch[itbin]='-';					// Display symbol for logic 1	
+            // Construct binary waveforms for single-bit channels   
+            ibit=(miniscope_data[itbin] >> (ich % 16)) & 0x1;   // Logic levels vs tbin for this channel
+            if(ibit==0) scope_ch[itbin]='_';                    // Display symbol for logic 0                   
+            if(ibit==1) scope_ch[itbin]='-';                    // Display symbol for logic 1   
 
             // Build integer for special channel groups
             if (ch[ich].nbits > 1) {
@@ -116,7 +116,7 @@ void miniscope16 ( unsigned long base_adr, int ntbins, int miniscope_data[16])
         } //close itbin
 
         // Display binary waveforms
-        chblank=(ch[ich].nbits!=1) && !DISP_ALL;		// Dont display channels that are hex digits
+        chblank=(ch[ich].nbits!=1) && !DISP_ALL;        // Dont display channels that are hex digits
 
         if(!chblank) {
             fprintf(log_file,"ch%3.2i  %s",ich,ch[ich].tag.c_str());
@@ -140,8 +140,8 @@ void miniscope16 ( unsigned long base_adr, int ntbins, int miniscope_data[16])
             fprintf(log_file,"ch%3.2i  %s",ich,ch[ich].tag.c_str());
             for(itbin=tb0;itbin<ndisp;++itbin) fprintf(log_file,"%c",state[ihex[itbin]]);
             fprintf(log_file,"\n");
-        }	// close if ich
-    }	// close ich
+        }   // close if ich
+    }   // close ich
 
     fprintf(log_file,"\n");
 

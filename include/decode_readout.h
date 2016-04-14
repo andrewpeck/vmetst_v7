@@ -8,7 +8,7 @@
 //------------------------------------------------------------------------------
 // Debug print mode
 //------------------------------------------------------------------------------
-//	#define debug 1	// comment this line to turn off debug print
+//  #define debug 1 // comment this line to turn off debug print
 
 #ifdef debug
 #define dprintf fprintf
@@ -18,7 +18,7 @@
 //------------------------------------------------------------------------------
 // Prototypes
 //------------------------------------------------------------------------------
-void decode_readout(int	vf_data[mxframe],int &dmb_wdcnt, bool &err_check);
+void decode_readout(int vf_data[mxframe],int &dmb_wdcnt, bool &err_check);
 //------------------------------------------------------------------------------
 #endif
 //------------------------------------------------------------------------------
