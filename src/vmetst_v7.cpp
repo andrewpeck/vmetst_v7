@@ -24114,7 +24114,7 @@ skipxl:
        //   Read ALCT Hardware Serial Numbers
        //------------------------------------------------------------------------------
        void L41050() {
-L41050:
+//L41050:
            // Set posneg=0, enable rat dsn
            adr    = vme_ratctrl_adr+base_adr;
            status = vme_read(adr,rd_data);
@@ -24220,7 +24220,7 @@ L41050:
        //------------------------------------------------------------------------------
        void L41060()
        {
-L41060:
+//L41060:
            printf("\tSingle Cable Test:\n");
            printf("\tRequires alct_sctest.v firmware in the ALCT mezzanine FPGA\n");
 
