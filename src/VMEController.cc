@@ -944,7 +944,7 @@ int VMEController::vcc_read_command(int code, int n_words, unsigned short *readb
    int n, l, lcnt;
    char *radd_to, *radd_from;
    int ptyp;
-   const char broadcast_addr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+   const unsigned char broadcast_addr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
    if(code<0 || code > 0xFF || n_words<=0) return -1;
    wbuf[0]=0x00;
@@ -1345,14 +1345,14 @@ int VMEController::VME_controller(int irdwr,unsigned int ptr,unsigned short int 
      6 delay
   */
 
-  const char a_mask[8]={0x00,0x20,0x40,0x50,0x80,0x90,0x00,0x00};
-  const char r_mask=0x00;
-  const char w_mask=0x10;
-  const char ts_mask[4]={0x00,0x04,0x08,0x0c};
-  const char ts_size[4]={1,2,4,8};
-  const char tt_mask[4]={0x00,0x01,0x02,0x03};;
-  const char delay_mask[8]={0,1,2,3,4,5,6,7};
-  const char broadcast_addr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+  const unsigned char a_mask[8]={0x00,0x20,0x40,0x50,0x80,0x90,0x00,0x00};
+  const unsigned char r_mask=0x00;
+  const unsigned char w_mask=0x10;
+  const unsigned char ts_mask[4]={0x00,0x04,0x08,0x0c};
+  const unsigned char ts_size[4]={1,2,4,8};
+  const unsigned char tt_mask[4]={0x00,0x01,0x02,0x03};;
+  const unsigned char delay_mask[8]={0,1,2,3,4,5,6,7};
+  const unsigned char broadcast_addr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
   int LRG_read_flag;
   static unsigned int LRG_read_pnt=0;
