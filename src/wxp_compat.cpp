@@ -1,10 +1,54 @@
 #include "wxp_compat.h"
 #include <string>
 
-void _strtime (std::string time) {
+#include <cstdlib>
+#include <time.h>
+
+// formats time in hh:mm:ss
+void _strtime (std::string thetime) {
+
+	time_t t;
+	struct tm *tm_tmp;
+
+	char * time_cstring; 
+
+	t = time(NULL);
+	tm_tmp = localtime(&t);
+	if (tm_tmp == NULL) {
+		perror("localtime");
+		exit(EXIT_FAILURE);
+	}
+
+	if (strftime(time_cstring, sizeof(time_cstring), "%H:%M:%S", tm_tmp) == 0) {
+		fprintf(stderr, "strftime returned 0");
+		exit(EXIT_FAILURE);
+	}
+
+	thetime = time_cstring; 
 }
 
-void _strdate (std::string date) {
+void _strdate (std::string the_date) {
+
+	time_t t;
+	struct tm *tm_tmp;
+
+	char * date_cstring; 
+
+	t = time(NULL);
+
+	tm_tmp = localtime(&t);
+	if (tm_tmp == NULL) {
+		perror("localtime");
+		exit(EXIT_FAILURE);
+	}
+
+	if (strftime(date_cstring, sizeof(date_cstring), "%Y:%m:%d", tm_tmp) == 0) {
+		fprintf(stderr, "strftime returned 0");
+		exit(EXIT_FAILURE);
+	}
+
+	the_date = date_cstring; 
+
 }
 
 bool GetComputerName (std::string buffer, long unsigned int *size) {
@@ -17,6 +61,7 @@ int ExpandEnvironmentStrings(std::string in, std::string out, int size) {
     return 1; 
 }
 
+// beep does not exist on systems past mswinXP 32bit... beep through speakers instead ? 
 void Beep (int a, int b)  {
 
 }; 

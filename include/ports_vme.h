@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <iostream>
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "pause.h"
 
 //------------------------------------------------------------------------------

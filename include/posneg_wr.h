@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 #include <stdio.h>
 #include <iostream>
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "pause.h"
 //------------------------------------------------------------------------------
 void posneg_wr(unsigned long &base_adr, const std::string phaser_bank, int posneg);

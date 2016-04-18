@@ -24,7 +24,7 @@
 #include "xsvf_writer.h"
 #include "pause.h"
 #include "stop.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "dsn_rd.h"
 #include "vme_jtag_io_ops.h"
 using namespace std;

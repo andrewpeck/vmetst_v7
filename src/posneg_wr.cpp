@@ -10,7 +10,7 @@
 #include <iostream>
 #include "posneg_wr.h"
 #include "pause.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "common.h"
 using namespace std;
 

@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 #include <stdio.h>
 #include <iostream>
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "common.h"
 using namespace std;
 

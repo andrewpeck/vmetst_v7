@@ -15,7 +15,7 @@
 #include <iostream>
 #include "vme_jtag_io_ops.h"
 #include "vme_jtag_io_byte.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "pause.h"
 using namespace std;
 

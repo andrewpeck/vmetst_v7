@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "phaser_rd.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "pause.h"
 using namespace std;
 

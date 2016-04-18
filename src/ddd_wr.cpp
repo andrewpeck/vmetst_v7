@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "ddd_wr.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "pause.h"
 
 using namespace std;

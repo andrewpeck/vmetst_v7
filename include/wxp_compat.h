@@ -19,8 +19,8 @@ typedef int64_t __int64;
 #define _strnicmp strncasecmp
 
 
-void _strtime (std::string time); 
-void _strdate (std::string date); 
+void _strtime (std::string the_time); 
+void _strdate (std::string the_date); 
 bool GetComputerName (std::string buffer, long unsigned int *size); 
 int ExpandEnvironmentStrings(std::string in, std::string out, int size); 
 void Beep (int a, int b);

@@ -13,7 +13,7 @@
 #include <iostream>
 #include "smb_read.h"
 #include "smb_write.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "pause.h"
 #include "common.h"
 using namespace std;

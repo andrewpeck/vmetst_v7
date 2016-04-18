@@ -126,7 +126,7 @@
 //  11/13/09 Bug fixs for tmb auto test
 //  11/16/09 Add pre-determined posneg alct-rx-tx scans
 //  01/11/10 Add cfeb bad bits testing
-//  01/26/10 Change vme_io_wxp for D16 block writes
+//  01/26/10 Change vme_io for D16 block writes
 //  01/26/10 Replace xsvfwriter submodule
 //  01/29/10 Add clct generated vs found display output
 //  02/11/10 Add type b csc mods
@@ -222,7 +222,7 @@
 #include "smb_read.h"
 #include "smb_write.h"
 #include "stop.h"
-#include "vme_io_wxp.h"
+#include "vme_io.h"
 #include "vme_jtag_io_byte.h"
 #include "vme_jtag_io_ops.h"
 #include "wxp_compat.h"
@@ -397,8 +397,8 @@ scnt[85]="CCB:  gtx_rx_err_count6";
     log_file      = fopen(log_file_name.c_str(),"w");
     //  setbuf(log_file, 0);    // stops buffering, but is 3x slower
 
-    if (log_file  != 0)  dprintf(stdout,"Opened      %s\n",log_file_name.c_str());
-    if (log_file  == 0) {fprintf(stdout,"Failed to open %s\n",log_file_name.c_str()); pause("WTF?");}
+    if (log_file  != 0)  dprintf(stdout,"Opened         %s\n", log_file_name.c_str());
+    if (log_file  == 0) {fprintf(stdout,"Failed to open %s\n", log_file_name.c_str()); pause("WTF?");}
 
     // Summary files
     sum_file_name = "vmetst_sum.txt";
