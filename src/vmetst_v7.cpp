@@ -11678,10 +11678,21 @@ L19251:
     for (ipass=1; ipass<=1000; ++ipass) {   // 19256
         for (itx  =0; itx  <=24;   ++itx  ) {   // 19255
 
-            status   = vme_write(adr=tmb_boot_adr+base_adr,     wr_data=sel_boot_jtag);
-            status   = vme_write(adr=alct_txa_adr+base_adr,     wr_data=0);
-            status   = vme_write(adr=alct_txb_adr+base_adr,     wr_data=0);
-            status   = vme_write(adr=adr=vme_step_adr+base_adr, wr_data=sel_step_alct);
+            adr=tmb_boot_adr+base_adr; 
+            wr_data = 0xffff & sel_boot_jtag; 
+            status = vme_write(adr, wr_data);
+
+            adr=alct_txa_adr+base_adr; 
+            wr_data = 0;                      
+            status = vme_write(adr, wr_data);
+
+            adr=alct_txb_adr+base_adr; 
+            wr_data = 0;                      
+            status = vme_write(adr, wr_data);
+
+            adr=vme_step_adr+base_adr; 
+            wr_data = 0xffff & sel_step_alct; 
+            status = vme_write(adr, wr_data);
 
             if (itx>=0 && itx<=4) {
                 wr_data= (1<<itx) | sel_boot_jtag;
