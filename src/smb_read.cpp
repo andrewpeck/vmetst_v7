@@ -79,7 +79,7 @@ void smb_read(unsigned long &adc_adr, int &smb_adr, int &smb_data_tmb, int &smb_
     sda_bit[ 4] = (smb_adr >> 3) & 0x1;         // A3
     sda_bit[ 5] = (smb_adr >> 2) & 0x1;         // A2
     sda_bit[ 6] = (smb_adr >> 1) & 0x1;         // A1
-    sda_bit[ 7] = (smb_adr, 0) & 0x1;           // A0
+    sda_bit[ 7] = (smb_adr >> 0) & 0x1;         // A0
     sda_bit[ 8] = 1;                            // 1=read data register
     sda_bit[ 9] = 1;                            // ACK
     sda_bit[10] = 1;                            // D7 read from LM84,1=z output from fpga
