@@ -11,11 +11,9 @@
 // Debug print mode
 //------------------------------------------------------------------------------
 #define debug 1 // comment this line to turn off debug print
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf //
-#endif
+
+#include "debug_print.h"
+
 //------------------------------------------------------------------------------
 void            decode_raw_hits (
         int              vf_data[mxframe],

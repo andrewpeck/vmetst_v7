@@ -241,11 +241,7 @@ int main() {
 
 //  #define debug_print 1   // comment this line to turn off debug print
 
-#ifdef debug_print
-#define dprintf fprintf
-#else
-#define dprintf  //
-#endif
+#include "debug_print.h"
 
 //------------------------------------------------------------------------------
 // String inits
@@ -23456,12 +23452,6 @@ L3900:
            //------------------------------------------------------------------------------
            //   #define debug_print 1   // comment this line to turn off debug print
 
-#ifdef debug_print
-#define dprintf fprintf
-#else
-#define dprintf  //
-#endif
-
            //------------------------------------------------------------------------------
            //   Open log file
            //------------------------------------------------------------------------------
@@ -29121,7 +29111,12 @@ L410320:
     reg_len = 84;                               // Register length
     vme_jtag_write_ir(adr,ichain,chip_id,opcode);           // Set opcode
     vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);  // Write 0's read idcode
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+
+    dprintf(stdout,"tdo="); 
+    for (i=0; i<reg_len; ++i) 
+        dprintf(stdout,"%1i",tdo[i]); 
+    dprintf(stdout,"\n");
+
     if (ifunc<0) goto L410320;
 
     // Decode ALCT USER1 register
@@ -29183,7 +29178,11 @@ L410320:
     reg_len = 40;                               // Register length
     vme_jtag_write_ir(adr,ichain,chip_id,opcode);           // Set opcode
     vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);  // Write 0's read idcode
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+    dprintf(stdout,"tdo="); 
+    for (i=0; i<reg_len; ++i) {
+        dprintf(stdout,"%1i",tdo[i]); 
+    }
+    dprintf(stdout,"\n");
 
     // Decode ALCT USER2 register
     for (i=0; i<reg_len; ++i) {
@@ -29240,7 +29239,11 @@ L410320:
     reg_len = 40;                               // Register length
     vme_jtag_write_ir(adr,ichain,chip_id,opcode);           // Set opcode
     vme_jtag_write_dr(adr,ichain,chip_id,rsd,tdo,reg_len);  // Write data
-    dprintf(stdout,"tdo="); for (i=0; i<reg_len; ++i) dprintf(stdout,"%1i",tdo[i]); dprintf(stdout,"\n");
+    dprintf(stdout,"tdo="); 
+    for (i=0; i<reg_len; ++i) { 
+        dprintf(stdout,"%1i",tdo[i]); 
+    }
+    dprintf(stdout,"\n");
 
 L410329:
     goto L410300;

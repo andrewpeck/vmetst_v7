@@ -1,11 +1,13 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+
 #include "wxp_compat.h"
 
 #include <stdio.h>
 #include <iostream>
 #include <time.h>
+
 using namespace std; 
 
 const int mxframe     = 8192; // Max raw hits frame number, scope adds 512 *160/16=5120 frames

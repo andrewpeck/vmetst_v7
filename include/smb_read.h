@@ -10,11 +10,9 @@
 //  Debug print mode
 //------------------------------------------------------------------------------
 //  #define debug 1 // comment this line to turn off debug print
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf //
-#endif
+
+#include "debug_print.h"
+
 //------------------------------------------------------------------------------
 void smb_read(unsigned long &adc_adr, int &smb_adr, 
         int &smb_data_tmb, int &smb_data_rat);

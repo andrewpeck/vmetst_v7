@@ -23,11 +23,7 @@ using namespace std;
 //------------------------------------------------------------------------------
 //  #define debug 1 // comment this line to turn off debug print
 
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf //
-#endif
+    #include "debug_print.h"
 
 //------------------------------------------------------------------------------
 //  Prototypes

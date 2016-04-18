@@ -9,11 +9,9 @@
 //  Debug print mode
 //------------------------------------------------------------------------------
 //  #define debug 1 // comment this line to turn off debug print
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf
-#endif
+
+#include "debug_print.h"
+
 //------------------------------------------------------------------------------------------
 void ddd_wr(unsigned long &base_adr, const int &ddd_chip, const int &ddd_channel, const int &ddd_delay);
 //------------------------------------------------------------------------------------------

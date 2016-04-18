@@ -18,17 +18,15 @@
 #include "smb_read.h"
 #include "vme_io.h"
 #include "common.h"
+
 using namespace std;
+
 //------------------------------------------------------------------------------
 //  Debug print mode
 //------------------------------------------------------------------------------
-//  #define debug 1 // comment this line to turn off debug print
 
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf //
-#endif
+//  #define debug 1 // comment this line to turn off debug print
+    #include "debug_print.h"
 
 //------------------------------------------------------------------------------
 //  Prototypes

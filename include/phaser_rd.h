@@ -21,11 +21,7 @@ using namespace std;
 //------------------------------------------------------------------------------
 //  #define debug 1 // comment this line to turn off debug print
 
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf //
-#endif
+#include "debug_print.h"
 
 //------------------------------------------------------------------------------
 // Function phaser_rd(base_adr, phaser_bank, phaser_delta) returns phaser_delay

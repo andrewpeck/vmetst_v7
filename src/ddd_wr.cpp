@@ -36,11 +36,7 @@ using namespace std;
 //------------------------------------------------------------------------------
 //  #define debug 1 // comment this line to turn off debug print
 
-#ifdef debug
-#define dprintf fprintf
-#else
-#define dprintf //
-#endif
+    #include "debug_print.h"
 
 //------------------------------------------------------------------------------------------
 // Entry ddd_wr(base_adr,ddd_chip,ddd_channel,ddd_delay)

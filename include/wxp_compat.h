@@ -1,5 +1,5 @@
 #ifndef WXP_COMPAT_H
-#define WXP_COMPAT_H 
+#define WXP_COMPAT_H
 
 #ifdef __linux__
 
@@ -13,20 +13,21 @@
 
 typedef int64_t __int64;
 
-#define _cpp_min min                             
-#define _cpp_max max                             
 #define _stat stat
-#define _strnicmp strncasecmp
+
+#define _cpp_min(...)  min(__VA_ARGS__)
+#define _cpp_max(...)  max(__VA_ARGS__)
+#define _strnicmp(...) strncasecmp(__VA_ARGS__)
 
 
-void _strtime (std::string the_time); 
-void _strdate (std::string the_date); 
-bool GetComputerName (std::string buffer, long unsigned int *size); 
-int ExpandEnvironmentStrings(std::string in, std::string out, int size); 
+void _strtime (std::string the_time);
+void _strdate (std::string the_date);
+bool GetComputerName (std::string buffer, long unsigned int *size);
+int ExpandEnvironmentStrings(std::string in, std::string out, int size);
 void Beep (int a, int b);
-int _kbhit(void); 
-char _getch(); 
- 
+int _kbhit(void);
+char _getch();
+
 #endif /* linux */
 
 #endif /* WXP_COMPAT_H */
