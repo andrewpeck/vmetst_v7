@@ -20177,8 +20177,8 @@ L25461:
                    status   = vme_write(adr=(alct_txa_adr+base_adr),wr_data=(alct_tx_lo));
                    status   = vme_write(adr=(alct_txb_adr+base_adr),wr_data=alct_tx_hi);
 
-                   for (i=0; i<38; ++i);
-                   rpc_data[i]=0;
+                   for (i=0; i<38; ++i)
+                    rpc_data[i]=0;
 
                    // Read back RPC data registers
                    status   = vme_read(adr=(rpc_rxa_adr+base_adr),rpc_rxa); // 1st in time
