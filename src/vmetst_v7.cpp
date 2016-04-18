@@ -24432,24 +24432,26 @@ adb_loop:
                        // Write ADB channel
                        if (adb_wr_ch<0 || adb_wr_ch>23) stop("\t adb_wr_ch out of range");
 
-                       opcode  = 0x16;                                          // ALCT opcode
-                       reg_len = 9;                                         // Register length
+                       opcode  = 0x16;                                        // ALCT opcode
+                       reg_len = 9;                                           // Register length
 
-                       i4_to_tdi(i4=adb_wr_ch,&tdi[0], 9,0);                    // Convert integer to tdi bit array
+                       i4_to_tdi(i4=adb_wr_ch,&tdi[0], 9,0);                  // Convert integer to tdi bit array
 
-                       vme_jtag_anystate_to_rti(adr,ichain);                    // Take TAP to RTI
-                       vme_jtag_write_ir(adr,ichain,chip_id,opcode);            // Set opcode
-                       vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);   // Write tdi
+                       vme_jtag_anystate_to_rti(adr,ichain);                  // Take TAP to RTI
+                       vme_jtag_write_ir(adr,ichain,chip_id,opcode);          // Set opcode
+                       vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len); // Write tdi
 
-                       // Clear TDI and TDO arrays
-                       for (i=0; i<mxbitstream; ++i) {tdi[i]=0; tdo[i];}
+                       for (i=0; i<mxbitstream; ++i) {                        // Clear TDI and TDO arrays
+                           tdi[i]=0;
+                           tdo[i]=0;
+                       }
 
                        // Read back ADB channel
-                       opcode  = 0x15;                                          // ALCT opcode
-                       reg_len = 9;                                         // Register length
+                       opcode  = 0x15;                                        // ALCT opcode
+                       reg_len = 9;                                           // Register length
 
-                       vme_jtag_write_ir(adr,ichain,chip_id,opcode);            // Set opcode
-                       vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);   // Write 0's read tdo
+                       vme_jtag_write_ir(adr,ichain,chip_id,opcode);          // Set opcode
+                       vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len); // Write 0's read tdo
 
                        tdi_to_i4(&tdo[0],adb_rd_ch,reg_len,0);
                        if (iprint) printf("\tADB  channel readback  %4.4X=%2.2i\n",adb_rd_ch, adb_rd_ch);
@@ -24464,7 +24466,10 @@ adb_loop:
                        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);   // Write tdi
 
                        // Clear TDI and TDO arrays
-                       for (i=0; i<mxbitstream; ++i) {tdi[i]=0; tdo[i];}
+                       for (i=0; i<mxbitstream; ++i) {
+                           tdi[i]=0; 
+                           tdo[i]=0;
+                       }
 
                        // Read back SCSI data
                        opcode  = 0x17;                                          // ALCT opcode
@@ -27027,27 +27032,33 @@ adb_loop_sc:
                        if (adb_wr_ch<0 || adb_wr_ch>23) stop("\t adb_wr_ch out of range");
 
                        opcode  = 0x16;                                          // Write ADB channel
-                       reg_len = 9;                                         // Register length
+                       reg_len = 9;                                             // Register length
                        i4_to_tdi(i4=adb_wr_ch,&tdi[0], 9,0);                    // Convert integer to tdi bit array
                        vme_jtag_anystate_to_rti(adr,ichain);                    // Take TAP to RTI
                        vme_jtag_write_ir(adr,ichain,chip_id,opcode);            // Set opcode
                        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);   // Write tdi
 
-                       for (i=0; i<mxbitstream; ++i) {tdi[i]=0; tdo[i];}        // Clear TDI and TDO arrays
+                       for (i=0; i<mxbitstream; ++i) {                          // Clear TDI and TDO arrays
+                           tdi[i]=0; 
+                           tdo[i]=0;
+                       }        
 
                        opcode  = 0x15;                                          // Read back ADB channel
-                       reg_len = 9;                                         // Register length
+                       reg_len = 9;                                             // Register length
                        vme_jtag_write_ir(adr,ichain,chip_id,opcode);            // Set opcode
                        vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);   // Write 0's read tdo
                        tdi_to_i4(&tdo[0],adb_rd_ch,reg_len,0);
 
-                       opcode  = 0x18;                                          // Write SCSI data to tx on cable
-                       reg_len = 16;                                            // Register length
-                       i4_to_tdi(i4=scsi_wr_data,&tdi[0], 16, 0);               // Convert integer to tdi bit array
-                       vme_jtag_write_ir(adr,ichain,chip_id,opcode);            // Set opcode
-                       vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len);   // Write tdi
+                       opcode  = 0x18;                                        // Write SCSI data to tx on cable
+                       reg_len = 16;                                          // Register length
+                       i4_to_tdi(i4=scsi_wr_data,&tdi[0], 16, 0);             // Convert integer to tdi bit array
+                       vme_jtag_write_ir(adr,ichain,chip_id,opcode);          // Set opcode
+                       vme_jtag_write_dr(adr,ichain,chip_id,tdi,tdo,reg_len); // Write tdi
 
-                       for (i=0; i<mxbitstream; ++i) {tdi[i]=0; tdo[i];}        // Clear TDI and TDO arrays
+                       for (i=0; i<mxbitstream; ++i) {                        // Clear TDI and TDO arrays
+                           tdi[i]=0; 
+                           tdo[i]=0;
+                       }
 
                        opcode  = 0x17;                                          // Read back SCSI data
                        reg_len = 16;                                            // Register length
