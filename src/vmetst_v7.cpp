@@ -252,7 +252,7 @@ sclct_sm[1] = "Idle    ";   // Idling, waiting for pretrig
 sclct_sm[2] = "Pretrig ";   // Pretriggered, pushed event into pretrigger pipeline
 sclct_sm[3] = "Throttle";   // Reduce trigger rate
 sclct_sm[4] = "Flush   ";   // Flushing event, throttling trigger rate
-sclct_sm[5] = "Halt    ";   // Halted, waiting for un-halt from VME\
+sclct_sm[5] = "Halt    ";   // Halted, waiting for un-halt from VME
 
 sread_sm[ 0] = "Xstartup";  // Startup wait for buffer status to update after a reset
 sread_sm[ 1] = "Xckstack";  // Idling, waiting for stack data
