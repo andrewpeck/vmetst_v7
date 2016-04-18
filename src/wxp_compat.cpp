@@ -19,10 +19,7 @@ void _strtime (std::string thetime) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (strftime(time_cstring, sizeof(time_cstring), "%H:%M:%S", tm_tmp) == 0) {
-		fprintf(stderr, "strftime returned 0");
-		exit(EXIT_FAILURE);
-	}
+	strftime(time_cstring, sizeof(time_cstring), "%H:%M:%S", tm_tmp);
 
 	thetime = time_cstring; 
 }
@@ -42,13 +39,9 @@ void _strdate (std::string the_date) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (strftime(date_cstring, sizeof(date_cstring), "%Y/%m/%d", tm_tmp) == 0) {
-		fprintf(stderr, "strftime returned 0");
-		exit(EXIT_FAILURE);
-	}
+	strftime(date_cstring, sizeof(date_cstring), "%Y/%m/%d", tm_tmp); 
 
 	the_date = date_cstring; 
-
 }
 
 bool GetComputerName (std::string buffer, long unsigned int *size) {
