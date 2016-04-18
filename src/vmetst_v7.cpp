@@ -3017,7 +3017,7 @@ void L1300() {
         icrc_ok="ERR!";
 
         if (icrc==dsn[7] && icrc!=0) icrc_ok = "OK  ";
-        fprintf(stdout,"\tDigital Serial for %s CRC=%2.2X DSN=%",dsn_chip[itype].c_str(),dsn[7]);
+        fprintf(stdout,"\tDigital Serial for %s CRC=%2.2X DSN=%i",dsn_chip[itype].c_str(),dsn[7]);
         for (i=5; i>0; i--) fprintf(stdout,"%2.2X",dsn[i]);
         fprintf(stdout," MFG=%2.2X %s\n",dsn[0],icrc_ok.c_str());
 
@@ -24131,9 +24131,12 @@ L41050:
                dow_crc(dsn,icrc);
                icrc_ok="ERR!";
 
-               if (icrc==dsn[7] && icrc!=0) icrc_ok = "OK  ";
-               printf("\tDigital Serial for %s CRC=%2.2X DSN=%",dsn_chip[itype].c_str(),dsn[7]);
-               for (i=5; i>0; i--) fprintf(stdout,"%2.2X",dsn[i]);
+               if (icrc==dsn[7] && icrc!=0) 
+               icrc_ok = "OK  ";
+               printf("\tDigital Serial for %s CRC=%2.2X DSN=%i",dsn_chip[itype].c_str(),dsn[7]);
+
+               for (i=5; i>0; i--) 
+               fprintf(stdout,"%2.2X",dsn[i]);
                printf(" MFG=%2.2X %s\n",dsn[0],icrc_ok.c_str());
 
            }    // close itype
@@ -24165,7 +24168,7 @@ L41050:
                if (icrc==dsn[7] && icrc!=0) icrc_ok = "OK  ";
                else                          icrc_ok = "ERR!";
 
-               printf("\tDigital Serial for %s CRC=%2.2X DSN=%",dsn_chip_alct[itype].c_str(),dsn[7]);
+               printf("\tDigital Serial for %s CRC=%2.2X DSN=%i",dsn_chip_alct[itype].c_str(),dsn[7]);
                for (i=5; i>0; i--) printf("%2.2X",dsn[i]);
                printf(" MFG=%2.2X %s\n",dsn[0],icrc_ok.c_str());
            }
@@ -24307,7 +24310,7 @@ L41060:
                if (icrc==dsn[7] && icrc!=0) icrc_ok = "OK  ";
                else                          icrc_ok = "ERR!";
 
-               printf("\tDigital Serial for %s CRC=%2.2X DSN=%",dsn_chip_alct[itype].c_str(),dsn[7]);
+               printf("\tDigital Serial for %s CRC=%2.2X DSN=%i",dsn_chip_alct[itype].c_str(),dsn[7]);
                for (i=5; i>0; i--) printf("%2.2X",dsn[i]);
                printf(" MFG=%2.2X %s\n",dsn[0],icrc_ok.c_str());
            }
