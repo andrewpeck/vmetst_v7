@@ -10,7 +10,7 @@ void _strtime (std::string thetime) {
 	time_t t;
 	struct tm *tm_tmp;
 
-	char * time_cstring; 
+	char time_cstring [] = "hh:mm:ss"; 
 
 	t = time(NULL);
 	tm_tmp = localtime(&t);
@@ -32,7 +32,7 @@ void _strdate (std::string the_date) {
 	time_t t;
 	struct tm *tm_tmp;
 
-	char * date_cstring; 
+	char date_cstring [] = "yy/mm/dd"; 
 
 	t = time(NULL);
 
@@ -42,7 +42,7 @@ void _strdate (std::string the_date) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (strftime(date_cstring, sizeof(date_cstring), "%Y:%m:%d", tm_tmp) == 0) {
+	if (strftime(date_cstring, sizeof(date_cstring), "%Y/%m/%d", tm_tmp) == 0) {
 		fprintf(stderr, "strftime returned 0");
 		exit(EXIT_FAILURE);
 	}
