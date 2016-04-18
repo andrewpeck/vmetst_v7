@@ -1533,7 +1533,7 @@ bool            tmb_ref_exists;
 bool            tmb_ref_skip;
 int             tmb_board_id;
 int             firmware_type_ref;
-int             statid[10];
+int             statid[11];
 
 const int       tmb_ntests=60;
 int             tmb_npassed[tmb_ntests+1];
