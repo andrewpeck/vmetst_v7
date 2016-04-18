@@ -262,7 +262,7 @@ void xsvf_writer(int &islot, std::string xsvf_file_name, int &nerrors)
     wr_data = rd_data & 0xFFF8;                     // zero tck, tms, tdi
     status  = vme_write(adr,wr_data);
 
-    wr_data = wr_data & 0xFF80 | (ichain << 3);     // Select new chain id
+    wr_data = (wr_data & 0xFF80) | (ichain << 3);     // Select new chain id
     status  = vme_write(adr,wr_data);
 
     wr_data = wr_data | (1 << 7);                   // Commandeer the jtag chain

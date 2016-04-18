@@ -8844,7 +8844,7 @@ L18020:
 
     parity = 0;
     for (ibit=0; ibit<=4; ++ibit) {
-        parity = parity ^ (geo_adr_rd >> ibit) & 0x1;
+        parity = parity ^ ((geo_adr_rd >> ibit) & 0x1);
     }
     parity = parity ^ 0x1;  //make it odd
 
@@ -10051,7 +10051,7 @@ L18130:
                 status   = vme_read(adr,rd_data);
                 adc_data = rd_data;
 
-                wr_data  = adc_data & 0xF9FF | (smb_data << 10);
+                wr_data  = (adc_data & 0xF9FF) | (smb_data << 10);
                 wr_data  = wr_data | (smb_clk << 9);
                 status   = vme_write(adr,wr_data);
 
@@ -10262,7 +10262,7 @@ L18140:
                 adr     = vme_adc_adr+base_adr;
                 status  = vme_read(adr,rd_data);
                 adc_data= rd_data;
-                wr_data = adc_data & 0xF9FF | (smb_data << 10);             // alct_tx[31]
+                wr_data = (adc_data & 0xF9FF) | (smb_data << 10);             // alct_tx[31]
                 status  = vme_write(adr,wr_data);
 
                 // Read ALCT input registers
@@ -11145,7 +11145,7 @@ L91361:
 
             if (ipass==1) fprintf(test_file,"\tCFEB%1i[CK] read=%6.1X expect=%6.1X\n\n",icfeb+1,rd_data,0x0);
 
-            if (rd_data!=0 || debug_step && !debug_loop) {
+            if (rd_data!=0 || (debug_step && !debug_loop)) {
                 tmb_nfailed[itest]=1;
                 cfeb_err++;
                 printf("\tFailed CFEB%1i clock bit wr=0 rd=%6.6X\n",icfeb+1,rd_data);
@@ -19827,8 +19827,7 @@ L25251:
             alct_data = (alct_data>>4); // rx4 is the ALCT lsb
 
             // Compare ALCT read data to ALCT write data
-            if ((alct_data!=(1<<itx) || (alct_lsbs!=alct_expect) && (!debug_loop || debug_beep)) || debug_step)
-            {
+            if ( ( alct_data!=(1<<itx) || ((alct_lsbs!=alct_expect) && (!debug_loop || debug_beep))) || debug_step) {
                 alct_err++;
 
                 if (ifunc>=0)
@@ -21018,7 +21017,7 @@ L2920:
            wr_data = rd_data & 0xFFF8;                          // zero tck, tms, tdi
            status  = vme_write(boot_adr,wr_data);
 
-           wr_data = wr_data & 0xFF80 | (ichain << 3);          // Select new chain id
+           wr_data = (wr_data & 0xFF80) | (ichain << 3);          // Select new chain id
            status  = vme_write(boot_adr,wr_data);
 
            wr_data = wr_data | (1 << 7);                        // Commandeer the jtag chain
@@ -21656,22 +21655,22 @@ L30600:
            for (i=0; i<=0xF; ++i) {
                switch (adr)
                {
-                   case 0x0: jtag_data = alct_begin_marker;             break;
-                   case 0x1: jtag_data = 0x80 | (alct_type  >>  8) & 0xF;   break;
-                   case 0x2: jtag_data = 0x80 | (alct_type  >>  4) & 0xF;   break;
-                   case 0x3: jtag_data = 0x80 | (alct_type  >>  0) & 0xF;   break;
-                   case 0x4: jtag_data = 0x80 | (alct_month >>  4) & 0xF;   break;
-                   case 0x5: jtag_data = 0x80 | (alct_month >>  0) & 0xF;   break;
-                   case 0x6: jtag_data = 0x80 | (alct_day   >>  4) & 0xF;   break;
-                   case 0x7: jtag_data = 0x80 | (alct_day   >>  0) & 0xF;   break;
-                   case 0x8: jtag_data = 0x80 | (alct_year  >> 12) & 0xF;   break;
-                   case 0x9: jtag_data = 0x80 | (alct_year  >>  8) & 0xF;   break;
-                   case 0xA: jtag_data = 0x80 | (alct_year  >>  4) & 0xF;   break;
-                   case 0xB: jtag_data = 0x80 | (alct_year  >>  0) & 0xF;   break;
-                   case 0xC: jtag_data = 0x80 | alct_version & 0xF;     break;
-                   case 0xD: jtag_data = 0x80 | 0;                          break;
-                   case 0xE: jtag_data = 0x80 | 0;                          break;
-                   case 0xF: jtag_data = 0xAA;                              break;//  end header marker
+                   case 0x0: jtag_data = alct_begin_marker;                    break;
+                   case 0x1: jtag_data = 0x80 | ( (alct_type  >>  8) & 0xF);   break;
+                   case 0x2: jtag_data = 0x80 | ( (alct_type  >>  4) & 0xF);   break;
+                   case 0x3: jtag_data = 0x80 | ( (alct_type  >>  0) & 0xF);   break;
+                   case 0x4: jtag_data = 0x80 | ( (alct_month >>  4) & 0xF);   break;
+                   case 0x5: jtag_data = 0x80 | ( (alct_month >>  0) & 0xF);   break;
+                   case 0x6: jtag_data = 0x80 | ( (alct_day   >>  4) & 0xF);   break;
+                   case 0x7: jtag_data = 0x80 | ( (alct_day   >>  0) & 0xF);   break;
+                   case 0x8: jtag_data = 0x80 | ( (alct_year  >> 12) & 0xF);   break;
+                   case 0x9: jtag_data = 0x80 | ( (alct_year  >>  8) & 0xF);   break;
+                   case 0xA: jtag_data = 0x80 | ( (alct_year  >>  4) & 0xF);   break;
+                   case 0xB: jtag_data = 0x80 | ( (alct_year  >>  0) & 0xF);   break;
+                   case 0xC: jtag_data = 0x80 | ( alct_version       & 0xF);   break;
+                   case 0xD: jtag_data = 0x80;                                 break;
+                   case 0xE: jtag_data = 0x80;                                 break;
+                   case 0xF: jtag_data = 0xAA;                                 break;//  end header marker
                }
 
                cksum = (cksum+jtag_data) & 0x00FF;
@@ -21730,14 +21729,14 @@ L30620:
            for (i=1; i<=8; ++i) {
                switch (i)
                {
-                   case 0x1: jtag_data = 0xFA;                          break;  // end of JTAG data marker
-                   case 0x2: jtag_data = 0xC0 | (wdcnt >> 12) & 0xF;    break;
-                   case 0x3: jtag_data = 0xC0 | (wdcnt >>  8) & 0xF;    break;
-                   case 0x4: jtag_data = 0xC0 | (wdcnt >>  4) & 0xF;    break;
-                   case 0x5: jtag_data = 0xC0 | (wdcnt >>  0) & 0xF;    break;
-                   case 0x6: jtag_data = 0xC0 | (cksum >>  4) & 0xF;    break;
-                   case 0x7: jtag_data = 0xC0 | (cksum >>  0) & 0xF;    break;
-                   case 0x8: jtag_data = 0xFF;                          break;  // end of PROM data marker
+                   case 0x1: jtag_data = 0xFA;                             break;  // end of JTAG data marker
+                   case 0x2: jtag_data = 0xC0 | ( (wdcnt >> 12) & 0xF);    break;
+                   case 0x3: jtag_data = 0xC0 | ( (wdcnt >>  8) & 0xF);    break;
+                   case 0x4: jtag_data = 0xC0 | ( (wdcnt >>  4) & 0xF);    break;
+                   case 0x5: jtag_data = 0xC0 | ( (wdcnt >>  0) & 0xF);    break;
+                   case 0x6: jtag_data = 0xC0 | ( (cksum >>  4) & 0xF);    break;
+                   case 0x7: jtag_data = 0xC0 | ( (cksum >>  0) & 0xF);    break;
+                   case 0x8: jtag_data = 0xFF;                             break;  // end of PROM data marker
                }
 
                if (i<=5) cksum = (cksum+jtag_data) & 0xFF;

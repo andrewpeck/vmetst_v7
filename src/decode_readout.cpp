@@ -2125,12 +2125,12 @@ rpc_done:
                 if (bcb_cfebid[i]!=icfeb) fprintf(log_file,"ERRb: Blocked bits format mismatch: bcb_cfebid=%i icfeb=%i\n",bcb_cfebid[i],icfeb);
             }
 
-            bcb_cfeb_ly[icfeb][0] = (bcb_data[0] >> 0) & 0xFF;
-            bcb_cfeb_ly[icfeb][1] = (bcb_data[0] >> 8) & 0x0F | ((bcb_data[1] & 0x0F) << 4);
-            bcb_cfeb_ly[icfeb][2] = (bcb_data[1] >> 4) & 0xFF;
-            bcb_cfeb_ly[icfeb][3] = (bcb_data[2] >> 0) & 0xFF;
-            bcb_cfeb_ly[icfeb][4] = (bcb_data[2] >> 8) & 0x0F | ((bcb_data[3] & 0x0F) << 4);
-            bcb_cfeb_ly[icfeb][5] = (bcb_data[3] >> 4) & 0xFF;
+            bcb_cfeb_ly[icfeb][0] =  (bcb_data[0] >> 0) & 0xFF;
+            bcb_cfeb_ly[icfeb][1] = ((bcb_data[0] >> 8) & 0x0F) | ((bcb_data[1] & 0x0F) << 4);
+            bcb_cfeb_ly[icfeb][2] =  (bcb_data[1] >> 4) & 0xFF;
+            bcb_cfeb_ly[icfeb][3] =  (bcb_data[2] >> 0) & 0xFF;
+            bcb_cfeb_ly[icfeb][4] = ((bcb_data[2] >> 8) & 0x0F) | ((bcb_data[3] & 0x0F) << 4);
+            bcb_cfeb_ly[icfeb][5] =  (bcb_data[3] >> 4) & 0xFF;
 
         }   // close iframe
 

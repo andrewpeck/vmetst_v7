@@ -6,7 +6,7 @@ OBJECTS = $(addprefix obj/,$(subst .cpp,.o,$(subst .cc,.o,$(SOURCES)) ))
 INCLUDE= -I./include
 LIBDIR = -L./bin
 
-CXXFLAGS = -g -O3 $(INCLUDE) -Wall -Wunused-but-set-variable
+CXXFLAGS = -g -O3 $(INCLUDE) -Wall -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-unused-variable -Wno-maybe-uninitialized
 
 TARGET = vmetst_v7
 
